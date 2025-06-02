@@ -368,9 +368,16 @@ if (!['grupo-unbanchat.js'].includes(name) && chat && chat.isBanned && !isROwner
 if (name != 'grupo-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && name != 'grupo-delete.js' && chat?.isBanned && !isROwner) return 
 if (user.antispam > 2) return
 if (m.text && user.banned && !isROwner) {
-m.reply(`《✦》Estas baneado/a, no puedes usar comandos en este bot!\n\n${user.bannedReason ? `✰ *Motivo:* ${user.bannedReason}` : '✰ *Motivo:* Sin Especificar'}\n\n> ✧ Si este Bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`)
-user.antispam++
-return
+  m.reply(`🚫 *Acceso Denegado: Estás Baneado(a)*
+
+No puedes usar comandos en este bot mientras tu cuenta esté baneada.
+
+${user.bannedReason ? `📌 *Motivo:* ${user.bannedReason}` : '📌 *Motivo:* No especificado'}
+
+🛡️ Si crees que esto es un error y el bot es una cuenta oficial, puedes presentar tu caso con un moderador. Asegúrate de incluir evidencia válida.
+
+🔄 *Reintentos:* ${++user.antispam}`);
+  return;
 }
 
 if (user.antispam2 && isROwner) return
@@ -436,12 +443,17 @@ m.reply('chirrido -_-')
 else
 m.exp += xp
 if (!isPrems && plugin.coin && global.db.data.users[m.sender].coin < plugin.coin * 1) {
-conn.reply(m.chat, `❮✦❯ Se agotaron tus ${moneda}`, m)
-continue
+conn.reply(m.chat, `❮✦❯ Te has quedado sin ${moneda} OnO.`, m)
+continúe
 }
 if (plugin.level > _user.level) {
-conn.reply(m.chat, `❮✦❯ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)       
-continue
+  conn.reply(m.chat, `❌ ¡Aún no puedes usar este comando!
+
+🔐 Necesitas ser nivel *${plugin.level}*.
+📊 Pero tú solo tienes nivel *${_user.level}*.
+
+📈 ¡Usa *${usedPrefix}levelup* para subir de nivel y desbloquearlo!`, m);
+  continue;
 }
 let extra = {
 match,
@@ -560,46 +572,112 @@ let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].ge
 
 const msg = {
   rowner: `
-[ ACCESO DENEGADO ]
-Solo los verdaderos Monarcas tienen permiso para ejecutar *${comando}*. Tú no eres uno de ellos.`,
+🛡️ *[ SISTEMA DE AUTORIDAD - BLOQUEO DE COMANDO ]*
+
+✦ Comando: *${comando}*
+✦ Estado: *RESTRINGIDO A MONARCAS*
+
+Solo aquellos elegidos por la voluntad del sistema pueden ejecutar esta técnica.
+
+🚷 Tú no posees el rango requerido para manipular este poder.
+
+_“El poder sin control es solo una ilusión...”_`,
+}
 
   owner: `
-[ COMANDO RESTRINGIDO ]
-*${comando}* está reservado para quienes cargan el peso del sistema. Los desarrolladores. No intentes sobrepasarlos.`,
+🛡️ *[ SISTEMA DE AUTORIDAD - BLOQUEO DE COMANDO ]*
+
+✦ Comando: *${comando}*
+✦ Estado: *RESTRINGIDO A MONARCAS*
+
+Solo aquellos elegidos por la voluntad del sistema pueden ejecutar esta técnica.
+
+🚷 Tú no posees el rango requerido para manipular este poder.
+
+_“El poder sin control es solo una ilusión...”_`,
+}
 
   mods: `
-[ ACCESO SOLO A VIGILANTES ]
-El comando *${comando}* responde únicamente a los guardianes asignados. Tú no estás en esa lista.`,
+📛 *[ PERMISO DENEGADO - SOLO GUARDIANES ]*
+
+Intentaste usar *${comando}*... ¿pero acaso luces como un moderador?
+
+👀 No estás en la lista de los *Vigilantes del Sistema*. Nice try.`,
+}
 
   premium: `
-[ NIVEL DE PODER INSUFICIENTE ]
-Solo unidades premium pueden invocar *${comando}*. Tu autoridad no alcanza.`,
+📛 *[ COMANDO BLOQUEADO - RANGO PEASANT DETECTADO ]*
+
+JAJAJA 😆  
+¿Tú? ¿Usar *${comando}* sin ser premium?
+
+Esto es como un NPC tratando de lanzar un hechizo legendario.  
+🚫 *FAIL INEVITABLE*  
+Desbloquea el modo *Premium* si no quieres seguir haciendo el ridículo.`,
+}
 
   group: `
-[ ENTORNO NO COMPATIBLE ]
-*${comando}* solo puede ser activado en operaciones grupales. Este lugar no califica.`,
+🚫 *[ ACCIÓN INVÁLIDA - MODO GRUPO REQUERIDO ]*
+
+Comando *${comando}*:  
+→ *Clasificación*: Técnica de Escuadrón  
+→ *Estado actual*: Modo solitario (¿en serio?)
+
+💡 Consejo del sistema: La fuerza del grupo supera al poder individual.  
+Aunque en tu caso… tal vez no haya grupo que te aguante 🤷‍♂️`,
+}
 
   private: `
-[ ENTORNO NO AUTORIZADO ]
-Este comando requiere un canal privado. Aquí hay demasiados ojos.`,
+📢 *[ ERROR DE USUARIO - ¿SECRETO EN PÚBLICO? ]*
+
+Intentaste ejecutar *${comando}* en modo grupal...  
+💀 Spoiler: fallaste.
+
+Ese comando solo se activa en *modo privado*.  
+🤡 El sistema recomienda pensar antes de hacer magia.`,
+}
 
   admin: `
-[ NO TIENES AUTORIDAD ]
-*${comando}* está reservado a los líderes de esta zona. Tu rol no cumple con ese criterio.`,
+👑 *[ ACCESO DENEGADO - SOLO PARA LOS “GRANDES JEFES” ]*
+
+¿*${comando}*? JAJA, ¿en serio crees que tienes el título para eso?
+
+😂 Esta habilidad es solo para los que llevan la corona, no para los simples mortales.
+
+Vuelve cuando dejes de jugar a ser líder y subas de nivel en la vida real.`,
+}
 
   botAdmin: `
-[ FUNCIÓN BLOQUEADA ]
-No tengo el control del grupo. Necesito privilegios administrativos para ejecutar *${comando}*. Obtén el poder necesario o retírate.`,
+🤖 *[ FUNCIÓN BLOQUEADA - ¿ME VES CARA DE ADMIN? ]*
+
+Quiero usar *${comando}*, pero sin privilegios de administrador soy solo un simple bot juguete.
+
+🫤 Dame el poder o déjame en paz, que no vine a hacer el ridículo.
+
+👋 Cuando tengas admin, hablamos en serio.`,
+}
 
   unreg: `
-[ NO RECONOCIDO ]
-No puedes usar *${comando}* hasta completar tu sincronización con el sistema.
-Usa el comando:
-» #${verifyaleatorio} ${user2}.${edadaleatoria}`,
+🚫 *[ ACCESO DENEGADO - SIN SINCRONIZACIÓN ]*
 
+¿Intentando usar *${comando}* sin estar registrado?  
+😅 Eso es como intentar pelear sin armas.
+
+Para desbloquear tus poderes, completa tu sincronización con el sistema usando:  
+» #${verifyaleatorio} ${user2}.${edadaleatoria}
+
+⚔️ Vamos, que no muerdo... todavía.`,
+}
+
+  const msg = {
   restrict: `
-[ COMANDO BLOQUEADO ]
-Esta función ha sido sellada por orden superior. No está disponible para ti.`
+🚫 *[ COMANDO BLOQUEADO - NI LO INTENTES ]*
+
+Esta función fue sellada por orden superior...  
+¿Y tú quién eres para cuestionar? 😂
+
+Mejor ahorra tu energía intentando cosas que sí puedes hacer, campeón.  
+O espera a que te asciendan en el próximo parche.`,
 }[type];
     
 if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
