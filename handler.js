@@ -676,8 +676,7 @@ Esta función fue sellada por orden superior...
 ¿Y tú quién eres para cuestionar? 😂
 
 Mejor ahorra tu energía intentando cosas que sí puedes hacer, campeón.  
-O espera a que te asciendan en el próximo parche.`,
-}[type];
+O espera a que te asciendan en el próximo parche.`,}[type];
     
 if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
 
