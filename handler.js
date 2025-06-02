@@ -582,7 +582,7 @@ Solo aquellos elegidos por la voluntad del sistema pueden ejecutar esta técnica
 🚷 Tú no posees el rango requerido para manipular este poder.
 
 _“El poder sin control es solo una ilusión...”_`,
-}
+
 
   owner: `
 🛡️ *[ SISTEMA DE AUTORIDAD - BLOQUEO DE COMANDO ]*
@@ -595,7 +595,7 @@ Solo aquellos elegidos por la voluntad del sistema pueden ejecutar esta técnica
 🚷 Tú no posees el rango requerido para manipular este poder.
 
 _“El poder sin control es solo una ilusión...”_`,
-}
+
 
   mods: `
 📛 *[ PERMISO DENEGADO - SOLO GUARDIANES ]*
@@ -603,7 +603,7 @@ _“El poder sin control es solo una ilusión...”_`,
 Intentaste usar *${comando}*... ¿pero acaso luces como un moderador?
 
 👀 No estás en la lista de los *Vigilantes del Sistema*. Nice try.`,
-}
+
 
   premium: `
 📛 *[ COMANDO BLOQUEADO - RANGO PEASANT DETECTADO ]*
@@ -614,7 +614,7 @@ JAJAJA 😆
 Esto es como un NPC tratando de lanzar un hechizo legendario.  
 🚫 *FAIL INEVITABLE*  
 Desbloquea el modo *Premium* si no quieres seguir haciendo el ridículo.`,
-}
+
 
   group: `
 🚫 *[ ACCIÓN INVÁLIDA - MODO GRUPO REQUERIDO ]*
@@ -625,7 +625,7 @@ Comando *${comando}*:
 
 💡 Consejo del sistema: La fuerza del grupo supera al poder individual.  
 Aunque en tu caso… tal vez no haya grupo que te aguante 🤷‍♂️`,
-}
+
 
   private: `
 📢 *[ ERROR DE USUARIO - ¿SECRETO EN PÚBLICO? ]*
@@ -635,7 +635,7 @@ Intentaste ejecutar *${comando}* en modo grupal...
 
 Ese comando solo se activa en *modo privado*.  
 🤡 El sistema recomienda pensar antes de hacer magia.`,
-}
+
 
   admin: `
 👑 *[ ACCESO DENEGADO - SOLO PARA LOS “GRANDES JEFES” ]*
@@ -645,7 +645,7 @@ Ese comando solo se activa en *modo privado*.
 😂 Esta habilidad es solo para los que llevan la corona, no para los simples mortales.
 
 Vuelve cuando dejes de jugar a ser líder y subas de nivel en la vida real.`,
-}
+
 
   botAdmin: `
 🤖 *[ FUNCIÓN BLOQUEADA - ¿ME VES CARA DE ADMIN? ]*
@@ -655,7 +655,7 @@ Quiero usar *${comando}*, pero sin privilegios de administrador soy solo un simp
 🫤 Dame el poder o déjame en paz, que no vine a hacer el ridículo.
 
 👋 Cuando tengas admin, hablamos en serio.`,
-}
+
 
   unreg: `
 🚫 *[ ACCESO DENEGADO - SIN SINCRONIZACIÓN ]*
@@ -667,7 +667,7 @@ Para desbloquear tus poderes, completa tu sincronización con el sistema usando:
 » #${verifyaleatorio} ${user2}.${edadaleatoria}
 
 ⚔️ Vamos, que no muerdo... todavía.`,
-} 
+
 
   restrict: `
 🚫 *[ COMANDO BLOQUEADO - NI LO INTENTES ]*
@@ -676,7 +676,8 @@ Esta función fue sellada por orden superior...
 ¿Y tú quién eres para cuestionar? 😂
 
 Mejor ahorra tu energía intentando cosas que sí puedes hacer, campeón.  
-O espera a que te asciendan en el próximo parche.`,}[type];
+O espera a que te asciendan en el próximo parche.`,
+}[type];
     
 if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
 
