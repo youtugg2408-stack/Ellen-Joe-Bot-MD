@@ -34,9 +34,9 @@ global.languaje = 'Español'
 global.vs = '2.2.0'
 global.nameqr = 'Vermeil-Bot'
 global.namebot = '˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃'
-global.Rubysessions = 'RubySessions'
-global.jadi = 'RubyJadiBots' 
-global.RubyJadibts = true
+global.Vermeilsessions = 'VermeilSessions'
+global.jadi = 'VermeilJadiBots' 
+global.VermeilJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
