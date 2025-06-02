@@ -1,5 +1,5 @@
 {
-  "name": "RubyBot-MD",
+  "name": "Vermeil-Bot",
   "version": "2.2.0",
   "description": "WhatsApp Bot Multi Device",
   "main": "index.js",
@@ -18,16 +18,16 @@
     "eslint": "eslint .",
     "eslintfix": "eslint --fix ."
   },
-  "homepage": "https://github.com/Dioneibi-rip/Ruby-Hoshino-Bot",
+  "homepage": "https://github.com/nevi-dev/Vermeil-bot",
   "author": {
-    "name": "dioneibi"
+    "name": "nevi-dev"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Dioneibi-rip/Ruby-Hoshino-Bot.git"
+    "url": "git+https://github.com/nevi-dev/Vermeil-Bot.git"
   },
   "bugs": {
-    "url": "https://github.com/Dioneibi-rip/Ruby-Hoshino-Bot/issues"
+    "url": "https://github.com/nevi-dev/Vermeil-bot/issues"
   },
   "license": "MIT-License",
   "dependencies": {
