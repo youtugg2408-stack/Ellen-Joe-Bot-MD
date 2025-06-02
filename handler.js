@@ -667,9 +667,8 @@ Para desbloquear tus poderes, completa tu sincronización con el sistema usando:
 » #${verifyaleatorio} ${user2}.${edadaleatoria}
 
 ⚔️ Vamos, que no muerdo... todavía.`,
-}
+} 
 
-  const msg = {
   restrict: `
 🚫 *[ COMANDO BLOQUEADO - NI LO INTENTES ]*
 
