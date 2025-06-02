@@ -176,7 +176,7 @@ version,
 
 global.conn = makeWASocket(connectionOptions);
 
-if (!fs.existsSync(`./${Rubysessions}/creds.json`)) {
+if (!fs.existsSync(`./${Vermeilsessions}/creds.json`)) {
 if (opcion === '2' || methodCode) {
 opcion = '2'
 if (!conn.authState.creds.registered) {
