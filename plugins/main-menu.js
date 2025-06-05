@@ -7,6 +7,8 @@ const cooldowns = new Map();
 const lastMenuSent = new Map();
 
 let handler = async (m, { conn, usedPrefix }) => {
+    // Si el mensaje es respuesta al propio mensaje del bot, ignorar
+  if (m.quoted?.id && m.quoted?.fromMe) return;
   const chatId = m.chat;
   const now = Date.now();
   const waitTime = 20 * 60 * 1000;
