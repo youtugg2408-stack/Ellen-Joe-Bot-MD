@@ -19,13 +19,10 @@ let handler = async (m, { conn, usedPrefix }) => {
     const seconds = Math.floor((remainingMs % 60000) / 1000);
 
     const last = lastMenuSent.get(chatId);
-
     return await conn.reply(
       chatId,
       `@${m.sender.split('@')[0]} no se puede enviar el menú antes de tiempo.\nTiempo restante: *${minutes}m ${seconds}s*`,
-      {
-        key: last?.key || m.key
-      },
+      last?.message || m,
       {
         mentions: [m.sender]
       }
@@ -42,7 +39,6 @@ let handler = async (m, { conn, usedPrefix }) => {
   const uptime = clockString(process.uptime() * 1000);
   const totalreg = Object.keys(global.db?.data?.users || {}).length;
 
-  // Hora UTC
   const utcTime = moment().utc().format('HH:mm');
 
   const videoLinks = [
@@ -102,7 +98,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   cooldowns.set(chatId, now);
   lastMenuSent.set(chatId, {
     timestamp: now,
-    key: sentMsg.key
+    message: sentMsg
   });
 };
 
