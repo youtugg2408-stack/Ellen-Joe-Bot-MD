@@ -38,9 +38,8 @@ let rtx2 = `✐ Cσɳҽxισɳ SυႦ-Bσƚ Mσԃҽ Cσԃҽ\n
 \`3\` » Selecciona Vincular con el número de teléfono\n
 \`4\` » Escriba el Código para iniciar sesion con el bot\n
 ✧ No es recomendable usar tu cuenta principal.\n
-︵۪۪۪۪۪۪۪⏜໋᳝ׅ۪۪۪࣪╼╽═┅᪲━᳝ׅ࣪🍒━ּ᳝ׅ࣪ᰰᩫ┅═╽╾໋᳝۪۪۪۪࣪⏜۪۪۪۪۪۪۪۪︵
-       ꩘᮫۪࣫🪷𝂻݄˓ֱׄ֞𝐒ִ𝕦͠𝖕ִ𝖊ׄ𝖗̤𝗋̤𝖚𝗯𝗒 ִ֪𝐒ׄ𝖚͟𝖇ִ𝖇֗𝖔͟𝖙
-                𝐁̲̱𝕪ᰰ 𝖉̤𝗂͠𝗈ׄ𝗇֗𝖊𝗂͟𝖇𝗂֦ 𝖗𝖎𝖕 ❀⃪ְ᳝҇𝆬🌟̸̷҈҉ᩖ᪲𝆬𔗨ּ`
+           [\VERMEIL-BOT/]
+                 [\BY:nevi-dev/]
                 
 
 const __filename = fileURLToPath(import.meta.url)
