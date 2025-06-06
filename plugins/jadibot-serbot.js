@@ -61,18 +61,18 @@ return m.reply(`${emoji2} No se han encontrado espacios para *Sub-Bots* disponib
 }*/
 let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
 let id = `${who.split`@`[0]}`  //conn.getName(who)
-let pathRubyJadiBot = path.join(`./${jadi}/`, id)
-if (!fs.existsSync(pathRubyJadiBot)){
-fs.mkdirSync(pathRubyJadiBot, { recursive: true })
+let pathVermeilJadiBot = path.join(`./${jadi}/`, id)
+if (!fs.existsSync(pathVermeilJadiBot)){
+fs.mkdirSync(pathVermeilJadiBot, { recursive: true })
 }
-RubyJBOptions.pathRubyJadiBot = pathRubyJadiBot
-RubyJBOptions.m = m
-RubyJBOptions.conn = conn
-RubyJBOptions.args = args
-RubyJBOptions.usedPrefix = usedPrefix
-RubyJBOptions.command = command
-RubyJBOptions.fromCommand = true
-RubyJadiBot(RubyJBOptions)
+VermeilJBOptions.pathVermeilJadiBot = pathVermeilJadiBot
+VermeilJBOptions.m = m
+VermeilJBOptions.conn = conn
+VermeilJBOptions.args = args
+VermeilJBOptions.usedPrefix = usedPrefix
+VermeilJBOptions.command = command
+VermeilJBOptions.fromCommand = true
+VermeilJadiBot(VermeilJBOptions)
 global.db.data.users[m.sender].Subs = new Date * 1
 } 
 handler.help = ['qr', 'code']
