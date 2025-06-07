@@ -573,7 +573,10 @@ O sigue perdiendo el tiempo esperando que algo pase.
 
 — Ejemplo para que no seas tan inútil:  
   */reg nevi.15*`,
-  restrict: '「📵」 *¡Ouh~! Esta función está dormida por ahora~* 💤'
+  restrict: '「⚠️」Esta función está dormida.  
+No molestes intentando usar algo que ni siquiera funciona.
+
+> Vuelve cuando haya vida… si es que alguna vez la hay.'
 }[type];
 if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}
 const file = global.__filename(import.meta.url, true);
