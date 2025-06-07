@@ -525,7 +525,12 @@ function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]
 
 global.dfail = (type, m, conn) => {
 const msg = {
-  rowner: '「🌺」 *Gomenasai~! Esta función solo la puede usar mi creador celestial...* 🌌\n\n> *Dioneibi-sama.*',
+  rowner: '「✖」No tienes autorización para usar esta función.
+
+Está reservada únicamente para nevi-dev.  
+No es cuestión de capacidad... es cuestión de jerarquía.
+
+> No intentes lo que está fuera de tu alcance.',
   owner: '「🌸」 *¡Nyaa~! Solo mi creador y programadores pueden usar este comando~!* 💾💕',
   mods: '「🌟」 *Uguu~ Esto eso solo lo pueden usar mis desarrolladores mágicos~!* 🔮',
   premium: '「🍡」 *Ehh~? Esta función es exclusiva para usuarios Premium-desu~!* ✨\n\n💫 *¿No eres premium aún? Consíguelo ahora usando:*\n> ✨ *.comprarpremium 2 dias*  (o reemplaza "2 dias" por la cantidad que desees).',
