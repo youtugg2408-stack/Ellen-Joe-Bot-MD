@@ -269,7 +269,9 @@ per: [],
         .includes(sendNum)
 
     const isOwner = isROwner
-    const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
+    const isMods = isOwner || global.mods
+  .map(v => String(v).replace(/[^0-9]/g, '') + '@s.whatsapp.net')
+  .includes(m.sender)
     const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
 
     if (opts['queque'] && m.text && !(isMods || isPrems)) {
