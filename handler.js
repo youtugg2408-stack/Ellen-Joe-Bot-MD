@@ -564,7 +564,15 @@ Si no estás en esa lista, cállate y deja de molestar.
 Aunque claro, entiendo que pedirte que hagas algo útil es mucho para ti.
 
 > Así que, o me haces admin, o sigue soñando con resultados.',
-  unreg: `🍥 𝑶𝒉 𝒏𝒐~! *¡Aún no estás registrado~!* 😿\nNecesito conocerte para que uses mis comandos~ ✨\n\n📝 Por favor regístrate con:\n» */reg nombre.edad*\n\n🎶 Ejemplo encantado:\n» */reg Dioneibi-kun.15*\n\n💖 ¡Así podré reconocerte, nya~!*`,
+  unreg: `「⚠️」¿En serio? Todavía no estás registrado.  
+No puedo hacer magia con alguien que ni siquiera se presentó.
+
+> Regístrate ya con:  
+  */reg nombre.edad*  
+O sigue perdiendo el tiempo esperando que algo pase.
+
+— Ejemplo para que no seas tan inútil:  
+  */reg nevi.15*`,
   restrict: '「📵」 *¡Ouh~! Esta función está dormida por ahora~* 💤'
 }[type];
 if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}
