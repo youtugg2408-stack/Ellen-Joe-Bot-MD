@@ -7,9 +7,8 @@ const cooldowns = new Map();
 const lastMenuSent = new Map();
 
 let handler = async (m, { conn, usedPrefix }) => {
-    // Si el mensaje es respuesta al propio mensaje del bot, ignorar
   if (m.quoted?.id && m.quoted?.fromMe) return;
-    
+
   const chatId = m.chat;
   const now = Date.now();
   const waitTime = 20 * 60 * 1000;
@@ -34,14 +33,13 @@ let handler = async (m, { conn, usedPrefix }) => {
 
   cooldowns.set(chatId, now);
 
-  const name = await conn.getName(m.sender);
+  const name = (await conn.getName(m.sender).catch(() => null)) || 'Usuario';
   const isMain = conn.user.jid === global.conn.user.jid;
   const botNumber = conn.user.jid.split('@')[0];
   const principalNumber = global.conn?.user?.jid?.split('@')[0] || "Desconocido";
   const totalCommands = Object.keys(global.plugins).length;
   const uptime = clockString(process.uptime() * 1000);
   const totalreg = Object.keys(global.db?.data?.users || {}).length;
-
   const utcTime = moment().utc().format('HH:mm');
 
   const videoLinks = [
@@ -64,6 +62,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     for (let tag of plugin.tags) {
       if (!groups[tag]) groups[tag] = [];
       for (let help of plugin.help) {
+        if (/^\$|^=>|^>/.test(help)) continue; // excluir comandos especiales
         groups[tag].push(`${usedPrefix}${help}`);
       }
     }
@@ -79,7 +78,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   }).join('\n\n');
 
   const header = `
-Hola $name este es el menú:
+Hola ${name} este es el menú:
 |----[𝙑𝙀𝙍𝙈𝙀𝙄𝙇 𝘽𝙊𝙏]----•
 | 👤 Usuario: ${name}
 | 🤖 Bot: ${isMain ? 'Principal' : `Sub-Bot | Principal: ${principalNumber}`}
@@ -92,12 +91,17 @@ Hola $name este es el menú:
 
   const finalText = `${header}\n\n${sections}\n\n[⏳] Este menú puede enviarse 1 vez cada 20 minutos por grupo.`;
 
-  const sentMsg = await conn.sendMessage(chatId, {
-    video: { url: gifVideo },
-    gifPlayback: true,
-    caption: finalText,
-    mentions: [m.sender]
-  }, { quoted: m });
+  let sentMsg;
+  try {
+    sentMsg = await conn.sendMessage(chatId, {
+      video: { url: gifVideo },
+      gifPlayback: true,
+      caption: finalText,
+      mentions: [m.sender]
+    }, { quoted: m });
+  } catch (e) {
+    sentMsg = await conn.reply(chatId, finalText, m);
+  }
 
   cooldowns.set(chatId, now);
   lastMenuSent.set(chatId, {
