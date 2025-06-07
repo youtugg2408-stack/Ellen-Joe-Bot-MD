@@ -33,11 +33,17 @@ let handler = async (m, { conn, usedPrefix }) => {
 
   cooldowns.set(chatId, now);
 
-  const name = (await conn.getName(m.sender).catch(() => null)) || 'Usuario';
+  let name;
+  try {
+    name = await conn.getName(m.sender);
+  } catch {
+    name = 'Usuario';
+  }
+
   const isMain = conn.user.jid === global.conn.user.jid;
   const botNumber = conn.user.jid.split('@')[0];
   const principalNumber = global.conn?.user?.jid?.split('@')[0] || "Desconocido";
-  const totalCommands = Object.keys(global.plugins).length;
+  const totalCommands = Object.keys(global.plugins || {}).length;
   const uptime = clockString(process.uptime() * 1000);
   const totalreg = Object.keys(global.db?.data?.users || {}).length;
   const utcTime = moment().utc().format('HH:mm');
@@ -57,12 +63,12 @@ let handler = async (m, { conn, usedPrefix }) => {
   };
 
   let groups = {};
-  for (let plugin of Object.values(global.plugins)) {
+  for (let plugin of Object.values(global.plugins || {})) {
     if (!plugin.help || !plugin.tags) continue;
     for (let tag of plugin.tags) {
       if (!groups[tag]) groups[tag] = [];
       for (let help of plugin.help) {
-        if (/^\$|^=>|^>/.test(help)) continue; // excluir comandos especiales
+        if (/^\$|^=>|^>/.test(help)) continue; // Excluir comandos especiales
         groups[tag].push(`${usedPrefix}${help}`);
       }
     }
