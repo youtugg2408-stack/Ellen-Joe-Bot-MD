@@ -531,9 +531,23 @@ Está reservada únicamente para nevi-dev.
 No es cuestión de capacidad... es cuestión de jerarquía.
 
 > No intentes lo que está fuera de tu alcance.',
-  owner: '「🌸」 *¡Nyaa~! Solo mi creador y programadores pueden usar este comando~!* 💾💕',
-  mods: '「🌟」 *Uguu~ Esto eso solo lo pueden usar mis desarrolladores mágicos~!* 🔮',
-  premium: '「🍡」 *Ehh~? Esta función es exclusiva para usuarios Premium-desu~!* ✨\n\n💫 *¿No eres premium aún? Consíguelo ahora usando:*\n> ✨ *.comprarpremium 2 dias*  (o reemplaza "2 dias" por la cantidad que desees).',
+  owner: '「✖」Acceso denegado.
+
+Este comando está restringido al Creador y al núcleo de desarrollo.  
+Tu intento ha sido registrado... y será recordado.
+
+> No repitas este error. Algunos sistemas no perdonan.',
+  mods: '「✖」Función restringida.
+
+Este módulo solo responde a los desarrolladores autorizados.  
+Cualquier intento externo será considerado una anomalía.
+
+> No interfieras con lo que no te corresponde.',
+  premium: '「🔥」¿Qué crees que haces? ¡Esta función es SOLO para usuarios Premium!  
+
+¿No eres premium? Pues más te vale ponerte las pilas y conseguirlo YA.  
+
+> Usa *.comprarpremium <días>* y deja de molestar.',
   group: '「🐾」 *¡Onii-chan~! Este comando solo puede usarse en grupos grupales~!* 👥',
   private: '「🎀」 *Shh~ Este comando es solo para ti y para mí, en privado~* 💌',
   admin: '「⚠️」Solo los admin tienen derecho a usar esta mierda.  
