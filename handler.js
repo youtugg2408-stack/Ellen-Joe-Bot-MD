@@ -548,8 +548,14 @@ Cualquier intento externo será considerado una anomalía.
 ¿No eres premium? Pues más te vale ponerte las pilas y conseguirlo YA.  
 
 > Usa *.comprarpremium <días>* y deja de molestar.',
-  group: '「🐾」 *¡Onii-chan~! Este comando solo puede usarse en grupos grupales~!* 👥',
-  private: '「🎀」 *Shh~ Este comando es solo para ti y para mí, en privado~* 💌',
+  group: '「⚠️」¿En serio? Este comando solo funciona en grupos.  
+No en chats privados, ¿qué parte no entendiste?
+
+> Deja de perder el tiempo y únete a un grupo si quieres usarlo.',
+  private: '「⚠️」¿Privado? Sí, solo aquí, nada de andar esparciendo esto por ahí.  
+Este comando es exclusivo para chats privados, no para otros lados.
+
+> No intentes usarlo donde no debes, ¿entendido?',
   admin: '「⚠️」Solo los admin tienen derecho a usar esta mierda.  
 Si no estás en esa lista, cállate y deja de molestar.
 
