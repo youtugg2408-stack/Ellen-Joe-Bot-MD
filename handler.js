@@ -560,7 +560,10 @@ Este comando es exclusivo para chats privados, no para otros lados.
 Si no estás en esa lista, cállate y deja de molestar.
 
 > No eres nadie aquí, aprende a respetar los límites.',
-  botAdmin: '「🔧」 *¡Espera! Necesito ser admin para que este comando funcione correctamente.*\n\n🔧 *Hazme admin y desataré todo mi poder~*',
+  botAdmin: '「⚠️」¿Quieres que este comando funcione? Fácil: hazme admin.  
+Aunque claro, entiendo que pedirte que hagas algo útil es mucho para ti.
+
+> Así que, o me haces admin, o sigue soñando con resultados.',
   unreg: `🍥 𝑶𝒉 𝒏𝒐~! *¡Aún no estás registrado~!* 😿\nNecesito conocerte para que uses mis comandos~ ✨\n\n📝 Por favor regístrate con:\n» */reg nombre.edad*\n\n🎶 Ejemplo encantado:\n» */reg Dioneibi-kun.15*\n\n💖 ¡Así podré reconocerte, nya~!*`,
   restrict: '「📵」 *¡Ouh~! Esta función está dormida por ahora~* 💤'
 }[type];
