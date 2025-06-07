@@ -79,15 +79,15 @@ let handler = async (m, { conn, usedPrefix }) => {
   }).join('\n\n');
 
   const header = `
-╭━━〔 𝙑𝙀𝙍𝙈𝙀𝙄𝙇 𝘽𝙊𝙏 〕━━⬣
-┃ 👤 Usuario: ${name}
-┃ 🤖 Bot: ${isMain ? 'Principal' : `Sub-Bot | Principal: ${principalNumber}`}
-┃ 📦 Comandos: ${totalCommands}
-┃ ⏱️ Uptime: ${uptime}
-┃ 🌍 Hora UTC: ${utcTime}
-┃ 👥 Usuarios: ${totalreg}
-┃ 👑 Dueño: wa.me/${global.owner?.[0]?.[0] || "No definido"}
-╰━━━━━━━━━━━━━━━━━━⬣`.trim();
+|----[𝙑𝙀𝙍𝙈𝙀𝙄𝙇 𝘽𝙊𝙏]----•
+| 👤 Usuario: ${name}
+| 🤖 Bot: ${isMain ? 'Principal' : `Sub-Bot | Principal: ${principalNumber}`}
+| 📦 Comandos: ${totalCommands}
+| ⏱️ Uptime: ${uptime}
+| 🌍 Hora UTC: ${utcTime}
+| 👥 Usuarios: ${totalreg}
+| 👑 Dueño: wa.me/${global.owner?.[0]?.[0] || "No definido"}
+|---------------------•`.trim();
 
   const finalText = `${header}\n\n${sections}\n\n[⏳] Este menú puede enviarse 1 vez cada 20 minutos por grupo.`;
 
