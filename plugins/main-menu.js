@@ -79,6 +79,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   }).join('\n\n');
 
   const header = `
+Hola $name este es el menú:
 |----[𝙑𝙀𝙍𝙈𝙀𝙄𝙇 𝘽𝙊𝙏]----•
 | 👤 Usuario: ${name}
 | 🤖 Bot: ${isMain ? 'Principal' : `Sub-Bot | Principal: ${principalNumber}`}
