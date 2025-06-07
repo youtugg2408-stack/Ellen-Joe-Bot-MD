@@ -524,47 +524,47 @@ function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]
 }}
 
 global.dfail = (type, m, conn) => {
-const msg = {
-  rowner: '「✖」No tienes autorización para usar esta función.
+  const msg = {
+    rowner: `「✖」No tienes autorización para usar esta función.
 
 Está reservada únicamente para nevi-dev.  
 No es cuestión de capacidad... es cuestión de jerarquía.
 
-> No intentes lo que está fuera de tu alcance.',
-  owner: '「✖」Acceso denegado.
+> No intentes lo que está fuera de tu alcance.`,
+    owner: `「✖」Acceso denegado.
 
 Este comando está restringido al Creador y al núcleo de desarrollo.  
 Tu intento ha sido registrado... y será recordado.
 
-> No repitas este error. Algunos sistemas no perdonan.',
-  mods: '「✖」Función restringida.
+> No repitas este error. Algunos sistemas no perdonan.`,
+    mods: `「✖」Función restringida.
 
 Este módulo solo responde a los desarrolladores autorizados.  
 Cualquier intento externo será considerado una anomalía.
 
-> No interfieras con lo que no te corresponde.',
-  premium: '「🔥」¿Qué crees que haces? ¡Esta función es SOLO para usuarios Premium!  
+> No interfieras con lo que no te corresponde.`,
+    premium: `「🔥」¿Qué crees que haces? ¡Esta función es SOLO para usuarios Premium!  
 
 ¿No eres premium? Pues más te vale ponerte las pilas y conseguirlo YA.  
 
-> Usa *.comprarpremium <días>* y deja de molestar.',
-  group: '「⚠️」¿En serio? Este comando solo funciona en grupos.  
+> Usa *.comprarpremium <días>* y deja de molestar.`,
+    group: `「⚠️」¿En serio? Este comando solo funciona en grupos.  
 No en chats privados, ¿qué parte no entendiste?
 
-> Deja de perder el tiempo y únete a un grupo si quieres usarlo.',
-  private: '「⚠️」¿Privado? Sí, solo aquí, nada de andar esparciendo esto por ahí.  
+> Deja de perder el tiempo y únete a un grupo si quieres usarlo.`,
+    private: `「⚠️」¿Privado? Sí, solo aquí, nada de andar esparciendo esto por ahí.  
 Este comando es exclusivo para chats privados, no para otros lados.
 
-> No intentes usarlo donde no debes, ¿entendido?',
-  admin: '「⚠️」Solo los admin tienen derecho a usar esta mierda.  
+> No intentes usarlo donde no debes, ¿entendido?`,
+    admin: `「⚠️」Solo los admin tienen derecho a usar esta mierda.  
 Si no estás en esa lista, cállate y deja de molestar.
 
-> No eres nadie aquí, aprende a respetar los límites.',
-  botAdmin: '「⚠️」¿Quieres que este comando funcione? Fácil: hazme admin.  
+> No eres nadie aquí, aprende a respetar los límites.`,
+    botAdmin: `「⚠️」¿Quieres que este comando funcione? Fácil: hazme admin.  
 Aunque claro, entiendo que pedirte que hagas algo útil es mucho para ti.
 
-> Así que, o me haces admin, o sigue soñando con resultados.',
-  unreg: `「⚠️」¿En serio? Todavía no estás registrado.  
+> Así que, o me haces admin, o sigue soñando con resultados.`,
+    unreg: `「⚠️」¿En serio? Todavía no estás registrado.  
 No puedo hacer magia con alguien que ni siquiera se presentó.
 
 > Regístrate ya con:  
@@ -573,13 +573,17 @@ O sigue perdiendo el tiempo esperando que algo pase.
 
 — Ejemplo para que no seas tan inútil:  
   */reg nevi.15*`,
-  restrict: '「⚠️」Esta función está dormida.  
+    restrict: `「⚠️」Esta función está dormida.  
 No molestes intentando usar algo que ni siquiera funciona.
 
-> Vuelve cuando haya vida… si es que alguna vez la hay.'
-}[type];
-if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}
-const file = global.__filename(import.meta.url, true);
+> Vuelve cuando haya vida… si es que alguna vez la hay.`
+  }[type]
+
+  if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))
+}
+
+const file = global.__filename(import.meta.url, true)
+
 
 // NO TOCAR
 watchFile(file, async () => {
