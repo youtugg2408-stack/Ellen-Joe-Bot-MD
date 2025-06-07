@@ -396,7 +396,11 @@ typeof _prefix === 'string' ?
                 if (user.antispam > 2)
                     return
                 if (m.text && user.banned && !isROwner) {
-                    m.reply(`《✦》Estas baneado/a, no puedes usar comandos en este bot!\\n\\n${user.bannedReason ? `✰ *Motivo:* ${user.bannedReason}` : '✰ *Motivo:* Sin Especificar'}\\n\\n> ✧ Si este Bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`)
+                    m.reply(`《✦》¡Oh no! Qué tragedia... ¡Estás baneado/a! No puedes usar comandos en este bot 🤭
+
+✰ *Motivo:* ${user.bannedReason ? `${user.bannedReason}` : '¡Vaya! Ni siquiera se tomaron la molestia de decir por qué 😂'}
+
+> ✧ Pero tranquilo/a, si *por algún milagro* este bot es oficial y tienes pruebas (de otro universo probablemente), puedes *intentar* hablar con un moderador. Suerte con eso. 😌`)
                     user.antispam++
                     return
                 }
