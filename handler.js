@@ -544,17 +544,21 @@ Para desactivar esta función, escriba
 }
 
 global.dfail = (type, m, conn) => {
-    let msg = {
-        rowner: '👑 Este comando solo puede ser utilizado por el *Creador del bot*',
-        owner: '🔱 Este comando solo puede ser utilizado por el *Dueño del Bot*',
-        mods: '🔰  Esta función es solo para *Para moderadores del Bot*',
-        premium: '💠 Este comando es solo para miembros *Premium*\n\nEscribe */premium* para más info',
-        group: '⚙️ ¡Este comando solo se puede usar en grupos!',
-        private: '📮 Este comando solo se puede usar en el chat *privado del Bot*',
-        admin: '🛡️ Este comando es solo para *Admins* del grupo',
-        botAdmin: '💥 ¡Para usar este comando debo ser *Administrador!*',
-        unreg: '📇 Regístrese para usar esta función  Escribiendo:\n\n*/reg nombre.edad*\n\n📌Ejemplo : */reg Fz.16*',
-        restrict: '🔐 Esta característica está *deshabilitada*'
+ let edadaleatoria = ['10', '28', '20', '40', '18', '21', '15', '11', '9', '17', '25'].getRandom()
+let user2 = m.pushName || 'Anónimo'
+let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
+
+ let msg = {
+rowner: ✦ ¿Intentando usar *${comando}* sin ser mi creador? Aww, qué tierno... ¡pero no! ✋, 
+owner: ✦ Oh no~ ¿creíste que podías usar *${comando}*? Solo los desarrolladores, no los simples mortales como tú. 🙄, 
+mods: ✦ *${comando}* es solo para mods, y tú... bueno, tú ni mod de tu propia vida. 😏, 
+premium: ✦ ¿Premium? Jajaja. ¿Tú? Ni regalado. *${comando}* es solo para los VIP, no para los del montón. 💅, 
+group: ✦ ¿Tan solito estás que quieres usar *${comando}* en privado? Este comando es solo para grupos, baka~, 
+private: ✦ ¿En serio intentas usar *${comando}* aquí? Este comando es solo para mi rinconcito privado, ¡fuera de aquí! 😒, 
+admin: ✦ *${comando}* es solo para admins. Tú solo eres decoración en este grupo. 💁‍♀️, 
+botAdmin: ✦ ¿Y cómo quieres que ejecute *${comando}* si ni admin soy? ¡Hazme admin primero, inútil! 🤨, 
+unreg: ✦ ¿Usar *${comando}* sin registrarte? ¡Qué descaro! Regístrate ya con:\n> » #${verifyaleatorio} ${user2}.${edadaleatoria} o vete a llorar a otro lado. 😈, 
+restrict: ✦ Ooops~ Esta función está *desactivada*. Ni con magia podrás usarla ahora mismo, lo siento (no). 😜
     }[type]
     if (msg) return m.reply(msg)
 }
