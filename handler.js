@@ -352,8 +352,12 @@ let user = global.db.data.users[m.sender]
 if (!['grupo-unbanchat.js'].includes(name) && chat && chat.isBanned && !isROwner) return
 if (name != 'grupo-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && name != 'grupo-delete.js' && chat?.isBanned && !isROwner) return
 if (m.text && user.banned && !isROwner) {
-m.reply(`《✦》Estas baneado/a, no puedes usar comandos en este bot!\n\n${user.bannedReason ? `✰ *Motivo:* ${user.bannedReason}` : '✰ *Motivo:* Sin Especificar'}\n\n> ✧ Si este Bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`)
-return
+  m.reply(
+    `✦ Aww~ ¿Intentando usar comandos estando baneado/a? ¡Qué adorable! 😘\n\n` +
+    `✰ *Motivo del ban:* ${user.bannedReason || 'Jajaja, ni se molestaron en decirte por qué. Triste.'}\n\n` +
+    `> ✧ Si crees que esto es un error (spoiler: no lo es), ve y llora con un moderador... si es que les importa. 💅`
+  )
+  return
 }
 
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
@@ -416,7 +420,13 @@ conn.reply(m.chat, `❮✦❯ Se agotaron tus ${moneda}`, m)
 continue
 }
 if (plugin.level > _user.level) {
-conn.reply(m.chat, `❮✦❯ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)
+  conn.reply(m.chat, 
+    `✦ ¿En serio intentas usar *${comando}* con ese nivel tan miserable?\n\n` +
+    `• Se necesita nivel: *${plugin.level}* 🏆\n` +
+    `• Tu nivel actual: *${_user.level}*... patético. 🙄\n\n` +
+    `✧ Ve a subir de nivel primero, insecto. Usa:\n*${usedPrefix}levelup* antes de volver a molestar. 💅`, 
+    m
+  )
 continue
 }
 let extra = {
