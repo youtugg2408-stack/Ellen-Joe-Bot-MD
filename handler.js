@@ -535,18 +535,19 @@ let user2 = m.pushName || 'Anónimo'
 let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
 
 const msg = {
-rowner: `『✦』El comando *${comando}* solo puede ser usado por los creadores del bot.`, 
-owner: `『✦』El comando *${comando}* solo puede ser usado por los desarrolladores del bot.`, 
-mods: `『✦』El comando *${comando}* solo puede ser usado por los moderadores del bot.`, 
-premium: `『✦』El comando *${comando}* solo puede ser usado por los usuarios premium.`, 
-group: `『✦』El comando *${comando}* solo puede ser usado en grupos.`,
-private: `『✦』El comando *${comando}* solo puede ser usado al chat privado del bot.`,
-admin: `『✦』El comando *${comando}* solo puede ser usado por los administradores del grupo.`, 
-botAdmin: `『✦』Para ejecutar el comando *${comando}* debo ser administrador del grupo.`,
-unreg: `『✦』El comando *${comando}* solo puede ser usado por los usuarios registrado, registrate usando:\n> » #${verifyaleatorio} ${user2}.${edadaleatoria}`,
-restrict: `『✦』Esta caracteristica está desactivada.`
+rowner: `✦ ¿Intentando usar *${comando}* sin ser mi creador? Aww, qué tierno... ¡pero no! ✋`, 
+owner: `✦ Oh no~ ¿creíste que podías usar *${comando}*? Solo los desarrolladores, no los simples mortales como tú. 🙄`, 
+mods: `✦ *${comando}* es solo para mods, y tú... bueno, tú ni mod de tu propia vida. 😏`, 
+premium: `✦ ¿Premium? Jajaja. ¿Tú? Ni regalado. *${comando}* es solo para los VIP, no para los del montón. 💅`, 
+group: `✦ ¿Tan solito estás que quieres usar *${comando}* en privado? Este comando es solo para grupos, baka~`, 
+private: `✦ ¿En serio intentas usar *${comando}* aquí? Este comando es solo para mi rinconcito privado, ¡fuera de aquí! 😒`, 
+admin: `✦ *${comando}* es solo para admins. Tú solo eres decoración en este grupo. 💁‍♀️`, 
+botAdmin: `✦ ¿Y cómo quieres que ejecute *${comando}* si ni admin soy? ¡Hazme admin primero, inútil! 🤨`, 
+unreg: `✦ ¿Usar *${comando}* sin registrarte? ¡Qué descaro! Regístrate ya con:\n> » #${verifyaleatorio} ${user2}.${edadaleatoria} o vete a llorar a otro lado. 😈`, 
+restrict: `✦ Ooops~ Esta función está *desactivada*. Ni con magia podrás usarla ahora mismo, lo siento (no). 😜`
 }[type];
-if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
+
+if (msg) return m.reply(msg).then(_ => m.react('💢'));
 
 let file = global.__filename(import.meta.url, true)
 watchFile(file, async () => {
