@@ -58,7 +58,7 @@ global.listo = '❀ *Aquí tienes ฅ^•ﻌ•^ฅ*'
 global.fotoperfil = await conn.profilePictureUrl(m.sender, 'image').catch(_ => 'https://files.catbox.moe/xr2m6u.jpg')
 
 //Ids channel
-global.canalIdM = ["120363335626706839@newsletter", "120363335626706839@newsletter"]
+global.canalIdM = ["120363418071540900@newsletter", "120363418071540900@newsletter"]
 global.canalNombreM = ["VERMEIL-BOT-CHANNEL", "VERMEIL-OFICIAL-CHANNEL"]
 global.channelRD = await getRandomChannel()
 
