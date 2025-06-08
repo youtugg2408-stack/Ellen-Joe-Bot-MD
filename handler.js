@@ -559,7 +559,8 @@ restrict: `✦ Ooops~ Esta función está *desactivada*. Ni con magia podrás us
 
 if (msg) return m.reply(msg).then(_ => m.react('💢'));
 
-let file = global.__filename(import.meta.url, true)
+let file = global.__filename(import.meta.url, true);
 watchFile(file, async () => {
-unwatchFile(file)
-console.log(chalk.magenta("Se actualizo 'handler.js'"))})
+  unwatchFile(file);
+  console.log(chalk.magenta("Se actualizó 'handler.js'"));
+});
