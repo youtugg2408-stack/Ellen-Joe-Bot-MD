@@ -6,6 +6,10 @@ import moment from 'moment-timezone';
 const cooldowns = new Map();
 const lastMenuSent = new Map();
 
+const newsletterJid = '120363418071540900@newsletter';
+const newsletterName = '*VERMEIL-BOT-OFICIAL*';
+const packname = '˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃';
+
 let handler = async (m, { conn, usedPrefix }) => {
   if (m.quoted?.id && m.quoted?.fromMe) return;
 
@@ -68,7 +72,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     for (let tag of plugin.tags) {
       if (!groups[tag]) groups[tag] = [];
       for (let help of plugin.help) {
-        if (/^\$|^=>|^>/.test(help)) continue; // Excluir comandos especiales
+        if (/^\$|^=>|^>/.test(help)) continue;
         groups[tag].push(`${usedPrefix}${help}`);
       }
     }
@@ -97,16 +101,35 @@ Hola ${name} este es el menú:
 
   const finalText = `${header}\n\n${sections}\n\n[⏳] Este menú puede enviarse 1 vez cada 20 minutos por grupo.`;
 
+  const contextInfo = {
+    mentionedJid: [m.sender],
+    isForwarded: true,
+    forwardingScore: 999,
+    forwardedNewsletterMessageInfo: {
+      newsletterJid,
+      newsletterName,
+      serverMessageId: -1
+    },
+    externalAdReply: {
+      title: packname,
+      body: 'Ver todos los comandos de Ruby Hoshino Bot',
+      thumbnailUrl: 'https://telegra.ph/file/58865c5c6c7300cbdf663.jpg', // cambia si quieres otra miniatura
+      sourceUrl: 'https://github.com/nevi-dev/Vermeil-bot',
+      mediaType: 1,
+      renderLargerThumbnail: true
+    }
+  };
+
   let sentMsg;
   try {
     sentMsg = await conn.sendMessage(chatId, {
       video: { url: gifVideo },
       gifPlayback: true,
       caption: finalText,
-      mentions: [m.sender]
+      contextInfo
     }, { quoted: m });
   } catch (e) {
-    sentMsg = await conn.reply(chatId, finalText, m);
+    sentMsg = await conn.reply(chatId, finalText, m, { contextInfo });
   }
 
   cooldowns.set(chatId, now);
