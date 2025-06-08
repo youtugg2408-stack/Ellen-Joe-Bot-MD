@@ -229,7 +229,10 @@ let _user = global.db.data && global.db.data.users && global.db.data.users[m.sen
 
 const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
 const isOwner = isROwner || m.fromMe
-const isMods = isROwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
+const isMods = isROwner || (Array.isArray(global.mods) && global.mods
+  .filter(v => typeof v === 'string')
+  .map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')
+  .includes(m.sender))
 const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender) || _user.premium == true
 
 if (m.isBaileys) return
