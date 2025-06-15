@@ -230,8 +230,15 @@ let _user = global.db.data && global.db.data.users && global.db.data.users[m.sen
 const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
 const isROwner = [...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
 const isOwner = isROwner || m.fromMe
-const isMods = isROwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
-const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender) || _user.premium == true
+const isMods = isROwner || global.mods
+  .filter(v => typeof v === 'string')
+  .map(v => v.replace(/[^0-9]/g, '') + detectwhat)
+  .includes(m.sender)
+
+const isPrems = isROwner || global.prems
+  .filter(v => typeof v === 'string')
+  .map(v => v.replace(/[^0-9]/g, '') + detectwhat)
+  .includes(m.sender) || _user.premium === true
 
 if (m.isBaileys) return
 if (opts['nyimak'])  return
