@@ -229,9 +229,12 @@ let _user = global.db.data && global.db.data.users && global.db.data.users[m.sen
 
 const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
 
-const owners = Array.isArray(global.owner)
-  ? global.owner.map(o => Array.isArray(o) ? o[0] : o)
+  const owners = Array.isArray(global.owner)
+  ? global.owner
+      .filter(o => Array.isArray(o) && o[0] && o[0].length > 0)
+      .map(o => o[0])
   : [];
+
 
 const ownerIds = owners.map(num => String(num).replace(/[^0-9]/g, '') + detectwhat);
 
