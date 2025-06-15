@@ -229,21 +229,22 @@ let _user = global.db.data && global.db.data.users && global.db.data.users[m.sen
 
 const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
 
-  const owners = Array.isArray(global.owner)
-  ? global.owner
-      .filter(o => Array.isArray(o) && o[0] && o[0].length > 0)
-      .map(o => o[0])
-  : [];
+// obtener solo números puros de owners
+const ownersNumbers = global.owner
+  .filter(o => Array.isArray(o) && o[0])
+  .map(o => o[0]);
 
+// concatenar sufijo correcto a cada número
+const ownersIds = ownersNumbers.map(num => num + detectwhat);
 
-const ownerIds = owners.map(num => String(num).replace(/[^0-9]/g, '') + detectwhat);
-
-// Logs para depurar
 console.log('🟢 m.sender:', m.sender);
-console.log('🟢 Lista de dueños detectados:', ownerIds);
+console.log('🟢 Lista de dueños detectados:', ownersIds);
 
-const isROwner = ownerIds.includes(m.sender);
+const isROwner = ownersIds.includes(m.sender);
 const isOwner = isROwner || m.fromMe;
+
+console.log('🟢 ¿Es dueño?:', isROwner);
+
 
 const isMods = isROwner || (Array.isArray(global.mods) ? global.mods : [])
   .filter(v => typeof v === 'string')
