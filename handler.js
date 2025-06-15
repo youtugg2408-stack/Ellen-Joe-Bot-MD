@@ -230,14 +230,17 @@ let _user = global.db.data && global.db.data.users && global.db.data.users[m.sen
 const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
 
 const owners = Array.isArray(global.owner)
-  ? global.owner.map(entry => Array.isArray(entry) ? entry[0] : entry)
-  : []
+  ? global.owner.map(o => Array.isArray(o) ? o[0] : o)
+  : [];
 
-const isROwner = owners
-  .map(num => String(num).replace(/[^0-9]/g, '') + detectwhat)
-  .includes(m.sender)
+const ownerIds = owners.map(num => String(num).replace(/[^0-9]/g, '') + detectwhat);
 
-const isOwner = isROwner || m.fromMe
+// Logs para depurar
+console.log('🟢 m.sender:', m.sender);
+console.log('🟢 Lista de dueños detectados:', ownerIds);
+
+const isROwner = ownerIds.includes(m.sender);
+const isOwner = isROwner || m.fromMe;
 
 const isMods = isROwner || (Array.isArray(global.mods) ? global.mods : [])
   .filter(v => typeof v === 'string')
