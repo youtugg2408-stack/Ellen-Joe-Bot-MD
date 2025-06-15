@@ -228,9 +228,18 @@ console.error(e)
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
 const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
-const isROwner = [...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
+
+const owners = Array.isArray(global.owner)
+  ? global.owner.map(entry => Array.isArray(entry) ? entry[0] : entry)
+  : []
+
+const isROwner = owners
+  .map(num => String(num).replace(/[^0-9]/g, '') + detectwhat)
+  .includes(m.sender)
+
 const isOwner = isROwner || m.fromMe
-const isMods = isROwner || global.mods
+
+const isMods = isROwner || (Array.isArray(global.mods) ? global.mods : [])
   .filter(v => typeof v === 'string')
   .map(v => v.replace(/[^0-9]/g, '') + detectwhat)
   .includes(m.sender)
