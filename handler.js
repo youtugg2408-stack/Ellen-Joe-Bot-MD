@@ -155,6 +155,8 @@ if (!('welcome' in chat))
 chat.welcome = true
 if (!('autolevelup' in chat))
 chat.autolevelup = false
+if (!('primaryBot' in chat)) 
+chat.primaryBot = null
 if (!('autoAceptar' in chat))
 chat.autoAceptar = false
 if (!('autosticker' in chat))
@@ -194,6 +196,7 @@ delete: false,
 autoAceptar: false,
 autoRechazar: false,
 detect: true,
+primaryBot: null,
 antiBot: false,
 antiBot2: false,
 modoadmin: false,
@@ -228,33 +231,10 @@ console.error(e)
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
 const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
-
-// obtener solo números puros de owners
-const ownersNumbers = global.owner
-  .filter(o => Array.isArray(o) && o[0])
-  .map(o => o[0]);
-
-// concatenar sufijo correcto a cada número
-const ownersIds = ownersNumbers.map(num => num + detectwhat);
-
-console.log('🟢 m.sender:', m.sender);
-console.log('🟢 Lista de dueños detectados:', ownersIds);
-
-const isROwner = ownersIds.includes(m.sender);
-const isOwner = isROwner || m.fromMe;
-
-console.log('🟢 ¿Es dueño?:', isROwner);
-
-
-const isMods = isROwner || (Array.isArray(global.mods) ? global.mods : [])
-  .filter(v => typeof v === 'string')
-  .map(v => v.replace(/[^0-9]/g, '') + detectwhat)
-  .includes(m.sender)
-
-const isPrems = isROwner || global.prems
-  .filter(v => typeof v === 'string')
-  .map(v => v.replace(/[^0-9]/g, '') + detectwhat)
-  .includes(m.sender) || _user.premium === true
+const isROwner = [...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
+const isOwner = isROwner || m.fromMe
+const isMods = isROwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
+const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender) || _user.premium == true
 
 if (m.isBaileys) return
 if (opts['nyimak'])  return
@@ -554,13 +534,8 @@ if (!m.fromMe) return this.sendMessage(m.chat, { react: { text: emot, key: m.key
 function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]}
 }}
 
-global.dfail = (type, m, usedPrefix, command, conn) => {
-
-let edadaleatoria = ['10', '28', '20', '40', '18', '21', '15', '11', '9', '17', '25'].getRandom()
-let user2 = m.pushName || 'Anónimo'
-let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
-
-const msg = {
+global.dfail = (type, m, conn) => {
+    let msg = {
 rowner: `✦ ¿Intentando usar *${comando}* sin ser mi creador? Aww, qué tierno... ¡pero no! ✋`,
 owner: `✦ Oh no~ ¿creíste que podías usar *${comando}*? Solo los desarrolladores, no los simples mortales como tú. 🙄`,
 mods: `✦ *${comando}* es solo para mods, y tú... bueno, tú ni mod de tu propia vida. 😏`,
@@ -572,9 +547,17 @@ botAdmin: `✦ ¿Y cómo quieres que ejecute *${comando}* si ni admin soy? ¡Haz
 unreg: `✦ ¿Usar *${comando}* sin registrarte? ¡Qué descaro! Regístrate ya con:\n> » #${verifyaleatorio} ${user2}.${edadaleatoria} o vete a llorar a otro lado. 😈`,
 restrict: `✦ Ooops~ Esta función está *desactivada*. Ni con magia podrás usarla ahora mismo, lo siento (no). 😜`
 }[type];
-if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
+if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}
+const file = global.__filename(import.meta.url, true);
 
-let file = global.__filename(import.meta.url, true)
+// NO TOCAR
 watchFile(file, async () => {
-unwatchFile(file)
-console.log(chalk.magenta("Se actualizo 'handler.js'"))})
+unwatchFile(file);
+console.log(chalk.green('Actualizando "handler.js"'));
+// if (global.reloadHandler) console.log(await global.reloadHandler());
+
+if (global.conns && global.conns.length > 0 ) {
+const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
+for (const userr of users) {
+userr.subreloadHandler(false)
+}}});
