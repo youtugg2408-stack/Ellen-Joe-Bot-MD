@@ -34,24 +34,24 @@ global.prems = []
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
 global.libreria = 'Baileys'
-global.baileys = 'V 6.7.16' 
+global.baileys = 'V 6.7.16'
 global.languaje = 'Español'
 global.vs = '2.2.0'
-global.nameqr = 'Ruby-Hoshino-Bot-MD'
-global.namebot = '꒰ 🥥 ꒱ؘ 𝙍𝙪𝙗𝙮-𝙃𝙤𝙨𝙝𝙞𝙣𝙤-𝘽𝙤𝙩 ♪ ࿐ ࿔*:･ﾟ'
-global.Rubysessions = 'RubySessions'
-global.jadi = 'RubyJadiBots' 
+global.nameqr = 'ellen-joe-bot'
+global.namebot = '꒰ 🥥 ꒱ؘ ellen-joe-bot ♪ ࿐ ࿔*:･ﾟ'
+global.Rubysessions = 'EllenJoeSessions'
+global.jadi = 'EllenJoeJadiBots'
 global.RubyJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.packname = '✦⃟⛧┋ ➪ _ＲＵＢＹ ⛧ ＨＯＳＨＩＮＯ_ 🌸┋⃟✧'
-global.botname = '🕊️⃟⋆≛⃝  𝐑᪶𝐮𝐛𝐲 𝐇⃨𝐨𝐬𝐡𝐢𝐧𝐨⃛ 🔥⃝ℓє'
-global.wm = '‧˚꒰🍷꒱ ፝͜⁞R͢ᴜʙʏ-H͢ᴼ꯭s፝֟ʜɪɴᴏ-𝘉𝘰𝘵-𝑴𝑫✰⃔⃝🦋'
-global.author = 'Made By 𐔌Dioneibi-rip ͡꒱ ۫'
-global.dev = '⌬ Modified by: Dioneibi-rip ⚙️💻 '
-global.textbot = '⏤͟͞ू⃪ 𝑹𝒖𝒃𝒚-𝐻𝒐𝒔𝒉𝒊𝒏𝒐🌸⃝𖤐 • 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗕𝘆 ᴰⁱᵒⁿᵉⁱᵇⁱ⁻ʳⁱᵖ'
-global.etiqueta = 'ˑ 𓈒 𐔌 D͙i͙o͙n͙e͙i͙b͙i͙-r͙i͙p͙ ͡꒱ ۫'
+global.packname = '✦⃟⛧┋ ➪ _ELLEN JOE BOT_ 🌸┋⃟✧'
+global.botname = '🕊️⃟⋆≛⃝  𝐄𝐥𝐥𝐞𝐧 𝐉𝐨𝐞 𝐁𝐨𝐭⃛ 🔥⃝ℓє'
+global.wm = '‧˚꒰🍷꒱ ፝͜⁞E͢l͢l͢e͢n͢-J͢o͢e͢-B͢o͢t͢-M͢D͢✰⃔⃝🦋'
+global.author = 'Made By 𐔌nevi-dev ͡꒱ ۫'
+global.dev = '⌬ Modified by: nevi-dev ⚙️💻 '
+global.textbot = '⏤͟͞ू⃪ 𝑬𝒍𝒍𝒆𝒏-𝑱𝒐𝒆-𝑩𝒐𝒕🌸⃝𖤐 • 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗕𝘆 ⁿᵉᵛⁱ⁻ᵈᵉᵛ'
+global.etiqueta = 'ˑ 𓈒 𐔌 n͙e͙v͙i͙-d͙e͙v͙ ͡꒱ ۫'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
