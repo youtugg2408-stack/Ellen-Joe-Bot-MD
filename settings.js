@@ -17,10 +17,12 @@ global.botNumber = '' //Ejemplo: 573218138672
 
 global.owner = [
 // <-- Número @s.whatsapp.net -->
- ['18096758983', '⟆⃝༉⃟⸙ ᯽ N͙e͙v͙i͙-D͙e͙v͙ ⌗⚙️࿐', true],
- ['18294868853', '⏤͟͞ू⃪ ፝͜⁞𝘿𝙞𝙤𝙣𝙚𝙞𝙗𝙞-ʳⁱᵖ ִֶ ࣪˖ ִֶָ🐇་༘', true]
- ['260081845334105', 'Nevi-LID', true],
- ['200141197844495', 'Dioneibi-LID', true]
+  ['18096758983', '⟆⃝༉⃟⸙ ᯽ N͙e͙v͙i͙-D͙e͙v͙ ⌗⚙️࿐', true],
+  ['8294868853', '⏤͟͞ू⃪ ፝͜⁞𝘿𝙞𝙤𝙣𝙚𝙞𝙗𝙞-ʳⁱᵖ ִֶ ࣪˖ ִֶָ🐇་༘', true],
+
+// <-- Número @lid -->
+  ['260081845334105', 'nevi', true],
+  ['200141197844495', 'Dioneibi', true]
 ];
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
@@ -35,21 +37,21 @@ global.libreria = 'Baileys'
 global.baileys = 'V 6.7.16' 
 global.languaje = 'Español'
 global.vs = '2.2.0'
-global.nameqr = 'Vermeil-Bot'
-global.namebot = '˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃'
-global.Vermeilsessions = 'VermeilSessions'
-global.jadi = 'VermeilJadiBots' 
-global.VermeilJadibts = true
+global.nameqr = 'Ruby-Hoshino-Bot-MD'
+global.namebot = '꒰ 🥥 ꒱ؘ 𝙍𝙪𝙗𝙮-𝙃𝙤𝙨𝙝𝙞𝙣𝙤-𝘽𝙤𝙩 ♪ ࿐ ࿔*:･ﾟ'
+global.Rubysessions = 'RubySessions'
+global.jadi = 'RubyJadiBots' 
+global.RubyJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.packname = '˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃'
-global.botname = '˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃'
-global.wm = '‧˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃'
-global.author = 'Made By: 𝓝𝓔𝓥𝓘-𝓓𝓔𝓥 ۫'
-global.dev = '⌬ Modified by: nevi-dev ⚙️💻 '
-global.textbot = '˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃\n    𝙋𝙤𝙬𝙚𝙧𝙚𝙙 𝙗𝙮 ⁱNevi-dev'
-global.etiqueta = 'ˑ𝓝𝓔𝓥𝓘-𝓓𝓔𝓥 ۫'
+global.packname = '✦⃟⛧┋ ➪ _ＲＵＢＹ ⛧ ＨＯＳＨＩＮＯ_ 🌸┋⃟✧'
+global.botname = '🕊️⃟⋆≛⃝  𝐑᪶𝐮𝐛𝐲 𝐇⃨𝐨𝐬𝐡𝐢𝐧𝐨⃛ 🔥⃝ℓє'
+global.wm = '‧˚꒰🍷꒱ ፝͜⁞R͢ᴜʙʏ-H͢ᴼ꯭s፝֟ʜɪɴᴏ-𝘉𝘰𝘵-𝑴𝑫✰⃔⃝🦋'
+global.author = 'Made By 𐔌Dioneibi-rip ͡꒱ ۫'
+global.dev = '⌬ Modified by: Dioneibi-rip ⚙️💻 '
+global.textbot = '⏤͟͞ू⃪ 𝑹𝒖𝒃𝒚-𝐻𝒐𝒔𝒉𝒊𝒏𝒐🌸⃝𖤐 • 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗕𝘆 ᴰⁱᵒⁿᵉⁱᵇⁱ⁻ʳⁱᵖ'
+global.etiqueta = 'ˑ 𓈒 𐔌 D͙i͙o͙n͙e͙i͙b͙i͙-r͙i͙p͙ ͡꒱ ۫'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
@@ -61,20 +63,20 @@ global.avatar = 'https://qu.ax/RYjEw.jpeg'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.gp1 = 'https://chat.whatsapp.com/J5hNkSzRKPSADI72wQk1B3'
-global.comunidad1 = 'https://chat.whatsapp.com/Ck1VBghTuGx6AcYOKNRtHT'
-global.channel = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x'
-global.channel2 = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x'
-global.md = 'https://github.com/nevi-dev/Vermeil-bot'
-global.correo = 'nevijose4@gmail.com'
-global.cn ='https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x';
+global.gp1 = 'https://chat.whatsapp.com/JMA2XLLEgSPAqEdCkMOgJR'
+global.comunidad1 = 'https://chat.whatsapp.com/K2CPrOTksiA36SW6k41yuR'
+global.channel = 'https://whatsapp.com/channel/0029VakLbM76mYPPFL0IFI3P'
+global.channel2 = 'https://whatsapp.com/channel/0029VakLbM76mYPPFL0IFI3P'
+global.md = 'https://github.com/Dioneibi-rip/Ruby-Hoshino-Bot'
+global.correo = 'dioneibipaselomendes@gmail.com'
+global.cn ='https://whatsapp.com/channel/0029VakLbM76mYPPFL0IFI3P';
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
 global.catalogo = fs.readFileSync('./src/catalogo.jpg');
 global.estilo = { key: {  fromMe: false, participant: `0@s.whatsapp.net`, ...(false ? { remoteJid: "5219992095479-1625305606@g.us" } : {}) }, message: { orderMessage: { itemCount : -999999, status: 1, surface : 1, message: packname, orderTitle: 'Bang', thumbnail: catalogo, sellerJid: '0@s.whatsapp.net'}}}
 global.ch = {
-ch1: '120363418071540900@newsletter',
+ch1: '120363335626706839@newsletter',
 }
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
