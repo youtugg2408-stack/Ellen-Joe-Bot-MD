@@ -5,7 +5,6 @@
   <img src="https://files.catbox.moe/pqalx3.gif" alt="Ellen Joe Bot MD Preview" />
 </p>
 
-
 ---
 
 ## 💫 𝐈𝐧𝐟𝐨𝐫𝐦𝐚𝐜𝐢o𝐧 𝐝𝐞𝐥 𝐁𝐨𝐭
