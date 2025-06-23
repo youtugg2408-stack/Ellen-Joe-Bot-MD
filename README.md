@@ -1,7 +1,7 @@
 <h1 align="center">✦ Ellen Joe Bot MD ✦</h1>
 
 <div align="center">
-  <img src="URL_DE_TU_GIF.gif" width="480" alt="Demostración del Bot en GIF">
+  <img src="https://files.catbox.moe/mok9hg.mp4" width="480" alt="Demostración del Bot en GIF">
 </div>
 
 ---
