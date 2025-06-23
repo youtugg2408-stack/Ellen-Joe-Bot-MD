@@ -1,9 +1,7 @@
 <h1 align="center">✦ Ellen Joe Bot MD ✦</h1>
 
 <div align="center">
-  <video src="https://files.catbox.moe/mok9hg.mp4" width="480" autoplay loop muted controls>
-    Tu navegador no soporta la etiqueta de video.
-  </video>
+  <img src="URL_DE_TU_GIF.gif" width="480" alt="Demostración del Bot en GIF">
 </div>
 
 ---
@@ -60,108 +58,64 @@ git clone [https://github.com/nevi-dev/Ellen-Joe-Bot-MD](https://github.com/nevi
 yarn install && npm install && npm update
 ```bash
 npm start
-```
 
-> Cuando veas: (Y/I/N/O/D/Z) [default=N]  
-> Escribe **"y"** y presiona **ENTER**
-
+> Cuando veas: (Y/I/N/O/D/Z) [default=N]
+> Escribe "y" y presiona ENTER
+> 
 </details>
-
----
-
-### **`🖥️ 𝐇𝐚𝐳 𝐜𝐥𝐢𝐜 𝐞𝐧 𝐥𝐚 𝐢𝐦𝐚𝐠𝐞𝐧 𝐩𝐚𝐫𝐚 𝐝𝐞𝐬𝐜𝐚𝐫𝐠𝐚𝐫 𝐜𝐥𝐨𝐮𝐝 𝐬𝐡𝐞𝐥𝐥 ✨`**
+🖥️ 𝐇𝐚𝐳 𝐜𝐥𝐢𝐜 𝐞𝐧 𝐥𝐚 𝐢𝐦𝐚𝐠𝐞𝐧 𝐩𝐚𝐫𝐚 𝐝𝐞𝐬𝐜𝐚𝐫𝐠𝐚𝐫 𝐜𝐥𝐨𝐮𝐝 𝐬𝐡𝐞𝐥𝐥 ✨
 <a
-href="https://www.mediafire.com/file/bp2l6cci2p30hjv/Cloud+Shell_1.apk/file"><img src="https://qu.ax/iSvfx.webp" height="125px"></a> 
-
-### ☁️ Instalación en **Cloud Shell**
-
+href="https://www.mediafire.com/file/bp2l6cci2p30hjv/Cloud+Shell_1.apk/file"><img src="https://qu.ax/iSvfx.webp" height="125px"></a>
+☁️ Instalación en Cloud Shell
 <details>
-  <summary><b>🚀 Ver pasos para Cloud Shell</b></summary>
-
-```bash
+<summary><b>🚀 Ver pasos para Cloud Shell</b></summary>
 git clone [https://github.com/nevi-dev/Ellen-Joe-Bot-MD](https://github.com/nevi-dev/Ellen-Joe-Bot-MD) && cd Ellen-Joe-Bot-MD
 ```bash
 yarn install && npm install
 ```bash
 npm start
-```
 
 > ✔️ Asegúrate de que tu Cloud Shell tenga Node.js instalado.
-</details>
-
----
-
-### ♻️ ¿El bot se detuvo?
-
+> </details>
+> 
+♻️ ¿El bot se detuvo?
 <details>
-  <summary><b>🔁 Cómo reiniciarlo en Termux</b></summary>
-
-```bash
+<summary><b>🔁 Cómo reiniciarlo en Termux</b></summary>
 cd Ellen-Joe-Bot-MD && npm start
-```
 
 </details>
-
----
-
-### 🧑‍💻 ¿Quieres poner tu número como owner?
-
+🧑‍💻 ¿Quieres poner tu número como owner?
 <details>
-  <summary><b>🔑 edita el archivo y Agrega tu número como Owner</b></summary>
-
-```bash
+<summary><b>🔑 edita el archivo y Agrega tu número como Owner</b></summary>
 cd Ellen-Joe-Bot-MD
 ```bash
 nano settings.js
-```
 
-> En el archivo `settings.js`, busca la sección `owner` y coloca tu número ahí.
-
+> En el archivo settings.js, busca la sección owner y coloca tu número ahí.
+> 
 </details>
-
----
-
-## 🌐 𝐄𝐧𝐥𝐚𝐜𝐞𝐬 u𝐭𝐢𝐥𝐞𝐬
-
+🌐 𝐄𝐧𝐥𝐚𝐜𝐞𝐬 u𝐭𝐢𝐥𝐞𝐬
 <details>
-  <summary><b>👥 Grupos Oficiales</b></summary>
-
-- 📢 [Canal Oficial](https://whatsapp.com/channel/0029VakLbM76mYPPFL0IFI3P)
-- 🌐 [Comunidad Global](https://chat.whatsapp.com/K2CPrOTksiA36SW6k41yuR)
-
+<summary><b>👥 Grupos Oficiales</b></summary>
+ * 📢 Canal Oficial
+ * 🌐 Comunidad Global
 </details>
-
 <details>
-  <summary><b>📞 Contacto</b></summary>
-
-- 📱 WhatsApp: 18294868853
-- 📧 Email: dioneibipaselomendes@gmail.com
-
+<summary><b>📞 Contacto</b></summary>
+ * 📱 WhatsApp: 18294868853
+ * 📧 Email: dioneibipaselomendes@gmail.com
 </details>
-
----
-
-## 👑 𝐂𝐫𝐞𝐚𝐝𝐨𝐫 𝐝𝐞𝐥 𝐁𝐨𝐭
-
-**💻 Creado por:** [Nevi Dev](https://github.com/nevi-dev)
-
+👑 𝐂𝐫𝐞𝐚𝐝𝐨𝐫 𝐝𝐞𝐥 𝐁𝐨𝐭
+💻 Creado por: Nevi Dev
 <div align="center">
-  <a href="[https://github.com/nevi-dev](https://github.com/nevi-dev)">
-    <img src="[https://github.com/nevi-dev.png](https://github.com/nevi-dev.png)" width="150" height="150" alt="Nevi Dev"/>
-  </a>
+<a href="[https://github.com/nevi-dev](https://github.com/nevi-dev)"><img src="[https://github.com/nevi-dev.png](https://github.com/nevi-dev.png)" width="250" height="250" alt="Nevi Dev"/></a>
 </div>
-
----
-
-## 🤝 𝐂𝐨𝐥𝐚𝐛𝐨𝐫𝐚𝐝𝐨𝐫𝐞𝐬
-
+🤝 𝐂𝐨𝐥𝐚𝐛𝐨𝐫𝐚𝐝𝐨𝐫𝐞𝐬
 <div align="center">
-  <a href="[https://github.com/Dioneibi-rip](https://github.com/Dioneibi-rip)">
-    <img src="[https://github.com/Dioneibi-rip.png](https://github.com/Dioneibi-rip.png)" width="120" height="120" alt="Dioneibi-rip" style="border-radius: 50%;"/>
-    <br>
-    <sub><b>Dioneibi-rip</b></sub>
-  </a>
+<a href="[https://github.com/Dioneibi-rip](https://github.com/Dioneibi-rip)" style="display:inline-block; text-decoration: none;">
+<img src="[https://github.com/Dioneibi-rip.png](https://github.com/Dioneibi-rip.png)" width="130" height="130" alt="Dioneibi-rip" style="border-radius: 50%;"/>
+<br>
+<sub><b>Dioneibi-rip</b></sub>
+</a>
 </div>
-
----
 
