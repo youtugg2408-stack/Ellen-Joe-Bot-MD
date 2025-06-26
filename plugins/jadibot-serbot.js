@@ -80,7 +80,7 @@ handler.tags = ['serbot']
 handler.command = ['qr', 'code']
 export default handler 
 
-export async function RubyJadiBot(options) {
+export async function EllenJadiBot(options) {
 let { pathEllenJadiBot, m, conn, args, usedPrefix, command } = options
 if (command === 'code') {
 command = 'qr'; 
