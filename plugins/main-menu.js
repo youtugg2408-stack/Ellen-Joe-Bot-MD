@@ -7,15 +7,28 @@ const cooldowns = new Map();
 const lastMenuSent = new Map();
 
 const newsletterJid = '120363418071540900@newsletter';
-const newsletterName = '*VERMEIL-BOT-OFICIAL*';
-const packname = '˚🅅🄴🅁🄼🄴🄸🄻-🄱🄾🅃';
+const newsletterName = '*Ellen-Joe-Bot-OFICIAL*';
+const packname = '˚🄴🄻🄻🄴🄽-🄹🄾🄴-🄱🄾🅃';
 
 let handler = async (m, { conn, usedPrefix }) => {
+  // --- NUEVO: Manejo de errores de lectura de DB ---
+  let mediaLinks;
+  try {
+    const dbPath = path.join(process.cwd(), 'src', 'database', 'db.json');
+    const dbRaw = fs.readFileSync(dbPath);
+    mediaLinks = JSON.parse(dbRaw).links;
+  } catch (e) {
+    console.error("Error al leer o parsear src/database/db.json:", e);
+    // Si hay un error, envía un mensaje al chat y detiene la ejecución del comando.
+    return conn.reply(m.chat, 'error al leer el db', m);
+  }
+  // --- FIN DEL BLOQUE MODIFICADO ---
+
   if (m.quoted?.id && m.quoted?.fromMe) return;
 
   const chatId = m.chat;
   const now = Date.now();
-  const waitTime = 20 * 60 * 1000;
+  const waitTime = 5 * 60 * 1000;
 
   const lastUsed = cooldowns.get(chatId) || 0;
 
@@ -52,12 +65,8 @@ let handler = async (m, { conn, usedPrefix }) => {
   const totalreg = Object.keys(global.db?.data?.users || {}).length;
   const utcTime = moment().utc().format('HH:mm');
 
-  const videoLinks = [
-    "https://telegra.ph/file/44d01492911aea8ead955.mp4",
-    "https://telegra.ph/file/d2f145fbaa694c719815a.mp4",
-    "https://telegra.ph/file/6e354a46e722b6ac91e65.mp4"
-  ];
-  const gifVideo = videoLinks[Math.floor(Math.random() * videoLinks.length)];
+  const gifVideo = mediaLinks.video[Math.floor(Math.random() * mediaLinks.video.length)];
+  const randomThumbnail = mediaLinks.imagen[Math.floor(Math.random() * mediaLinks.imagen.length)];
 
   const emojis = {
     'main': '📋', 'tools': '🛠️', 'audio': '🎧', 'group': '👥',
@@ -89,7 +98,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
   const header = `
 Hola ${name} este es el menú:
-|----[𝙑𝙀𝙍𝙈𝙀𝙄𝙇 𝘽𝙊𝙏]----•
+|----[Ellen-Joe-Bot]----•
 | 👤 Usuario: ${name}
 | 🤖 Bot: ${isMain ? 'Principal' : `Sub-Bot | Principal: ${principalNumber}`}
 | 📦 Comandos: ${totalCommands}
@@ -99,7 +108,7 @@ Hola ${name} este es el menú:
 | 👑 Dueño: wa.me/${global.owner?.[0]?.[0] || "No definido"}
 |---------------------•`.trim();
 
-  const finalText = `${header}\n\n${sections}\n\n[⏳] Este menú puede enviarse 1 vez cada 20 minutos por grupo.`;
+  const finalText = `${header}\n\n${sections}\n\n[⏳] Este menú puede enviarse 1 vez cada 5 minutos por grupo.`;
 
   const contextInfo = {
     mentionedJid: [m.sender],
@@ -112,9 +121,9 @@ Hola ${name} este es el menú:
     },
     externalAdReply: {
       title: packname,
-      body: 'Ver todos los comandos de Ruby Hoshino Bot',
-      thumbnailUrl: 'https://telegra.ph/file/58865c5c6c7300cbdf663.jpg', // cambia si quieres otra miniatura
-      sourceUrl: 'https://github.com/nevi-dev/Vermeil-bot',
+      body: 'Ver todos los comandos de Ellen-Joe-Bot',
+      thumbnailUrl: randomThumbnail,
+      sourceUrl: 'https://github.com/nevi-dev/Vermeil-bot', // Puedes cambiar este enlace si quieres
       mediaType: 1,
       renderLargerThumbnail: true
     }
@@ -129,6 +138,9 @@ Hola ${name} este es el menú:
       contextInfo
     }, { quoted: m });
   } catch (e) {
+    // Si falla el envío del video, intenta enviar solo texto.
+    // También podría fallar si la URL del thumbnail en contextInfo es inválida.
+    console.error("Error al enviar el mensaje del menú:", e);
     sentMsg = await conn.reply(chatId, finalText, m, { contextInfo });
   }
 
