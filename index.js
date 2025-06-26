@@ -121,7 +121,8 @@ global.db.chain = chain(global.db.data)
 }
 loadDatabase()
 
-const {state, saveState, saveCreds} = await useMultiFileAuthState(global.Vermeilsessions)
+// ASÍ DEBERÍA VERSE (CORRECTO)
+const { state, saveCreds } = await useMultiFileAuthState('global.Ellensessions');
 const msgRetryCounterMap = (MessageRetryMap) => { };
 const msgRetryCounterCache = new NodeCache()
 const {version} = await fetchLatestBaileysVersion();
