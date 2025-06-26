@@ -11,7 +11,7 @@ import fs, {readdirSync, statSync, unlinkSync, existsSync, mkdirSync, readFileSy
 import yargs from 'yargs';
 import {spawn} from 'child_process'
 import lodash from 'lodash'
-import { RubyJadiBot } from './plugins/jadibot-serbot.js';
+import { EllenJadiBot } from './plugins/jadibot-serbot.js';
 import chalk from 'chalk'
 import syntaxerror from 'syntax-error'
 import {tmpdir} from 'os'
@@ -47,12 +47,12 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1'
 
 console.log(chalk.red(`
 ░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═
-░▒▓█►─═                      🆅🅴🆁🅼🅴🅸🅻-🅱🅾🆃                    ═─◄█▓▒░
+░▒▓█►─═                      🅴🅻🅻🅴🅽-🅹🅾🅴-🅱🅾🆃-🅼🅳                    ═─◄█▓▒░
 ░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═
 `))
 
 
-cfonts.say('Vermeil Bot', {
+cfonts.say('Ellen Joe Bot', {
   font: 'chrome',
   align: 'center',
   gradient: ['#ff4fcb', '#ff77ff'],
@@ -68,8 +68,9 @@ cfonts.say('Developed By: nevi-dev', {
 })
 
 console.log(chalk.magentaBright('═════════════════════════════════════════════════════════════════════'))
-console.log(chalk.whiteBright('            🚀 Bienvenido al núcleo de la Bot Vermeil 🚀'))
-console.log(chalk.whiteBright('     Prepárate para una experiencia inolvidable... tu deseo es mi mandato ✨'))
+// Ellen Joe - Inicio de sesión
+console.log(chalk.cyanBright('      ⚙️  Agente Ellen Joe, de Victoria Housekeeping Co., iniciando operaciones. ⚙️'));
+console.log(chalk.white('          Indica la tarea. La completaré con precisión y eficiencia. Sin adornos.'));
 console.log(chalk.magentaBright('═════════════════════════════════════════════════════════════════════\n'))
 
 protoType()
@@ -141,13 +142,13 @@ let opcion
 if (methodCodeQR) {
 opcion = '1'
 }
-if (!methodCodeQR && !methodCode && !fs.existsSync(`./${Vermeilsessions}/creds.json`)) {
+if (!methodCodeQR && !methodCode && !fs.existsSync(`./${Ellensessions}/creds.json`)) {
 do {
 opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '))
 
 if (!/^[1-2]$/.test(opcion)) {
 console.log(chalk.bold.redBright(`✦ No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`))
-}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${Vermeilsessions}/creds.json`))
+}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${Ellensessions}/creds.json`))
 } 
 
 console.info = () => {} 
@@ -177,7 +178,7 @@ version,
 
 global.conn = makeWASocket(connectionOptions);
 
-if (!fs.existsSync(`./${Vermeilsessions}/creds.json`)) {
+if (!fs.existsSync(`./${Ellensessions}/creds.json`)) {
 if (opcion === '2' || methodCode) {
 opcion = '2'
 if (!conn.authState.creds.registered) {
@@ -235,7 +236,7 @@ console.log(chalk.bold.green('\n❀ Ruby-Bot Conectada con éxito ❀'))
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === 'close') {
 if (reason === DisconnectReason.badSession) {
-console.log(chalk.bold.cyanBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.Vermeilsessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+console.log(chalk.bold.cyanBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.Ellensessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
 } else if (reason === DisconnectReason.connectionClosed) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹\n┆ ⚠︎ CONEXION CERRADA, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹`))
 await global.reloadHandler(true).catch(console.error)
@@ -245,7 +246,7 @@ await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionReplaced) {
 console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠︎ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESION, POR FAVOR, CIERRA LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
 } else if (reason === DisconnectReason.loggedOut) {
-console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.Vermeilsessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.Ellensessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.restartRequired) {
 console.log(chalk.bold.cyanBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓\n┆ ✧ CONECTANDO AL SERVIDOR...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓`))
@@ -305,9 +306,9 @@ return true
 
 //Arranque nativo para subbots by - ReyEndymion >> https://github.com/ReyEndymion
 
-global.rutaJadiBot = join(__dirname, './VermeilJadiBots')
+global.rutaJadiBot = join(__dirname, './EllenJadiBots')
 
-if (global.RubyJadibts) {
+if (global.EllenJadibts) {
 if (!existsSync(global.rutaJadiBot)) {
 mkdirSync(global.rutaJadiBot, { recursive: true }) 
 console.log(chalk.bold.cyan(`La carpeta: ${jadi} se creó correctamente.`))
@@ -322,7 +323,7 @@ for (const gjbts of readRutaJadiBot) {
 const botPath = join(rutaJadiBot, gjbts)
 const readBotPath = readdirSync(botPath)
 if (readBotPath.includes(creds)) {
-RubyJadiBot({pathRubyJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
+RubyJadiBot({pathEllenJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
 }
 }
 }
@@ -403,7 +404,7 @@ const filePath = join(tmpDir, file)
 unlinkSync(filePath)})
 }
 
-function purgeRubySession() {
+function purgeEllenSession() {
 let prekey = []
 let directorio = readdirSync(`./${Vermeilsessions}`)
 let filesFolderPreKeys = directorio.filter(file => {
@@ -411,11 +412,11 @@ return file.startsWith('pre-key-')
 })
 prekey = [...prekey, ...filesFolderPreKeys]
 filesFolderPreKeys.forEach(files => {
-unlinkSync(`./${Rubysessions}/${files}`)
+unlinkSync(`./${Ellensessions}/${files}`)
 })
 } 
 
-function purgeRubySessionSB() {
+function purgeEllenSessionSB() {
 try {
 const listaDirectorios = readdirSync(`./${jadi}/`);
 let SBprekey = [];
@@ -471,12 +472,12 @@ console.log(chalk.bold.cyanBright(`\n╭» ❍ MULTIMEDIA ❍\n│→ ARCHIVOS D
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
-await purgeRubySession()
+await purgeEllenSession()
 console.log(chalk.bold.cyanBright(`\n╭» ❍ ${global.Vermeilsessions} ❍\n│→ SESIONES NO ESENCIALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10) // 10 min
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
-await purgeRubySessionSB()}, 1000 * 60 * 10)  
+await purgeEllenSessionSB()}, 1000 * 60 * 10)  
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
