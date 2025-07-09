@@ -17,7 +17,7 @@ handler.help = ['simi', 'bot'];
 handler.tags = ['fun'];
 handler.group = true;
 handler.register = true
-handler.command = ['Ruby', 'Ruby']
+handler.command = ['Ellen', 'ellen', 'bot', 'simi']
 
 export default handler;
 
