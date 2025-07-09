@@ -73,7 +73,7 @@ global.done = '✅'
 global.error = '✖️'
 global.msm = '⚠︎'
 
-//Emojis Rubyi Bot
+//Emojis Ellen Bot
 global.emoji = '🦈'
 global.emoji2 = '🦈'
 global.emoji3 = '🦈'
