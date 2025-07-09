@@ -30,12 +30,8 @@ global.getBuffer = async function getBuffer(url, options) {
 }
 
 // Lista de iconos
-const iconUrls = [
-'https://telegra.ph/file/3251e9ba74374d7e64c84.jpg', 
-'https://telegra.ph/file/27fde01b560b679316f9a.jpg',  
-'https://telegra.ph/file/58865c5c6c7300cbdf663.jpg', 
-'https://telegra.ph/file/908f4317b71644d1a531b.jpg', 
-'https://telegra.ph/file/88a0602e8cb345886aabe.jpg'
+const iconUrls =[
+'https://files.catbox.moe/6q30lk.jpeg',     'https://files.catbox.moe/nvhz1t.jpeg',    'https://files.catbox.moe/qfvoee.jpeg',     'https://files.catbox.moe/ukfp1a.jpeg',      'https://files.catbox.moe/eg9w4g.jpeg',     'https://files.catbox.moe/n78754.jpeg',     'https://files.catbox.moe/rlqy7g.jpeg',     'https://files.catbox.moe/c6bzo7.jpeg',     'https://files.catbox.moe/2hx17d.jpeg',     'https://files.catbox.moe/9zflws.jpeg',     'https://files.catbox.moe/6jb5kx.jpeg',    'https://files.catbox.moe/qveue1.jpeg',    'https://files.catbox.moe/6q30lk.jpeg',     'https://files.catbox.moe/7nhb1w.jpeg',   'https://files.catbox.moe/6htc0b.jpeg'
 ]
 
 // Función para elegir y descargar un icono aleatorio
@@ -50,16 +46,16 @@ global.icono = await getBuffer(iconUrl)
 global.creador = 'Wa.me/18096758983'
 global.ofcbot = `${conn.user.jid.split('@')[0]}`
 global.asistencia = 'Wa.me/18096758983'
-global.namechannel = '*VERMEIL-BOT-CHANNEL*'
-global.namechannel2 = '*VERMEIL-BOT-CHANNEL*'
-global.namegrupo = '*VERMEIL-BOT-OFICIAL*'
+global.namechannel = '*Ellen-Joe-BOT-CHANNEL*'
+global.namechannel2 = '*Ellen-Joe-BOT-CHANNEL*'
+global.namegrupo = '*Ellen-Joe-BOT-OFICIAL*'
 global.namecomu = '*VERMEIL-BOT-COMMUNITY*'
-global.listo = '❀ *Aquí tienes ฅ^•ﻌ•^ฅ*'
+global.listo = '🦈 *Aquí tienes ฅ^•ﻌ•^ฅ*'
 global.fotoperfil = await conn.profilePictureUrl(m.sender, 'image').catch(_ => 'https://files.catbox.moe/xr2m6u.jpg')
 
 //Ids channel
 global.canalIdM = ["120363418071540900@newsletter", "120363418071540900@newsletter"]
-global.canalNombreM = ["VERMEIL-BOT-CHANNEL", "VERMEIL-OFICIAL-CHANNEL"]
+global.canalNombreM = ["Ellen-Joe-BOT-CHANNEL", "Ellen-Joe-OFICIAL-CHANNEL"]
 global.channelRD = await getRandomChannel()
 
 //fechas
@@ -78,11 +74,11 @@ global.error = '✖️'
 global.msm = '⚠︎'
 
 //Emojis Rubyi Bot
-global.emoji = '❀'
-global.emoji2 = '✧'
-global.emoji3 = '🌺'
-global.emoji4 = '💗'
-global.emoji5 = '✰'
+global.emoji = '🦈'
+global.emoji2 = '🦈'
+global.emoji3 = '🦈'
+global.emoji4 = '🦈'
+global.emoji5 = '🦈'
 global.emojis = [emoji, emoji2, emoji3, emoji4].getRandom()
 
 //Espera
@@ -92,7 +88,7 @@ global.wait = '⚘𖠵⃕❖𖥔 𝑪𝒂𝒓𝒈𝒂𝒏𝒅𝒐...ꪶꪾ❍̵�
 var canal = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x'
 let canal2 = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x'
 var git = 'https://github.com/nevi-dev'
-var github = 'https://github.com/nevi-dev/Vermeil-bot' 
+var github = 'https://github.com/nevi-dev/Ellen-Joe-Bot-MD' 
 let correo = 'nevijose4@gmail.com'
 global.redes = [canal, canal2, git, github, correo].getRandom()
 
@@ -124,7 +120,7 @@ global.taguser = '@' + m.sender.split("@")[0]
 var more = String.fromCharCode(8206)
 global.readMore = more.repeat(850)
 
-global.packsticker = `°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\nᰔᩚ Usuario: ${nombre}\n❀ Bot: ${botname}\n✦ Fecha: ${fecha}\nⴵ Hora: ${tiempo}`;
+global.packsticker = `°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\n🦈 Usuario: ${nombre}\n🦈 Bot: ${botname}\n🦈 Fecha: ${fecha}\n🦈 Hora: ${tiempo}`;
 
 // rcanaɭ con icono como buffer
 global.rcanal = {
