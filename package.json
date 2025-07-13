@@ -1,5 +1,5 @@
 {
-  "name": "Vermeil-Bot",
+  "name": "Ellen-Joe-Bot-MD",
   "version": "2.2.0",
   "description": "WhatsApp Bot Multi Device",
   "main": "index.js",
@@ -18,16 +18,16 @@
     "eslint": "eslint .",
     "eslintfix": "eslint --fix ."
   },
-  "homepage": "https://github.com/nevi-dev/Vermeil-bot",
+  "homepage": "https://github.com/nevi-dev/Ellen-Joe-Bot-MD",
   "author": {
     "name": "nevi-dev"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nevi-dev/Vermeil-Bot.git"
+    "url": "git+https://github.com/nevi-dev/Ellen-Joe-Bot-MD.git"
   },
   "bugs": {
-    "url": "https://github.com/nevi-dev/Vermeil-bot/issues"
+    "url": "https://github.com/nevi-dev/Ellen-Joe-Bot-MD/issues"
   },
   "license": "MIT-License",
 "dependencies": {
