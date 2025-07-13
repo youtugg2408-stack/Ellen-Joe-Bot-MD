@@ -544,7 +544,7 @@ group: `✦ ¿Tan solito estás que quieres usar *${comando}* en privado? Este c
 private: `✦ ¿En serio intentas usar *${comando}* aquí? Este comando es solo para mi rinconcito privado, ¡fuera de aquí! 😒`,
 admin: `✦ *${comando}* es solo para admins. Tú solo eres decoración en este grupo. 💁‍♀️`,
 botAdmin: `✦ ¿Y cómo quieres que ejecute *${comando}* si ni admin soy? ¡Hazme admin primero, inútil! 🤨`,
-unreg: `✦ ¿Usar *${comando}* sin registrarte? ¡Qué descaro! Regístrate ya con:\n> » #${verifyaleatorio} ${user2}.${edadaleatoria} o vete a llorar a otro lado. 😈`,
+unreg: `✦ ¿Usar *${comando}* sin registrarte? ¡Qué descaro! Regístrate ya con:\n> » #$reg ${user2}.${edadaleatoria} o vete a llorar a otro lado. 😈`,
 restrict: `✦ Ooops~ Esta función está *desactivada*. Ni con magia podrás usarla ahora mismo, lo siento (no). 😜`
 }[type];
 if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}
