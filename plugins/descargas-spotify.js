@@ -1,15 +1,14 @@
 import axios from 'axios';
 import fetch from 'node-fetch';
 
-// --- Constantes y Configuración de Transmisión (Estilo Ellen Joe) ---
+// --- Constantes y Configuración ---
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏ𝐄\'s 𝐒ervice';
 
-// --- Handler Principal (Lógica del Comando) ---
+// --- Handler Principal (Adaptado a YT Music) ---
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-    const name = conn.getName(m.sender); // Identificando al Proxy
+    const name = conn.getName(m.sender);
 
-    // --- Contexto para las respuestas ---
     const contextInfo = {
         mentionedJid: [m.sender],
         isForwarded: true,
@@ -20,7 +19,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             serverMessageId: -1
         },
         externalAdReply: {
-            title: 'Ellen Joe: Pista localizada. 🦈',
+            title: 'Ellen Joe: Frecuencia localizada. 📻',
             body: `Procesando solicitud para el/la Proxy ${name}...`,
             thumbnail: icons,
             sourceUrl: redes,
@@ -30,24 +29,24 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     };
 
     if (!text) {
-        return conn.reply(m.chat, `🦈 *Rastro frío, Proxy ${name}.* Necesito la designación de una pista o artista de Spotify.`, m, { contextInfo, quoted: m });
+        return conn.reply(m.chat, `📻 *Estática en la línea, Proxy ${name}.* Necesito el nombre de una canción o artista de YouTube Music.`, m, { contextInfo, quoted: m });
     }
 
     try {
-        m.react('🔄'); // Reacción de procesamiento
-        conn.reply(m.chat, `🔄 *Iniciando protocolo de extracción de Spotify, Proxy ${name}.* Aguarda, la decodificación de audio está en curso.`, m, { contextInfo, quoted: m });
+        m.react('🔄');
+        conn.reply(m.chat, `🔄 *Iniciando protocolo de extracción de YT Music, Proxy ${name}.* Aguarda, la decodificación de audio está en curso.`, m, { contextInfo, quoted: m });
 
-        const songData = await searchAndDownloadSong(text);
+        const songData = await searchAndDownloadYTM(text);
 
         if (!songData) {
-            await m.react('❌'); // Reacción de error
-            throw `❌ *Fallo en la extracción, Proxy ${name}.*\nNo se encontró ninguna pista que coincida con "${text}" en Spotify. Verifica la designación.`;
+            await m.react('❌');
+            throw `❌ *Fallo en la extracción, Proxy ${name}.*\nNo se encontró ninguna pista que coincida con "${text}" en YouTube Music.`;
         }
 
         const info = `
-╭━━━━[ 𝚂𝚙𝚘𝚝𝚒𝚏𝚢 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙿𝚒𝚜𝚝𝚊 𝙰𝚜𝚎𝚐𝚞𝚛𝚊𝚍𝚊 ]━━━━⬣
+╭━━━━[ YT Music 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙿𝚒𝚜𝚝𝚊 𝙰segurada ]━━━━⬣
 🎵 *Designación de Pista:* ${songData.title}
-👤 *Agente Creador:* ${songData.artists}
+👤 *Agente(s) Creador(es):* ${songData.artists}
 💽 *Identificador de Álbum:* ${songData.album}
 🔗 *Enlace de Origen:* ${songData.url}
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━⬣`;
@@ -61,7 +60,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
                     showAdAttribution: true,
                     containsAutoReply: true,
                     renderLargerThumbnail: true,
-                    title: 'Ellen Joe: Pista asegurada. 🦈',
+                    title: 'Ellen Joe: Pista asegurada. 📻',
                     body: `Reproduciendo: ${songData.title} - ${songData.artists}`,
                     mediaType: 1,
                     thumbnailUrl: songData.thumbnail,
@@ -70,86 +69,76 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             }
         }, { quoted: m });
 
-        conn.sendMessage(m.chat, { 
-            audio: { url: songData.downloadUrl }, 
-            fileName: `${songData.title}.mp3`, 
-            mimetype: 'audio/mpeg', 
-            ptt: false 
+        conn.sendMessage(m.chat, {
+            audio: { url: songData.downloadUrl },
+            fileName: `${songData.title}.mp3`,
+            mimetype: 'audio/mpeg',
+            ptt: false
         }, { quoted: m });
-        
-        m.react('✅'); // Reacción de éxito
+
+        m.react('✅');
 
     } catch (e) {
-        console.error("Error en la operación Spotify:", e);
+        console.error("Error en la operación YT Music:", e);
         m.react('❌');
-        conn.reply(m.chat, `⚠️ *Anomalía crítica en la operación Spotify, Proxy ${name}.*\nNo pude completar la extracción. Verifica los parámetros o informa del error.\nDetalles: ${e.message || e}`, m, { contextInfo, quoted: m });
+        conn.reply(m.chat, `⚠️ *Anomalía crítica en la operación YT Music, Proxy ${name}.*\nNo pude completar la extracción.\nDetalles: ${e.message || e}`, m, { contextInfo, quoted: m });
     }
 };
 
-handler.help = ['spotify', 'splay'].map(v => v + ' <canción o artista>');
+// --- CONFIGURACIÓN DEL COMANDO ---
+handler.help = ['ytmusic <canción o artista>']; // Modificado para mostrar solo un comando
 handler.tags = ['downloader'];
-handler.command = ['spotify', 'splay'];
+handler.command = ['ytmusic']; // MODIFICADO para que solo reaccione a .ytmusic
 handler.group = true;
 handler.register = true;
 
 export default handler;
 
-// --- Función Auxiliar Híbrida (Spotify + YouTube) ---
-async function searchAndDownloadSong(query) {
+// --- Nueva Función Auxiliar para YouTube Music ---
+async function searchAndDownloadYTM(query) {
+    let currentStep = "Inicio";
     try {
-        // --- PASO 1: Buscar la canción en Spotify para obtener los metadatos correctos ---
-        console.log(`Buscando metadatos en Spotify para: "${query}"`);
-        const spotifyApiUrl = `https://spotify-info.onrender.com/search?q=${encodeURIComponent(query)}`;
-        const spotifyResponse = await axios.get(spotifyApiUrl);
+        const TIMEOUT = 30000;
 
-        if (!spotifyResponse.data || spotifyResponse.data.length === 0) {
-            console.error('La búsqueda en Spotify no arrojó resultados.');
-            return null;
+        currentStep = "Búsqueda en YouTube Music";
+        console.log(`[DIAGNÓSTICO] Iniciando Paso 1: ${currentStep} para "${query}"`);
+        const ytmSearchUrl = `https://yt-music-api.vercel.app/api/search?q=${encodeURIComponent(query)}`;
+        const ytmResponse = await axios.get(ytmSearchUrl, { timeout: TIMEOUT });
+
+        const songs = ytmResponse.data.filter(item => item.category === 'SONGS');
+        if (songs.length === 0) {
+            throw new Error('La búsqueda no arrojó ninguna canción en YouTube Music.');
         }
+        const ytmTrack = songs[0];
+        console.log(`[DIAGNÓSTICO] Paso 1 completado. Canción encontrada: "${ytmTrack.title}"`);
 
-        const spotifyTrack = spotifyResponse.data[0];
-        const spotifyTitle = spotifyTrack.title;
-        const spotifyArtist = spotifyTrack.artist;
-        const preciseYoutubeQuery = `${spotifyTitle} - ${spotifyArtist}`;
-        
-        console.log(`Búsqueda precisa para YouTube: "${preciseYoutubeQuery}"`);
-
-        // --- PASO 2: Usar los datos de Spotify para encontrar el audio en YouTube ---
-        const youtubeApiUrl = `https://yt-downloader.onrender.com/search?q=${encodeURIComponent(preciseYoutubeQuery)}`;
-        const youtubeResponse = await axios.get(youtubeApiUrl);
-        
-        if (!youtubeResponse.data || youtubeResponse.data.length === 0) {
-            console.error('La búsqueda en YouTube no arrojó resultados para la consulta precisa.');
-            return null;
-        }
-
-        const videoId = youtubeResponse.data[0].id;
+        currentStep = "Obtención del enlace de descarga";
+        const videoId = ytmTrack.videoId;
         if (!videoId) {
-            console.error('No se pudo obtener el ID del video de la búsqueda en YouTube.');
-            return null;
+            throw new Error("El resultado de YT Music no contenía un Video ID.");
         }
-
+        console.log(`[DIAGNÓSTICO] Iniciando Paso 2: ${currentStep} con ID: ${videoId}`);
         const downloadInfoUrl = `https://yt-downloader.onrender.com/download?id=${videoId}`;
-        const downloadInfoResponse = await axios.get(downloadInfoUrl);
-        const downloadTrack = downloadInfoResponse.data;
+        const downloadInfoResponse = await axios.get(downloadInfoUrl, { timeout: TIMEOUT });
 
-        if (!downloadTrack || !downloadTrack.mp3 || !downloadTrack.mp3.url) {
-             console.error('La API de descarga no proporcionó un enlace de audio (mp3).');
-             return null;
+        if (!downloadInfoResponse.data || !downloadInfoResponse.data.mp3 || !downloadInfoResponse.data.mp3.url) {
+             throw new Error('La API de descarga no proporcionó un enlace de audio (mp3).');
         }
+        const downloadTrack = downloadInfoResponse.data;
+        console.log("[DIAGNÓSTICO] Paso 2 completado. Enlace de descarga obtenido.");
 
-        // --- PASO 3: Devolver los datos de SPOTIFY con el enlace de descarga de YOUTUBE ---
         return {
-            title: spotifyTrack.title,
-            artists: spotifyTrack.artist,
-            album: spotifyTrack.album,
-            url: spotifyTrack.url,
-            thumbnail: spotifyTrack.cover,
+            title: ytmTrack.title,
+            artists: ytmTrack.artists.map(artist => artist.name).join(', '),
+            album: ytmTrack.album.name || 'Single',
+            url: `http://googleusercontent.com/youtube.com/13{videoId}`,
+            thumbnail: ytmTrack.thumbnailUrl.replace('w120-h120', 'w544-h544'),
             downloadUrl: downloadTrack.mp3.url
         };
 
     } catch (error) {
-        console.error('Error crítico en el proceso de búsqueda y descarga:', error.message);
-        return null;
+        console.error(`[DIAGNÓSTICO] Fallo en el paso: "${currentStep}"`);
+        console.error("[DIAGNÓSTICO] Detalles del error:", error);
+        throw new Error(`Fallo en el paso: ${currentStep}. Razón: ${error.message}`);
     }
 }
