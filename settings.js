@@ -41,7 +41,7 @@ global.nameqr = 'ellen-joe-bot'
 global.namebot = '꒰ 🥥 ꒱ؘ ellen-joe-bot ♪ ࿐ ࿔*:･ﾟ'
 global.Ellensessions = 'EllenSessions'
 global.jadi = 'EllenJadiBots'
-global.RubyJadibts = true
+global.EllenJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
