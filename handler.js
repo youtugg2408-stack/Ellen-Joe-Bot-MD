@@ -576,16 +576,16 @@ function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]
 // Función dfail global
 global.dfail = (type, m, conn) => {
     let msg = {
-rowner: `✦ ¿Intentando usar *${comando}* sin ser mi creador? Aww, qué tierno... ¡pero no! ✋`,
-owner: `✦ Oh no~ ¿creíste que podías usar *${comando}*? Solo los desarrolladores, no los simples mortales como tú. 🙄`,
-mods: `✦ *${comando}* es solo para mods, y tú... bueno, tú ni mod de tu propia vida. 😏`,
-premium: `✦ ¿Premium? Jajaja. ¿Tú? Ni regalado. *${comando}* es solo para los VIP, no para los del montón. 💅`,
-group: `✦ ¿Tan solito estás que quieres usar *${comando}* en privado? Este comando es solo para grupos, baka~`,
-private: `✦ ¿En serio intentas usar *${comando}* aquí? Este comando es solo para mi rinconcito privado, ¡fuera de aquí! 😒`,
-admin: `✦ *${comando}* es solo para admins. Tú solo eres decoración en este grupo. 💁‍♀️`,
-botAdmin: `✦ ¿Y cómo quieres que ejecute *${comando}* si ni admin soy? ¡Hazme admin primero, inútil! 🤨`,
-unreg: `✦ ¿Usar *${comando}* sin registrarte? ¡Qué descaro! Regístrate ya con: #$reg Ellen-Joe.19 o vete a llorar a otro lado. 😈`,
-restrict: `✦ Ooops~ Esta función está *desactivada*. Ni con magia podrás usarla ahora mismo, lo siento (no). 😜`
+rowner: `🦈 ¿Intentando usar *${comando}* sin ser mi creador? Aww, qué tierno... ¡pero no! ✋`,
+owner: `🦈 Oh no~ ¿creíste que podías usar *${comando}*? Solo los desarrolladores, no los simples mortales como tú. 🙄`,
+mods: `🦈 *${comando}* es solo para mods, y tú... bueno, tú ni mod de tu propia vida. 😏`,
+premium: `🦈 ¿Premium? Jajaja. ¿Tú? Ni regalado. *${comando}* es solo para los VIP, no para los del montón. 💅`,
+group: `🦈 ¿Tan solito estás que quieres usar *${comando}* en privado? Este comando es solo para grupos, baka~`,
+private: `🦈 ¿En serio intentas usar *${comando}* aquí? Este comando es solo para mi rinconcito privado, ¡fuera de aquí! 😒`,
+admin: `🦈 *${comando}* es solo para admins. Tú solo eres decoración en este grupo. 💁‍♀️`,
+botAdmin: `🦈 ¿Y cómo quieres que ejecute *${comando}* si ni admin soy? ¡Hazme admin primero, inútil! 🤨`,
+unreg: `🦈 ¿Usar *${comando}* sin registrarte? ¡Qué descaro! Regístrate ya con: #$reg Ellen-Joe.19 o vete a llorar a otro lado. 😈`,
+restrict: `🦈 Ooops~ Esta función está *desactivada*. Ni con magia podrás usarla ahora mismo, lo siento (no). 😜`
 }[type];
 if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('✖️'))}
 const file = global.__filename(import.meta.url, true);
