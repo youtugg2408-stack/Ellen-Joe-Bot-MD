@@ -1,18 +1,52 @@
 import { File } from "megajs";
 import path from "path";
 
+// --- Constantes y Configuración de Transmisión (Estilo Ellen Joe) ---
+const newsletterJid = '120363418071540900@newsletter';
+const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
+
 let handler = async (m, { conn, args, usedPrefix, text, command }) => {
+    const name = conn.getName(m.sender); // Identificando al Proxy
+
+    const contextInfo = {
+        mentionedJid: [m.sender],
+        isForwarded: true,
+        forwardingScore: 999,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid,
+            newsletterName,
+            serverMessageId: -1
+        },
+        externalAdReply: {
+            title: 'Ellen Joe: Pista localizada. 🦈',
+            body: `Procesando solicitud para el/la Proxy ${name}...`,
+            thumbnail: icons, // Asegúrate de que 'icons' y 'redes' estén definidos globalmente
+            sourceUrl: redes,
+            mediaType: 1,
+            renderLargerThumbnail: false
+        }
+    };
+
     try {
-        if (!text) return conn.reply(m.chat, `${emoji} Por favor, envia un link de MEGA para descargar el archivo.`, null, { quoted: fkontak });
+        if (!text) {
+            return conn.reply(m.chat, `🦈 *Rastro frío, Proxy ${name}.* Necesito un identificador de archivo de MEGA para proceder.\n\n_Ejemplo: ${usedPrefix + command} [tu_enlace_MEGA_aquí]`, m, { contextInfo, quoted: m });
+        }
 
         const file = File.fromURL(text);
         await file.loadAttributes();
 
-        if (file.size >= 300000000) return m.reply('✘ Error: El archivo es demasiado pesado (Peso máximo: 300MB ( Premium: 800MB )');
+        // Considerando el límite de 300MB
+        if (file.size >= 300000000) {
+            return conn.reply(m.chat, `⚠️ *Carga excesiva, Proxy ${name}.*\nEl archivo (${formatBytes(file.size)}) es demasiado grande para la transmisión estándar. Límite: 300MB.`, m, { contextInfo, quoted: m });
+        }
 
-        m.react(rwait);
+        m.react('🔄'); // Emoticono de procesamiento
 
-        const caption = `   *✿--- Descargas de MEGA ---✿*\n✐ File: ${file.name}\n✧ Size: ${formatBytes(file.size)}`;
+        const caption = `
+╭━━━━[ 𝙼𝙴𝙶𝙰 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙲𝚊𝚛𝚐𝚊 𝙰𝚜𝚎𝚐𝚞𝚛𝚊𝚍𝚊 ]━━━━⬣
+📦 *Designación de Archivo:* ${file.name}
+📏 *Tamaño de Carga:* ${formatBytes(file.size)}
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━⬣`;
 
         const data = await file.downloadBuffer();
 
@@ -26,6 +60,13 @@ let handler = async (m, { conn, args, usedPrefix, text, command }) => {
             ".jpg": "image/jpeg",
             ".jpeg": "image/jpeg",
             ".png": "image/png",
+            ".mp3": "audio/mpeg", // Añadido para mayor compatibilidad
+            ".ogg": "audio/ogg",
+            ".webp": "image/webp",
+            ".txt": "text/plain",
+            ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         };
 
         let mimetype = mimeTypes[fileExtension] || "application/octet-stream";
@@ -33,13 +74,14 @@ let handler = async (m, { conn, args, usedPrefix, text, command }) => {
         await conn.sendFile(m.chat, data, file.name, caption, m, null, { mimetype, asDocument: true });
 
     } catch (error) {
-        return m.reply(`${msm} Ocurrió un error: ${error.message}`);
+        console.error("Error al procesar MEGA:", error);
+        return conn.reply(m.chat, `❌ *Anomalía crítica, Proxy ${name}.*\nNo pude asegurar la carga desde MEGA. Verifica el enlace o intenta de nuevo.\nDetalles: ${error.message}`, m, { contextInfo, quoted: m });
     }
 }
 
 handler.help = ["mega"];
 handler.tags = ["descargas"];
-handler.command = ['mega', 'mg']
+handler.command = ['mega', 'mg'];
 handler.group = true;
 handler.register = true;
 handler.coin = 5;
