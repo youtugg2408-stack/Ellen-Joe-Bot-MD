@@ -1,11 +1,14 @@
 //código creado por Dioneibi-rip
+//modificado por nevi-dev
 import fetch from 'node-fetch';
 
-const newsletterJid = '120363335626706839@newsletter';
-const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡『 𝐓͢ᴇ𝙖፝ᴍ⃨ 𝘾𝒉꯭𝐚𝑛𝑛𝒆𝑙: 𝑹ᴜ⃜ɓ𝑦-𝑯ᴏ𝒔𝑯𝙞꯭𝑛𝒐 』࿐⟡';
+// --- Constantes y Configuración de Transmisión ---
+const newsletterJid = '120363418071540900@newsletter';
+const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 
 var handler = async (m, { conn, args, usedPrefix, command }) => {
-  const emoji = '🎥';
+  const name = conn.getName(m.sender); // Identificando al Proxy
+
   const contextInfo = {
     mentionedJid: [m.sender],
     isForwarded: true,
@@ -16,9 +19,9 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
       serverMessageId: -1
     },
     externalAdReply: {
-      title: namebot,
-      body: dev,
-      thumbnail: icons,
+      title: 'Ellen Joe: Pista localizada. 🦈',
+      body: `Procesando solicitud para el/la Proxy ${name}...`,
+      thumbnail: icons, // Asegúrate de que 'icons' y 'redes' estén definidos globalmente o pasados
       sourceUrl: redes,
       mediaType: 1,
       renderLargerThumbnail: false
@@ -28,7 +31,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
   if (!args[0]) {
     return conn.reply(
       m.chat,
-      `${emoji} *Oh senpai~* pásame un link de YouTube para traerte el videito.\n\nEjemplo de uso:\n*${usedPrefix + command} https://youtu.be/3vWtHIA2b7c*`,
+      `🦈 *Rastro frío, Proxy ${name}.* Necesito un identificador de video para proceder. Dame el enlace.\n\n_Ejemplo: ${usedPrefix + command} https://youtube.com/watch?v=xxxxxxxxxxx_`,
       m,
       { contextInfo, quoted: m }
     );
@@ -37,7 +40,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
   try {
     await conn.reply(
       m.chat,
-      `🌺 *E S P E R E*\n- 🍃 Se está descargando su video, dame un momentito >w<`,
+      `🔄 *Decodificando la señal, Proxy ${name}.* Aguarda. La presa está al alcance.`,
       m,
       { contextInfo, quoted: m }
     );
@@ -50,7 +53,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
     if (json.status !== 200 || !json.result?.download?.url) {
       return conn.reply(
         m.chat,
-        `❌ *No pude descargar el video.*\nRazón: ${json.message || 'Respuesta inválida.'}`,
+        `❌ *Extracción fallida, Proxy ${name}.*\nEl objetivo se ha escapado o la señal es inestable. Razón: ${json.message || 'Respuesta inválida del servidor.'}`,
         m,
         { contextInfo, quoted: m }
       );
@@ -61,9 +64,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
       description,
       timestamp,
       views,
-      image,
       author,
-      url: videoURL
     } = json.result.metadata;
 
     const {
@@ -79,15 +80,15 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
       m.chat,
       {
         video: videoBuffer,
-        caption: 
-`╭━━━━[ 𝚈𝚃𝙼𝙿𝟺 𝙳𝚎𝚌𝚘𝚍𝚎𝚍 ]━━━━⬣
-📹 *Título:* ${title}
-🧑‍💻 *Autor:* ${author?.name || 'Desconocido'}
-🕒 *Duración:* ${timestamp}
-📅 *Publicado:* ${json.result.metadata.ago}
-👁️ *Vistas:* ${views.toLocaleString()}
-🎞️ *Calidad:* ${quality}
-📄 *Descripción:*
+        caption:
+`╭━━━━[ 𝚈𝚃𝙼𝙿𝟺 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙿𝚛𝚎𝚜𝚊 𝙲𝚊𝚙𝚝𝚞𝚛𝚊𝚍𝚊 ]━━━━⬣
+📹 *Designación:* ${title}
+🧑‍💻 *Fuente Operacional:* ${author?.name || 'Desconocida'}
+🕒 *Duración del Flujo:* ${timestamp}
+📅 *Fecha de Registro:* ${json.result.metadata.ago}
+👁️ *Registros de Observación:* ${views.toLocaleString()}
+🎞️ *Calidad de Transmisión:* ${quality}
+📄 *Manifiesto de Carga:*
 ${description}
 ╰━━━━━━━━━━━━━━━━━━⬣`,
         mimetype: 'video/mp4',
@@ -99,7 +100,7 @@ ${description}
     console.error(e);
     await conn.reply(
       m.chat,
-      `❌ *Ocurrió un error al procesar el video.*\nDetalles: ${e.message}`,
+      `⚠️ *Anomalía detectada, Proxy ${name}.*\nNo pude asegurar la carga de video. Repórtalo si persiste.\nDetalles: ${e.message}`,
       m,
       { contextInfo, quoted: m }
     );
