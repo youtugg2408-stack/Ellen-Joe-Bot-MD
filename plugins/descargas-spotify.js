@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏ𝐄\'s 𝐒ervice';
 
-// --- Handler Principal (Adaptado a YT Music) ---
+// --- Handler Principal (Sin cambios) ---
 let handler = async (m, { conn, text, usedPrefix, command }) => {
     const name = conn.getName(m.sender);
 
@@ -69,13 +69,13 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             }
         }, { quoted: m });
 
-        conn.sendMessage(m.chat, {
-            audio: { url: songData.downloadUrl },
-            fileName: `${songData.title}.mp3`,
-            mimetype: 'audio/mpeg',
-            ptt: false
+        conn.sendMessage(m.chat, { 
+            audio: { url: songData.downloadUrl }, 
+            fileName: `${songData.title}.mp3`, 
+            mimetype: 'audio/mpeg', 
+            ptt: false 
         }, { quoted: m });
-
+        
         m.react('✅');
 
     } catch (e) {
@@ -85,33 +85,39 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 };
 
-// --- CONFIGURACIÓN DEL COMANDO ---
-handler.help = ['ytmusic <canción o artista>']; // Modificado para mostrar solo un comando
+handler.help = ['ytmusic <canción o artista>'];
 handler.tags = ['downloader'];
-handler.command = ['ytmusic']; // MODIFICADO para que solo reaccione a .ytmusic
+handler.command = ['ytmusic'];
 handler.group = true;
 handler.register = true;
 
 export default handler;
 
-// --- Nueva Función Auxiliar para YouTube Music ---
+// --- Función Auxiliar con la API Corregida ---
 async function searchAndDownloadYTM(query) {
     let currentStep = "Inicio";
     try {
         const TIMEOUT = 30000;
 
+        // --- PASO 1: Buscar en la API de YouTube Music ---
         currentStep = "Búsqueda en YouTube Music";
         console.log(`[DIAGNÓSTICO] Iniciando Paso 1: ${currentStep} para "${query}"`);
-        const ytmSearchUrl = `https://yt-music-api.vercel.app/api/search?q=${encodeURIComponent(query)}`;
+        
+        // ▼▼▼ EL ÚNICO CAMBIO ESTÁ EN ESTA LÍNEA ▼▼▼
+        const ytmSearchUrl = `https://youtube-music-api.onrender.com/search?query=${encodeURIComponent(query)}`;
+        // ▲▲▲ EL ÚNICO CAMBIO ESTÁ EN ESTA LÍNEA ▲▲▲
+
         const ytmResponse = await axios.get(ytmSearchUrl, { timeout: TIMEOUT });
 
-        const songs = ytmResponse.data.filter(item => item.category === 'SONGS');
+        // La nueva API devuelve los resultados en ytmResponse.data.results
+        const songs = ytmResponse.data.results.filter(item => item.type === 'song');
         if (songs.length === 0) {
             throw new Error('La búsqueda no arrojó ninguna canción en YouTube Music.');
         }
         const ytmTrack = songs[0];
         console.log(`[DIAGNÓSTICO] Paso 1 completado. Canción encontrada: "${ytmTrack.title}"`);
 
+        // --- PASO 2: Obtener el enlace de descarga ---
         currentStep = "Obtención del enlace de descarga";
         const videoId = ytmTrack.videoId;
         if (!videoId) {
@@ -127,12 +133,13 @@ async function searchAndDownloadYTM(query) {
         const downloadTrack = downloadInfoResponse.data;
         console.log("[DIAGNÓSTICO] Paso 2 completado. Enlace de descarga obtenido.");
 
+        // --- PASO 3: Devolver los datos ---
         return {
             title: ytmTrack.title,
             artists: ytmTrack.artists.map(artist => artist.name).join(', '),
             album: ytmTrack.album.name || 'Single',
-            url: `http://googleusercontent.com/youtube.com/13{videoId}`,
-            thumbnail: ytmTrack.thumbnailUrl.replace('w120-h120', 'w544-h544'),
+            url: `http://googleusercontent.com/youtube.com/14{videoId}`,
+            thumbnail: ytmTrack.thumbnails.slice(-1)[0].url, // Obtiene la imagen de mayor resolución
             downloadUrl: downloadTrack.mp3.url
         };
 
