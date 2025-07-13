@@ -1,7 +1,7 @@
-import fetch from "node-fetch"; 
-import { ogmp3 } from '../lib/youtubedl.js'; 
+import fetch from "node-fetch";
+import { ogmp3 } from '../lib/youtubedl.js';
 import yts from "yt-search";
-import axios from 'axios'; 
+import axios from 'axios';
 
 // --- Constantes y Configuración ---
 const SIZE_LIMIT_MB = 100;
@@ -21,7 +21,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
       serverMessageId: -1
     },
     externalAdReply: {
-      title: 'Ellen Joe: Pista localizada. 🦈', 
+      title: 'Ellen Joe: Pista localizada. 🦈',
       body: `Procesando solicitud para el/la Proxy ${name}...`,
       thumbnail: icons, // Recuerda: la URL de la imagen de Ellen Joe va aquí
       sourceUrl: redes,
@@ -49,7 +49,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   // --- Lógica de descarga directa ---
   if (isMode) {
     const mode = args[0].toLowerCase();
-    await m.react("📥"); 
+    await m.react("📥");
 
     const sendMediaFile = async (downloadUrl, title) => {
       if (mode === "audio") {
@@ -74,10 +74,10 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
         await m.react("📽️");
       }
     };
-    
+
     const urlToDownload = isInputUrl ? queryOrUrl : video.url;
 
-    // --- NUEVA LÓGICA DE DESCARGA CON 3 NIVELES ---
+    // --- LÓGICA DE DESCARGA ---
 
     // Nivel 1: Intento con la API Principal
     try {
@@ -93,40 +93,21 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
       }
       throw new Error("API Principal no devolvió URL válida.");
     } catch (e) {
-      console.log(`Fallo API Principal: ${e.message}. Pasando al protocolo 2.`);
+      console.log(`Fallo API Principal: ${e.message}. Pasando al protocolo de respaldo.`);
 
-      // Nivel 2: Intento con la API Secundaria
+      // Nivel 2: Intento con el Protocolo de Respaldo Final (ogmp3)
       try {
-        console.log("Protocolo 2: API Secundaria (stellarwa.xyz)");
-        const apiBase = "https://api.stellarwa.xyz/dow";
-        const endpoint = mode === "audio" ? "ytmp3" : "ytmp4";
-        const resSecondary = await fetch(`${apiBase}/${endpoint}?url=${encodeURIComponent(urlToDownload)}&apikey=Stellar`);
-        const jsonSecondary = await resSecondary.json();
-        
-        // Asumiendo que la URL de descarga está en 'result' y el estado es 'ok'
-        if (jsonSecondary.status === 'ok' && jsonSecondary.result) {
-          console.log("Éxito con API Secundaria.");
-          await sendMediaFile(jsonSecondary.result, video.title);
+        console.log("Protocolo 2: Respaldo final (ogmp3)");
+        const downloadResult = await ogmp3.download(urlToDownload, null, mode);
+        if (downloadResult.status && downloadResult.result?.download) {
+          console.log("Éxito con el respaldo (ogmp3).");
+          await sendMediaFile(downloadResult.result.download, downloadResult.result.title);
           return;
         }
-        throw new Error("API Secundaria no devolvió URL válida.");
+        throw new Error("El respaldo (ogmp3) también falló.");
       } catch (e2) {
-        console.log(`Fallo API Secundaria: ${e2.message}. Pasando al protocolo 3.`);
-
-        // Nivel 3: Intento con el Protocolo de Respaldo Final (ogmp3)
-        try {
-          console.log("Protocolo 3: Respaldo final (ogmp3)");
-          const downloadResult = await ogmp3.download(urlToDownload, null, mode);
-          if (downloadResult.status && downloadResult.result?.download) {
-            console.log("Éxito con el respaldo (ogmp3).");
-            await sendMediaFile(downloadResult.result.download, downloadResult.result.title);
-            return;
-          }
-          throw new Error("El respaldo (ogmp3) también falló.");
-        } catch (e3) {
-          console.error(`Todos los protocolos fallaron: ${e3.message}`);
-          await m.react("❌");
-        }
+        console.error(`Todos los protocolos fallaron: ${e2.message}`);
+        await m.react("❌");
       }
     }
     return;
