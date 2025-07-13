@@ -100,7 +100,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
         console.log("Protocolo 2: API Secundaria (stellarwa.xyz)");
         const apiBase = "https://api.stellarwa.xyz/dow";
         const endpoint = mode === "audio" ? "ytmp3" : "ytmp4";
-        const resSecondary = await fetch(`${apiBase}/${endpoint}?url=${encodeURIComponent(urlToDownload)}`);
+        const resSecondary = await fetch(`${apiBase}/${endpoint}?url=${encodeURIComponent(urlToDownload)}&apikey=Stellar`);
         const jsonSecondary = await resSecondary.json();
         
         // Asumiendo que la URL de descarga está en 'result' y el estado es 'ok'
