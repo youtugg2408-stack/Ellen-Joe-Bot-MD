@@ -1,4 +1,4 @@
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1'
+Process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1'
 import './settings.js'
 import { setupMaster, fork } from 'cluster'
 import { watchFile, unwatchFile } from 'fs'
@@ -122,8 +122,15 @@ global.db.chain = chain(global.db.data)
 }
 loadDatabase()
 
+// --- INICIO DE LA MODIFICACIÓN ---
+// Define el nombre de la carpeta de sesión para poder reutilizarlo.
+const Ellensessions = 'Ellensessions';
+global.Vermeilsessions = Ellensessions; // Usado en la función purgeEllenSession
+const jadi = 'EllenJadiBots'; // Usado en varias funciones de purga
+// --- FIN DE LA MODIFICACIÓN ---
+
 // ASÍ DEBERÍA VERSE (CORRECTO)
-const { state, saveCreds } = await useMultiFileAuthState('Ellensessions');
+const { state, saveCreds } = await useMultiFileAuthState(Ellensessions);
 const msgRetryCounterMap = (MessageRetryMap) => { };
 const msgRetryCounterCache = new NodeCache()
 const {version} = await fetchLatestBaileysVersion();
@@ -139,17 +146,26 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
 
 let opcion
-if (methodCodeQR) {
-opcion = '1'
-}
-if (!methodCodeQR && !methodCode && !fs.existsSync(`./${Ellensessions}/creds.json`)) {
-do {
-opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '))
 
-if (!/^[1-2]$/.test(opcion)) {
-console.log(chalk.bold.redBright(`✦ No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`))
-}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${Ellensessions}/creds.json`))
-} 
+// --- INICIO DE LA MODIFICACIÓN ---
+// Verifica si ya existe una sesión válida.
+const sessionExists = fs.existsSync(`./${Ellensessions}/creds.json`);
+
+if (methodCodeQR) {
+    opcion = '1';
+} else if (methodCode) {
+    // Si se usa un código de emparejamiento, no es necesario preguntar.
+} else if (!sessionExists) {
+    // Solo pregunta si no hay una sesión existente y no se especificó un método por línea de comandos.
+    do {
+        opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '));
+
+        if (!/^[1-2]$/.test(opcion)) {
+            console.log(chalk.bold.redBright(`✦ No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`));
+        }
+    } while (opcion !== '1' && opcion !== '2');
+}
+// --- FIN DE LA MODIFICACIÓN ---
 
 console.info = () => {} 
 console.debug = () => {} 
@@ -440,11 +456,10 @@ console.log(chalk.bold.red(`\n╭» ❍ ${jadi} ❍\n│→ OCURRIÓ UN ERROR\n�
 }}
 
 function purgeOldFiles() {
-const directories = [`./${sessions}/`, `./${jadi}/`]
+const directories = [`./${Vermeilsessions}/`, `./${jadi}/`]
 directories.forEach(dir => {
-readdirSync(dir, (err, files) => {
-if (err) throw err
-files.forEach(file => {
+if (fs.existsSync(dir)) {
+readdirSync(dir).forEach(file => {
 if (file !== 'creds.json') {
 const filePath = path.join(dir, file);
 unlinkSync(filePath, err => {
@@ -453,7 +468,7 @@ console.log(chalk.bold.red(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} NO SE LOGRÓ
 } else {
 console.log(chalk.bold.green(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} BORRADO CON ÉXITO\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))
 } }) }
-}) }) }) }
+}) } }) }
 
 function redefineConsoleMethod(methodName, filterStrings) {
 const originalConsoleMethod = console[methodName]
@@ -481,7 +496,7 @@ await purgeEllenSessionSB()}, 1000 * 60 * 10)
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
-console.log(await purgeOldFiles());
+await purgeOldFiles();
 console.log(chalk.bold.cyanBright(`\n╭» ❍ ARCHIVOS ❍\n│→ ARCHIVOS RESIDUALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10)
 
 _quickTest().then(() => conn.logger.info(chalk.bold(`✦  H E C H O\n`.trim()))).catch(console.error)
