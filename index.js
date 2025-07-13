@@ -44,33 +44,54 @@ let { say } = cfonts
 
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1'
 
-
-console.log(chalk.red(`
-░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═
-░▒▓█►─═                      🅴🅻🅻🅴🅽-🅹🅾🅴-🅱🅾🆃-🅼🅳                    ═─◄█▓▒░
-░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═░▒▓█►─═
+// ASCII Art representando a Ellen-Joe
+console.log(chalk.cyan(`
+                                                                    
+                                     @@.                            
+                                     @@,                            
+                                     @@,                            
+                                   @@@%                             
+                                 @@@@@,                             
+                             @@@@@@@.                               
+                         #@@@@@@@@,                                 
+                       @@@@@@@@@                                    
+                    ,@@@@@@@@@@                                     
+                  &@@@@@@@@@@@                                      
+                @@@@@@@@@@@@@                                       
+          %@@@@@@@@@@@@@@@@                                         
+        @@@@@@@@@@@@@@@@@@                                          
+       @@@@@@@@@@@@@@@@@@@                                          
+      @@@@@@@@@@@@@@@@@@@@@                                         
+     @@@@@@@@@@@@@@@@@@@@@@@                                        
+    @@@@@@@@@@@@@@@@@@@@@@@@#                                       
+   @@@@@@@@@@@@@@@@@@@@@@@@@@* #@@@@@@@@@@@@@@@@@@@@@@@@@@@                                      
+  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                     
+  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                    
+  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                   
+   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,                                  
+    .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                 
+       /@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@* &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,                         
+              %@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                      
 `))
 
-
-cfonts.say('Ellen Joe Bot', {
+cfonts.say('Ellen-Joe Bot', {
   font: 'chrome',
   align: 'center',
-  gradient: ['#ff4fcb', '#ff77ff'],
+  gradient: ['#00FFFF', '#8A2BE2'], // Colores cyberpunk: Cian y Azul-Violeta
   transition: true,
   env: 'node'
 })
 
 // Créditos
-cfonts.say('Developed By: nevi-dev', {
+cfonts.say('Adaptado para Ellen-Joe por: Nevi-dev', {
   font: 'console',
   align: 'center',
-  colors: ['blueBright']
+  colors: ['cyan']
 })
 
 console.log(chalk.magentaBright('═════════════════════════════════════════════════════════════════════'))
-// Ellen Joe - Inicio de sesión
-console.log(chalk.cyanBright('      ⚙️  Agente Ellen Joe, de Victoria Housekeeping Co., iniciando operaciones. ⚙️'));
-console.log(chalk.white('          Indica la tarea. La completaré con precisión y eficiencia. Sin adornos.'));
+console.log(chalk.cyanBright('          🚀 Bienvenido al núcleo del Bot Ellen-Joe 🚀'))
+console.log(chalk.whiteBright('  Iniciando sistemas... Ellen está lista para ayudarte en tu próximo encargo ✨'))
 console.log(chalk.magentaBright('═════════════════════════════════════════════════════════════════════\n'))
 
 protoType()
@@ -96,7 +117,7 @@ global.prefix = new RegExp('^[#/!.]')
 
 global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile('./src/database/database.json'))
 
-global.DATABASE = global.db 
+global.DATABASE = global.db
 global.loadDatabase = async function loadDatabase() {
 if (global.db.READ) {
 return new Promise((resolve) => setInterval(async function() {
@@ -122,15 +143,7 @@ global.db.chain = chain(global.db.data)
 }
 loadDatabase()
 
-// --- INICIO DE LA MODIFICACIÓN ---
-// Define el nombre de la carpeta de sesión para poder reutilizarlo.
-const Ellensessions = 'Ellensessions';
-global.Ellensessions = Ellensessions; // Usado en la función purgeEllenSession
-const jadi = 'EllenJadiBots'; // Usado en varias funciones de purga
-// --- FIN DE LA MODIFICACIÓN ---
-
-// ASÍ DEBERÍA VERSE (CORRECTO)
-const { state, saveCreds } = await useMultiFileAuthState(Ellensessions);
+const {state, saveState, saveCreds} = await useMultiFileAuthState(global.Ellensessions)
 const msgRetryCounterMap = (MessageRetryMap) => { };
 const msgRetryCounterCache = new NodeCache()
 const {version} = await fetchLatestBaileysVersion();
@@ -139,48 +152,39 @@ let phoneNumber = global.botNumber
 const methodCodeQR = process.argv.includes("qr")
 const methodCode = !!phoneNumber || process.argv.includes("code")
 const MethodMobile = process.argv.includes("mobile")
-const colores = chalk.bgMagenta.white
+const colores = chalk.bgCyan.black
 const opcionQR = chalk.bold.green
-const opcionTexto = chalk.bold.cyan
+const opcionTexto = chalk.bold.blue
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
 
 let opcion
-
-// --- INICIO DE LA MODIFICACIÓN ---
-// Verifica si ya existe una sesión válida.
-const sessionExists = fs.existsSync(`./${Ellensessions}/creds.json`);
-
 if (methodCodeQR) {
-    opcion = '1';
-} else if (methodCode) {
-    // Si se usa un código de emparejamiento, no es necesario preguntar.
-} else if (!sessionExists) {
-    // Solo pregunta si no hay una sesión existente y no se especificó un método por línea de comandos.
-    do {
-        opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '));
-
-        if (!/^[1-2]$/.test(opcion)) {
-            console.log(chalk.bold.redBright(`✦ No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`));
-        }
-    } while (opcion !== '1' && opcion !== '2');
+opcion = '1'
 }
-// --- FIN DE LA MODIFICACIÓN ---
+if (!methodCodeQR && !methodCode && !fs.existsSync(`./${Ellensessions}/creds.json`)) {
+do {
+opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '))
 
-console.info = () => {} 
-console.debug = () => {} 
+if (!/^[1-2]$/.test(opcion)) {
+console.log(chalk.bold.redBright(`✦ Solo se permiten los números 1 o 2. No se admiten letras ni símbolos especiales.`))
+}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${Ellensessions}/creds.json`))
+}
+
+console.info = () => {}
+console.debug = () => {}
 
 const connectionOptions = {
 logger: pino({ level: 'silent' }),
 printQRInTerminal: opcion == '1' ? true : methodCodeQR ? true : false,
-mobile: MethodMobile, 
+mobile: MethodMobile,
 browser: opcion == '1' ? [`${nameqr}`, 'Edge', '20.0.04'] : methodCodeQR ? [`${nameqr}`, 'Edge', '20.0.04'] : ['Ubuntu', 'Edge', '110.0.1587.56'],
 auth: {
 creds: state.creds,
 keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: "fatal" }).child({ level: "fatal" })),
 },
-markOnlineOnConnect: true, 
-generateHighQualityLinkPreview: true, 
+markOnlineOnConnect: true,
+generateHighQualityLinkPreview: true,
 getMessage: async (clave) => {
 let jid = jidNormalizedUser(clave.remoteJid)
 let msg = await store.loadMessage(jid, clave.id)
@@ -203,7 +207,7 @@ if (!!phoneNumber) {
 addNumber = phoneNumber.replace(/[^0-9]/g, '')
 } else {
 do {
-phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✦ Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✏  Ejemplo: 57321×××××××`)}\n${chalk.bold.magentaBright('---> ')}`)))
+phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✦ Por favor, ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✏️  Ejemplo: 1234567890`)}\n${chalk.bold.magentaBright('---> ')}`)))
 phoneNumber = phoneNumber.replace(/\D/g,'')
 if (!phoneNumber.startsWith('+')) {
 phoneNumber = `+${phoneNumber}`
@@ -244,25 +248,25 @@ global.timestamp.connect = new Date;
 if (global.db.data == null) loadDatabase();
 if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
 if (opcion == '1' || methodCodeQR) {
-console.log(chalk.bold.yellow(`\n❐ ESCANEA EL CÓDIGO QR EXPIRA EN 45 SEGUNDOS`))}
+console.log(chalk.bold.yellow(`\n❐ ESCANEA EL CÓDIGO QR, EXPIRA EN 45 SEGUNDOS`))}
 }
 if (connection == 'open') {
-console.log(chalk.bold.green('\n❀ Ellen-Joe-Bot Conectada con éxito 🦈'))
+console.log(chalk.bold.green('\n❀ Ellen-Bot Conectado Exitosamente ❀'))
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === 'close') {
 if (reason === DisconnectReason.badSession) {
-console.log(chalk.bold.cyanBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${Ellensessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+console.log(chalk.bold.cyanBright(`\n⚠️ SIN CONEXIÓN, BORRE LA CARPETA ${global.Ellensessions} Y ESCANEE EL CÓDIGO QR ⚠️`))
 } else if (reason === DisconnectReason.connectionClosed) {
-console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹\n┆ ⚠︎ CONEXION CERRADA, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹`))
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹\n┆ ⚠️ CONEXIÓN CERRADA, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹`))
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionLost) {
-console.log(chalk.bold.blueBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂\n┆ ⚠︎ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂`))
+console.log(chalk.bold.blueBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂\n┆ ⚠️ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂`))
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionReplaced) {
-console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠︎ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESION, POR FAVOR, CIERRA LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
+console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠️ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESIÓN, POR FAVOR, CIERRE LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
 } else if (reason === DisconnectReason.loggedOut) {
-console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${Ellensessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+console.log(chalk.bold.redBright(`\n⚠️ SIN CONEXIÓN, BORRE LA CARPETA ${global.Ellensessions} Y ESCANEE EL CÓDIGO QR ⚠️`))
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.restartRequired) {
 console.log(chalk.bold.cyanBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓\n┆ ✧ CONECTANDO AL SERVIDOR...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓`))
@@ -271,7 +275,7 @@ await global.reloadHandler(true).catch(console.error)
 console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸\n┆ ⧖ TIEMPO DE CONEXIÓN AGOTADO, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸`))
 await global.reloadHandler(true).catch(console.error) //process.send('reset')
 } else {
-console.log(chalk.bold.redBright(`\n⚠︎！ RAZON DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`))
+console.log(chalk.bold.redBright(`\n⚠️！ RAZÓN DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No Encontrado'} >> ${connection || 'No Encontrado'}`))
 }}
 }
 process.on('uncaughtException', console.error)
@@ -320,16 +324,16 @@ isInit = false
 return true
 };
 
-//Arranque nativo para subbots by - ReyEndymion >> https://github.com/ReyEndymion
+//Arranque nativo para sub-bots por - ReyEndymion >> https://github.com/ReyEndymion
 
 global.rutaJadiBot = join(__dirname, './EllenJadiBots')
 
 if (global.EllenJadibts) {
 if (!existsSync(global.rutaJadiBot)) {
-mkdirSync(global.rutaJadiBot, { recursive: true }) 
+mkdirSync(global.rutaJadiBot, { recursive: true })
 console.log(chalk.bold.cyan(`La carpeta: ${jadi} se creó correctamente.`))
 } else {
-console.log(chalk.bold.cyan(`La carpeta: ${jadi} ya está creada.`)) 
+console.log(chalk.bold.cyan(`La carpeta: ${jadi} ya está creada.`))
 }
 
 const readRutaJadiBot = readdirSync(rutaJadiBot)
@@ -364,22 +368,22 @@ global.reload = async (_ev, filename) => {
 if (pluginFilter(filename)) {
 const dir = global.__filename(join(pluginFolder, filename), true);
 if (filename in global.plugins) {
-if (existsSync(dir)) conn.logger.info(` updated plugin - '${filename}'`)
+if (existsSync(dir)) conn.logger.info(` plugin actualizado - '${filename}'`)
 else {
-conn.logger.warn(`deleted plugin - '${filename}'`)
+conn.logger.warn(` plugin eliminado - '${filename}'`)
 return delete global.plugins[filename]
-}} else conn.logger.info(`new plugin - '${filename}'`);
+}} else conn.logger.info(`nuevo plugin - '${filename}'`);
 const err = syntaxerror(readFileSync(dir), filename, {
 sourceType: 'module',
 allowAwaitOutsideFunction: true,
 });
-if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
+if (err) conn.logger.error(`error de sintaxis al cargar '${filename}'\n${format(err)}`)
 else {
 try {
 const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`));
 global.plugins[filename] = module.default || module;
 } catch (e) {
-conn.logger.error(`error require plugin '${filename}\n${format(e)}'`)
+conn.logger.error(`error al requerir el plugin '${filename}\n${format(e)}'`)
 } finally {
 global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)))
 }}
@@ -430,7 +434,7 @@ prekey = [...prekey, ...filesFolderPreKeys]
 filesFolderPreKeys.forEach(files => {
 unlinkSync(`./${Ellensessions}/${files}`)
 })
-} 
+}
 
 function purgeEllenSessionSB() {
 try {
@@ -458,8 +462,9 @@ console.log(chalk.bold.red(`\n╭» ❍ ${jadi} ❍\n│→ OCURRIÓ UN ERROR\n�
 function purgeOldFiles() {
 const directories = [`./${Ellensessions}/`, `./${jadi}/`]
 directories.forEach(dir => {
-if (fs.existsSync(dir)) {
-readdirSync(dir).forEach(file => {
+readdirSync(dir, (err, files) => {
+if (err) throw err
+files.forEach(file => {
 if (file !== 'creds.json') {
 const filePath = path.join(dir, file);
 unlinkSync(filePath, err => {
@@ -468,7 +473,7 @@ console.log(chalk.bold.red(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} NO SE LOGRÓ
 } else {
 console.log(chalk.bold.green(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} BORRADO CON ÉXITO\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))
 } }) }
-}) } }) }
+}) }) }) }
 
 function redefineConsoleMethod(methodName, filterStrings) {
 const originalConsoleMethod = console[methodName]
@@ -483,7 +488,7 @@ originalConsoleMethod.apply(console, arguments)
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await clearTmp()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ MULTIMEDIA ❍\n│→ ARCHIVOS DE LA CARPETA TMP ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 4) // 4 min 
+console.log(chalk.bold.cyanBright(`\n╭» ❍ MULTIMEDIA ❍\n│→ ARCHIVOS DE LA CARPETA TMP ELIMINADOS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 4) // 4 min
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
@@ -492,12 +497,12 @@ console.log(chalk.bold.cyanBright(`\n╭» ❍ ${global.Ellensessions} ❍\n│�
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
-await purgeEllenSessionSB()}, 1000 * 60 * 10)  
+await purgeEllenSessionSB()}, 1000 * 60 * 10)
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
-await purgeOldFiles();
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ARCHIVOS ❍\n│→ ARCHIVOS RESIDUALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10)
+console.log(await purgeOldFiles());
+console.log(chalk.bold.cyanBright(`\n╭» ❍ ARCHIVOS ❍\n│→ ARCHIVOS RESIDUALES ELIMINADOS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10)
 
 _quickTest().then(() => conn.logger.info(chalk.bold(`✦  H E C H O\n`.trim()))).catch(console.error)
 
