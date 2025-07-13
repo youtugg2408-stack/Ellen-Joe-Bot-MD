@@ -125,7 +125,7 @@ loadDatabase()
 // --- INICIO DE LA MODIFICACIÓN ---
 // Define el nombre de la carpeta de sesión para poder reutilizarlo.
 const Ellensessions = 'Ellensessions';
-global.Vermeilsessions = Ellensessions; // Usado en la función purgeEllenSession
+global.Ellensessions = Ellensessions; // Usado en la función purgeEllenSession
 const jadi = 'EllenJadiBots'; // Usado en varias funciones de purga
 // --- FIN DE LA MODIFICACIÓN ---
 
@@ -422,7 +422,7 @@ unlinkSync(filePath)})
 
 function purgeEllenSession() {
 let prekey = []
-let directorio = readdirSync(`./${Vermeilsessions}`)
+let directorio = readdirSync(`./${Ellensessions}`)
 let filesFolderPreKeys = directorio.filter(file => {
 return file.startsWith('pre-key-')
 })
@@ -456,7 +456,7 @@ console.log(chalk.bold.red(`\n╭» ❍ ${jadi} ❍\n│→ OCURRIÓ UN ERROR\n�
 }}
 
 function purgeOldFiles() {
-const directories = [`./${Vermeilsessions}/`, `./${jadi}/`]
+const directories = [`./${Ellensessions}/`, `./${jadi}/`]
 directories.forEach(dir => {
 if (fs.existsSync(dir)) {
 readdirSync(dir).forEach(file => {
@@ -488,7 +488,7 @@ console.log(chalk.bold.cyanBright(`\n╭» ❍ MULTIMEDIA ❍\n│→ ARCHIVOS D
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await purgeEllenSession()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ${global.Vermeilsessions} ❍\n│→ SESIONES NO ESENCIALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10) // 10 min
+console.log(chalk.bold.cyanBright(`\n╭» ❍ ${global.Ellensessions} ❍\n│→ SESIONES NO ESENCIALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10) // 10 min
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
