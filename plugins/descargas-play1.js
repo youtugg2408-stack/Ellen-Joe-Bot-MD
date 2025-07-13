@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // --- Constantes y Configuración ---
 const SIZE_LIMIT_MB = 100;
-const newsletterJid = '120363420846835529@newsletter';
+const newsletterJid = '120363418071540900@newsletter';
 
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 
