@@ -143,7 +143,7 @@ let handler = async (m, { conn, usedPrefix }) => {
       title: packname,
       body: '🦈 Menú de Comandos | Ellen-Joe-Bot 🦈',
       thumbnailUrl: miniaturaRandom,
-      sourceUrl: 'https://github.com/nevi-dev/Vermeil-bot',
+      sourceUrl: redes,
       mediaType: 1,
       renderLargerThumbnail: false
     }
