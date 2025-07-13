@@ -61,9 +61,9 @@ return m.reply(`${emoji2} No se han encontrado espacios para *Sub-Bots* disponib
 }*/
 let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
 let id = `${who.split`@`[0]}`  //conn.getName(who)
-let pathRubyJadiBot = path.join(`./${jadi}/`, id)
+let pathEllenJadiBot = path.join(`./${jadi}/`, id)
 if (!fs.existsSync(pathEllenJadiBot)){
-fs.mkdirSync(pathRubyJadiBot, { recursive: true })
+fs.mkdirSync(pathEllenJadiBot, { recursive: true })
 }
 EllenJBOptions.pathEllenJadiBot = pathEllenJadiBot
 EllenJBOptions.m = m
@@ -72,7 +72,7 @@ EllenJBOptions.args = args
 EllenJBOptions.usedPrefix = usedPrefix
 EllenJBOptions.command = command
 EllenJBOptions.fromCommand = true
-EllenJadiBot(RubyJBOptions)
+EllenJadiBot(EllenJBOptions)
 global.db.data.users[m.sender].Subs = new Date * 1
 } 
 handler.help = ['qr', 'code']
@@ -109,7 +109,7 @@ const drmer = Buffer.from(drm1 + drm2, `base64`)
 let { version, isLatest } = await fetchLatestBaileysVersion()
 const msgRetry = (MessageRetryMap) => { }
 const msgRetryCache = new NodeCache()
-const { state, saveState, saveCreds } = await useMultiFileAuthState(pathRubyJadiBot)
+const { state, saveState, saveCreds } = await useMultiFileAuthState(pathEllenJadiBot)
 
 const connectionOptions = {
 logger: pino({ level: "fatal" }),
@@ -137,7 +137,7 @@ if (store) {
 //const msg = store.loadMessage(key.remoteJid, key.id)
 //return msg.message && undefined
 } return {
-conversation: 'Ruby Hoshino Bott',
+conversation: 'Ellen Joe Bot MD',
 }}}*/
 
 let sock = makeWASocket(connectionOptions)
