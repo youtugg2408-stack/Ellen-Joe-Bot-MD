@@ -13,7 +13,7 @@
   <summary><b>☁️ 𝐀𝐜𝐥𝐚𝐫𝐚𝐜𝐢o𝐧 𝐥𝐞𝐠𝐚𝐥</b></summary>
 
 > 🚫 **Este proyecto NO está afiliado a WhatsApp ni WhatsApp LLC.**  
-> un bot hecho 100% independiente, la base del bot es de Yuki Suou. bot personalizado por **Dioneibi‑rip**.
+> un bot hecho 100% independiente, la base del bot es de Yuki Suou. bot personalizado por **nevi-dev**.
 </details>
 
 ---
@@ -21,7 +21,7 @@
 ## 🧩 𝐅𝐮𝐧𝐜𝐢𝐨𝐧𝐞𝐬 𝐝𝐞 𝐑𝐮𝐛𝐲
 
 <details>
-  <summary><b>✨ 𝐓𝐨𝐝𝐨 𝐥𝐨 𝐪𝐮𝐞 𝐩𝐮𝐞𝐝𝐞 𝐡𝐚𝐜𝐞𝐫</b></summary>
+  <summary><b>🦈𝐓𝐨𝐝𝐨 𝐥𝐨 𝐪𝐮𝐞 𝐩𝐮𝐞𝐝𝐞 𝐡𝐚𝐜𝐞𝐫</b></summary>
 
 - 👥 Gestión de grupos (bienvenidas, reglas, etc.)
 - 🛡️ Antidelete, antilink, antispam
@@ -58,7 +58,7 @@ apt update && apt upgrade && pkg install -y git nodejs ffmpeg imagemagick yarn
 ```
 
 ```bash
-git clone https://github.com/Dioneibi-rip/Ruby-Hoshino-Bot && cd Ruby-Hoshino-Bot
+git clone https://github.com/nevi-dev/Ellen-Joe-Bot-MD && cd Ellen-Joe-Bot-MD
 ```
 
 ```bash
@@ -86,7 +86,7 @@ href="https://www.mediafire.com/file/bp2l6cci2p30hjv/Cloud+Shell_1.apk/file"><im
   <summary><b>🚀 Ver pasos para Cloud Shell</b></summary>
 
 ```bash
-git clone https://github.com/Dioneibi-rip/Ruby-Hoshino-Bot && cd Ruby-Hoshino-Bot
+git clone git clone https://github.com/nevi-dev/Ellen-Joe-Bot-MD && cd Ellen-Joe-Bot-MD
 ```
 
 ```bash
@@ -108,7 +108,7 @@ npm start
   <summary><b>🔁 Cómo reiniciarlo en Termux</b></summary>
 
 ```bash
-cd Ruby-Hoshino-Bot && npm start
+cd Ellen-Joe-Bot-MD && npm start
 ```
 
 </details>
@@ -121,7 +121,7 @@ cd Ruby-Hoshino-Bot && npm start
   <summary><b>🔑 edita el archivo y Agrega tu número como Owner</b></summary>
 
 ```bash
-cd Ruby-Hoshino-Bot
+cd Ellen-Joe-Bot-MD
 ```
 
 ```bash
