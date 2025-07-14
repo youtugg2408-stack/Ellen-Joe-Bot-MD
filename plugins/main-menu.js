@@ -161,7 +161,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     console.error("Error al enviar el menú con video:", e);
     msgEnviado = await conn.reply(idChat, textoFinal, m, { contextInfo });
   }
-  
+
   // --- 6. Actualizar el estado del cooldown ---
   cooldowns.set(idChat, ahora);
   ultimoMenuEnviado.set(idChat, {
