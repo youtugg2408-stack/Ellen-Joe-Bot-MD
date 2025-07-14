@@ -1,97 +1,110 @@
+import axios from 'axios'
 import { createHash } from 'crypto'
+import PhoneNumber from 'awesome-phonenumber'
+import moment from 'moment-timezone'
 
-// Expresión regular para capturar el nombre y la edad del usuario en el formato "Nombre.edad"
 let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
+let handler = async function (m, { conn, text, args, usedPrefix, command }) {
+    let user = global.db.data.users[m.sender]
+    let name2 = conn.getName(m.sender)
+    let whe = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : m.sender
+    let perfil = await conn.profilePictureUrl(whe, 'image').catch(_ => 'https://qu.ax/FGSG.jpg')
 
-// Define la variable 'canales' con una URL relevante si es necesario, o déjala como está
-const canales = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x'; // URL oficial de Zenless Zone Zero
-
-// Se añade un objeto vacío como valor por defecto {} para evitar el TypeError
-let handler = async function (m, { conn, text, usedPrefix, command } = {}) {
-  // Verificación para asegurar que las dependencias existen antes de usarlas
-  if (!conn || !text || !m) {
-    // Si falta algo esencial, se detiene la ejecución para evitar más errores.
-    // Puedes poner un console.log('Faltan objetos esenciales en el handler de registro.');
-    return;
-  }
-  
-  let user = global.db.data.users[m.sender]
-  let name2 = conn.getName(m.sender)
-
-  // Verifica si el usuario ya está registrado
-  if (user.registered === true) throw `*『 ⚠️ 』Parece que ya estás en mis registros, conejito. Si quieres empezar de nuevo, usa #unreg.*`
-  
-  // Se verifica que 'text' exista y que el formato sea el correcto
-  if (!text || !Reg.test(text)) throw `*『 ⚙️ 』Vaya, parece que te has liado un poco. El formato correcto es:*\n\n#reg *TuNombre.TuEdad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.19*`
-
-  let [_, name, splitter, age] = text.match(Reg)
-
-  // Validaciones de los datos ingresados
-  if (!name) throw '*『 ❌ 』Un nombre es esencial, ¿sabes? No puedo registrar a un fantasma. Inténtalo de nuevo.*'
-  if (!age) throw '*『 ❌ 』Necesito tu edad. No te preocupes, no se lo diré a nadie... a menos que sea divertido.*'
-  if (name.length >= 30) throw '*『 ✨ 』Hey, con calma. Un nombre más corto y directo, por favor. Que sea fácil de recordar.*' 
-
-  age = parseInt(age)
-
-  // Bromas y validaciones adicionales para la edad
-  if (age > 100) throw '*『 😏 』¿En serio? Con esa edad, deberías estar contándome historias de la vieja Eridu, no jugando con esto.*'
-  if (age < 16) throw '*『 🐰 』Un conejito... Asegúrate de que no te metas en líos que no puedas manejar.*'
-
-  // Asignación de datos y recompensas al usuario
-  user.name = name.trim()
-  user.age = age
-  user.regTime = + new Date
-  user.registered = true
-  global.db.data.users[m.sender].dennies += 10000 // Moneda del juego
-  global.db.data.users[m.sender].w_engine_parts += 15 // Materiales de mejora
-  global.db.data.users[m.sender].exp += 500
-  global.db.data.users[m.sender].agent_level += 1
-
-  // Creación de un identificador único para el usuario
-  let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 6)        
-  m.react('🐰') // Reacción de conejo, un guiño a su apodo
-
-  // Mensaje de bienvenida personalizado al estilo de Ellen Joe
-  let regbot = `╭══• ೋ•✧๑🐰๑✧•ೋ •══╮
-*¡BIENVENIDO(A) A LA FAMILIA, CONEJITO!*
-╰══• ೋ•✧๑🐰๑✧•ೋ •══╯
-║_-~-__-~-__-~-__-~-__-~-__-~-__-~-__-~-__-~-__-~-__
-║
-║ ֪ ׂ✨ ̶ ׁ ֪ 𝐍𝐨𝐦𝐛𝐫𝐞 𝐝𝐞 𝐀𝐠𝐞𝐧𝐭𝐞: ${name}
-║ ֪ ׁ⚡  𝇌 𝐄𝐝𝐚𝐝: ${age} *Años*
-║
-║ *Es un placer tenerte a bordo. Espero que*
-║ *estés listo para un poco de acción y diversión.*
-║ *Usa* *.menu* *para ver qué podemos hacer.*
-║
-║
-║ ✨ 𝐏𝐚𝐪𝐮𝐞𝐭𝐞 𝐝𝐞 𝐁𝐢𝐞𝐧𝐯𝐞𝐧𝐢𝐝𝐚:
-║ • 10,000 Dennies 💵
-║ • 15 W-Engine Parts ⚙️
-║ • 500 de Experiencia 📈
-║ • Nivel de Agente +1 🌟
-╚══✦「 Victoria para los Conejos 」`
-
-  // Envío del mensaje con una tarjeta personalizada
-  conn.sendMessage(m.chat, {
-    text: regbot,
-    contextInfo: {
-      externalAdReply: {
-        title: '⊱『✅𝆺𝅥 REGISTRO COMPLETADO 𝆹𝅥✅』⊰',
-        body: 'Victoria para los Conejos', // Lema de su facción
-        thumbnailUrl: icons, // URL de una imagen de Ellen Joe
-        sourceUrl: canales,
-        mediaType: 1,
-        showAdAttribution: true,
-        renderLargerThumbnail: true,
-      }
+    if (user.registered === true) {
+        return m.reply(`*『✦』Ya estás registrado, para volver a registrarte, usa el comando: #unreg*`)
     }
-  }, { quoted: m })
-}
 
-// Comandos para activar el handler
+    if (!Reg.test(text)) return m.reply(`*『✦』El comando ingresado es incorrecto, uselo de la siguiente manera:*\n\n#reg *Nombre.edad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.18*`)
+
+    let [_, name, splitter, age] = text.match(Reg)
+    if (!name) return m.reply('*『✦』No puedes registrarte sin nombre, el nombre es obligatorio. Inténtelo de nuevo.*')
+    if (!age) return m.reply('*『✦』No puedes registrarte sin la edad, la edad es opcional. Inténtelo de nuevo.*')
+    if (name.length >= 100) return m.reply('*『✦』El nombre no debe tener más de 30 caracteres.*')
+
+    age = parseInt(age)
+    if (age > 1000 || age < 5) return m.reply('⏤͟͟͞͞𝑳𝒂 𝑬𝒅𝒂𝒅 𝒊𝒏𝒈𝒓𝒆𝒔𝒂𝒅𝒂 𝑬𝒔 𝒊𝒏𝒄𝒐𝒓𝒓𝒆𝒄𝒕𝒂⏤͟͟͞͞')
+
+    user.name = name.trim()
+    user.age = age
+    user.regTime = +new Date
+    user.registered = true
+    global.db.data.users[m.sender].money += 600
+    global.db.data.users[m.sender].estrellas += 10
+    global.db.data.users[m.sender].exp += 245
+    global.db.data.users[m.sender].joincount += 5    
+
+    let sn = createHash('md5').update(m.sender).digest('hex');
+    let moneda = '💸'
+    let regbot = `
+╭══• ೋ•✧๑♡๑✧•ೋ •══╮
+*¡𝚁𝙴𝙶𝙸𝚂𝚃𝚁𝙾 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙾 𝙴𝚇𝙸𝚃𝙾𝚂𝙾!*
+╰══• ೋ•✧๑♡๑✧•ೋ •══╯
+║
+║ ֪ ׂ⛓️ ̶ 𝐍𝐨𝐦𝐛𝐫𝐞: ${name}
+║ ֪ ׁ🌫️ 𝐄𝐝𝐚𝐝: ${age} años
+║
+║ 𝙶𝚛𝚊𝚌𝚒𝚊𝚜 𝚙𝚘𝚛 𝚛𝚎𝚐𝚒𝚜𝚝𝚛𝚊𝚛𝚝𝚎
+║ 📝 Usa *.menu* para ver comandos
+║
+║ ✨ 𝗥𝗲𝗰𝗼𝗺𝗽𝗲𝗻𝘀𝗮𝘀:
+║ • ${moneda} » 600
+║ • Experiencia » 245 🪙
+║ • Tokens » 10 💸
+╚═══════════════════════
+> 🎈 ¡Gracias por usar Ellen-Joe-Bot!
+`;
+
+    await conn.sendMessage(m.chat, {
+        text: regbot,
+        contextInfo: {
+            externalAdReply: {
+                title: '⊱『✅𝆺𝅥 𝗥𝗘𝗚𝗜𝗦𝗧𝗥𝗔𝗗𝗢(𝗔) 𝆹𝅥✅』⊰',
+                thumbnailUrl: icons,
+                mediaType: 1,
+                body: '𝙼𝚎𝚗𝚞 𝚍𝚒𝚜𝚙𝚘𝚗𝚒𝚋𝚕𝚎 𝚌𝚘𝚗 *.menu*',
+            }
+        }
+    }, { quoted: m });
+
+    // Envío silencioso al canal, solo si el bot es admin
+    let chtxt = `🩰 ɴᥱ𝒘 𝙍𝙐𝘽𝙔 𝙃𝙊𝙎𝙃𝙄𝙉𝙊 𝙐𝙎𝙀𝙍 ꜜ
+˚₊· ➳💎 *𝗨𝘀𝘂𝗮𝗿𝗶𝗼:* ${m.pushName || 'Anónimo'}    
+˚₊· ➳📂 *𝗩𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝗰𝗶𝗼́𝗻:* ${user.name}    
+˚₊· ➳🍰 *𝗘𝗱𝗮𝗱:* ${user.age} años    
+˚₊· ➳⌨️ *𝗥𝗲𝗴𝗶𝘀𝘁𝗿𝗼 𝗜𝗗:*  
+⤷ ${sn}`;
+
+    let channelID = '120363397177582655@newsletter';
+    try {
+        let metadata = await conn.groupMetadata(channelID);
+        let botID = conn.user.jid;
+        let isBotAdmin = metadata.participants?.some(p => p.id === botID && (p.admin === 'admin' || p.admin === 'superadmin'));
+
+        if (isBotAdmin) {
+            await conn.sendMessage(channelID, {
+                text: chtxt,
+                contextInfo: {
+                    externalAdReply: {
+                        title: "꒰🎀꒱ ʀᴇɢɪsᴛʀᴏ ᴄᴏᴍᴘʟᴇᴛᴀᴅᴏ ꒰🌸꒱",
+                        body: '✦⃟ 𝑬𝒏𝒄𝒐𝒏𝒕𝒓𝒂𝒅𝒐… 𝒕𝒆 𝒕𝒆𝒏𝒈𝒐 𝒆𝒏 𝒎𝒊 𝒗𝒊𝒔𝒕𝒂 🌸',
+                        thumbnailUrl: perfil,
+                        sourceUrl: 'https://github.com/Dioneibi-rip/Ruby-Hoshino-Bot',
+                        mediaType: 1,
+                        showAdAttribution: false,
+                        renderLargerThumbnail: false
+                    }
+                }
+            }, { quoted: null });
+        } else {
+            console.log('[❌] El bot no es admin del canal, mensaje no enviado.')
+        }
+    } catch (e) {
+        console.log('⚠️ Error al verificar canal o enviar mensaje:', e.message)
+    }
+};
+
 handler.help = ['reg']
 handler.tags = ['rg']
-handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar'] 
+handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar']
 
 export default handler
