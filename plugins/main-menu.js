@@ -11,7 +11,7 @@ const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 const packname = '˚🄴🄻🄻🄴🄽-🄹🄾🄴-🄱🄾🅃';
 
-// Asumiendo que 'redes' es una variable global o definida en otro lugar. Si no, defínela aquí.
+// Asumiendo que 'redes' es una variable global o definida en otro lugar.
 const redes = 'https://www.example.com'; 
 
 let handler = async (m, { conn, usedPrefix }) => {
@@ -48,7 +48,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     );
   }
 
-  // --- 3. Obtener nombre y hora del usuario (con depuración) ---
+  // --- 3. Obtener nombre y hora del usuario ---
   let nombre;
   try {
     nombre = await conn.getName(m.sender);
@@ -56,26 +56,21 @@ let handler = async (m, { conn, usedPrefix }) => {
     nombre = 'Usuario';
   }
 
-  // --- VERSIÓN FINAL CORREGIDA ---
   let horaUsuario = 'No disponible';
   try {
-    // Solo intentamos obtener la hora si el JID es de un usuario estándar (@s.whatsapp.net).
     if (m.sender.endsWith('@s.whatsapp.net')) {
-      const numeroUsuario = m.sender.split('@')[0]; // Extraemos solo el número.
-      
-      // Añadimos el '+' para asegurar el formato internacional E.164
+      const numeroUsuario = m.sender.split('@')[0];
       const numeroParseado = new PhoneNumber('+' + numeroUsuario);
       
-      // Se corrige el método y la lógica de comprobación
-      if (numeroParseado.isValid()) {
-        const zonaHorariaUsuario = numeroParseado.getTimezone(); // MÉTODO CORRECTO
-        if (zonaHorariaUsuario) { // Se comprueba si se obtuvo una zona horaria
+      // Versión corregida y segura
+      if (numeroParseado && numeroParseado.isValid()) {
+        const zonaHorariaUsuario = numeroParseado.getTimezone();
+        if (zonaHorariaUsuario) {
           horaUsuario = moment().tz(zonaHorariaUsuario).format('h:mm A');
         }
       }
     }
   } catch (e) {
-    // Se mantiene el log de errores por si algo más falla
     console.error("Error al procesar el número de teléfono:", e.message);
   }
 
