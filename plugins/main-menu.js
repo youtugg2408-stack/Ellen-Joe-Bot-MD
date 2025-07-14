@@ -11,9 +11,6 @@ const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 const packname = '˚🄴🄻🄻🄴🄽-🄹🄾🄴-🄱🄾🅃';
 
-// Asumiendo que 'redes' es una variable global o definida en otro lugar.
-const redes = 'https://www.example.com'; 
-
 let handler = async (m, { conn, usedPrefix }) => {
   // --- 1. Lectura de la base de datos de medios ---
   let enlacesMultimedia;
@@ -48,7 +45,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     );
   }
 
-  // --- 3. Obtener nombre y hora del usuario ---
+  // --- 3. Obtener nombre y hora del usuario (con depuración) ---
   let nombre;
   try {
     nombre = await conn.getName(m.sender);
@@ -58,20 +55,24 @@ let handler = async (m, { conn, usedPrefix }) => {
 
   let horaUsuario = 'No disponible';
   try {
-    if (m.sender.endsWith('@s.whatsapp.net')) {
-      const numeroUsuario = m.sender.split('@')[0];
-      const numeroParseado = new PhoneNumber('+' + numeroUsuario);
-      
-      // Versión corregida y segura
-      if (numeroParseado && numeroParseado.isValid()) {
-        const zonaHorariaUsuario = numeroParseado.getTimezone();
-        if (zonaHorariaUsuario) {
-          horaUsuario = moment().tz(zonaHorariaUsuario).format('h:mm A');
-        }
+    const numeroParseado = new PhoneNumber(m.sender);
+    console.log(`[DEBUG] Analizando JID: ${m.sender}`);
+    const esValido = numeroParseado.isValid();
+    console.log(`[DEBUG] ¿Número válido?: ${esValido}`);
+
+    if (esValido) {
+      const zonasHorarias = numeroParseado.getTimezones();
+      console.log(`[DEBUG] Zonas horarias encontradas: ${JSON.stringify(zonasHorarias)}`);
+      if (zonasHorarias && zonasHorarias.length > 0) {
+        const zonaHorariaUsuario = zonasHorarias[0];
+        console.log(`[DEBUG] Usando zona horaria: ${zonaHorariaUsuario}`);
+        horaUsuario = moment().tz(zonaHorariaUsuario).format('h:mm A');
+      } else {
+        console.log('[DEBUG] El número es válido pero no se encontraron zonas horarias.');
       }
     }
   } catch (e) {
-    console.error("Error al procesar el número de teléfono:", e.message);
+    console.error("Error al procesar el número con awesome-phonenumber:", e.message);
   }
 
   // --- 4. Recopilar información y construir el menú ---
