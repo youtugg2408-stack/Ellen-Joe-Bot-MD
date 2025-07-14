@@ -14,7 +14,7 @@ let handler = async function (m, { conn, text, args, usedPrefix, command }) {
         return m.reply(`*『✦』Ya estás registrado, para volver a registrarte, usa el comando: #unreg*`)
     }
 
-    if (!Reg.test(text)) return m.reply(`*『✦』El comando ingresado es incorrecto, uselo de la siguiente manera:*\n\n#reg *Nombre.edad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.18*`)
+    if (!Reg.test(text)) return m.reply(`*『🦈』El comando ingresado es incorrecto, uselo de la siguiente manera:*\n\n#reg *Nombre.edad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.18*`)
 
     let [_, name, splitter, age] = text.match(Reg)
     if (!name) return m.reply('*『✦』No puedes registrarte sin nombre, el nombre es obligatorio. Inténtelo de nuevo.*')
@@ -51,7 +51,7 @@ let handler = async function (m, { conn, text, args, usedPrefix, command }) {
 ║ • Experiencia » 245 🪙
 ║ • Tokens » 10 💸
 ╚═══════════════════════
-> 🎈 ¡Gracias por usar Ellen-Joe-Bot!
+> 『🦈』¡Gracias por usar Ellen-Joe-Bot!
 `;
 
     await conn.sendMessage(m.chat, {
