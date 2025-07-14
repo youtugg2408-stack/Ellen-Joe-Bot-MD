@@ -1,66 +1,77 @@
 import { createHash } from 'crypto'
 
+// Expresión regular para capturar el nombre y la edad del usuario en el formato "Nombre.edad"
 let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
 
-// Define la variable canales con la URL correcta
-const canales = 'https://whatsapp.com/channel/0029VaYh3Zm4dTnQKQ3VLT0h'; // Reemplaza con la URL correcta
+// Define la variable 'canales' con una URL relevante si es necesario, o déjala como está
+const canales = 'https://zenless.hoyoverse.com/en-us/'; // URL oficial de Zenless Zone Zero
 
 let handler = async function (m, { conn, text, usedPrefix, command }) {
   let user = global.db.data.users[m.sender]
   let name2 = conn.getName(m.sender)
 
-  if (user.registered === true) throw `*『✦』Ya estás registrado, para volver a registrarte, usa el comando: #unreg*`
-  if (!Reg.test(text)) throw `*『✦』El comando ingresado es incorrecto, uselo de la siguiente manera:*\n\n#reg *Nombre.edad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.18*`
+  // Verifica si el usuario ya está registrado
+  if (user.registered === true) throw `*『 ⚠️ 』Parece que ya estás en mis registros, conejito. Si quieres empezar de nuevo, usa #unreg.*`
+  
+  // Verifica si el formato del texto es correcto
+  if (!Reg.test(text)) throw `*『 ⚙️ 』Vaya, parece que te has liado un poco. El formato correcto es:*\n\n#reg *TuNombre.TuEdad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.19*`
 
   let [_, name, splitter, age] = text.match(Reg)
 
-  if (!name) throw '*『✦』No puedes registrarte sin nombre, el nombre es obligatorio. Inténtelo de nuevo.*'
-  if (!age) throw '*『✦』No puedes registrarte sin la edad, la edad es opcional. Inténtelo de nuevo.*'
-  if (name.length >= 30) throw '*『✦』El nombre no debe tener más de 30 caracteres.*' 
+  // Validaciones de los datos ingresados
+  if (!name) throw '*『 ❌ 』Un nombre es esencial, ¿sabes? No puedo registrar a un fantasma. Inténtalo de nuevo.*'
+  if (!age) throw '*『 ❌ 』Necesito tu edad. No te preocupes, no se lo diré a nadie... a menos que sea divertido.*'
+  if (name.length >= 30) throw '*『 ✨ 』Hey, con calma. Un nombre más corto y directo, por favor. Que sea fácil de recordar.*' 
 
   age = parseInt(age)
 
-  if (age > 999) throw '*『😏』¡Viejo/a Sabroso/a!*'
-  if (age < 5) throw '*¿𝐃𝐨𝐧𝐝𝐞 𝐞𝐬𝐭𝐚𝐧 𝐭𝐮𝐬 𝐩𝐚𝐩á𝐬?*😂'
+  // Bromas y validaciones adicionales para la edad
+  if (age > 100) throw '*『 😏 』¿En serio? Con esa edad, deberías estar contándome historias de la vieja Eridu, no jugando con esto.*'
+  if (age < 16) throw '*『 🐰 』Un conejito... Asegúrate de que no te metas en líos que no puedas manejar.*'
 
+  // Asignación de datos y recompensas al usuario
   user.name = name.trim()
   user.age = age
   user.regTime = + new Date
   user.registered = true
-  global.db.data.users[m.sender].money += 600
-  global.db.data.users[m.sender].estrellas += 10
-  global.db.data.users[m.sender].exp += 245
-  global.db.data.users[m.sender].joincount += 5
+  global.db.data.users[m.sender].dennies += 10000 // Moneda del juego
+  global.db.data.users[m.sender].w_engine_parts += 15 // Materiales de mejora
+  global.db.data.users[m.sender].exp += 500
+  global.db.data.users[m.sender].agent_level += 1
 
+  // Creación de un identificador único para el usuario
   let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 6)        
-  m.react('📩') 
+  m.react('🐰') // Reacción de conejo, un guiño a su apodo
 
-  let regbot = `╭══• ೋ•✧๑♡๑✧•ೋ •══╮
-*¡𝚁𝙴𝙶𝙸𝚂𝚃𝚁𝙾 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙾 𝙴𝚇𝙸𝚃𝙾𝚂𝙾!*
-╰══• ೋ•✧๑♡๑✧•ೋ •══╯
+  // Mensaje de bienvenida personalizado al estilo de Ellen Joe
+  let regbot = `╭══• ೋ•✧๑🐰๑✧•ೋ •══╮
+*¡BIENVENIDO(A) A LA FAMILIA, CONEJITO!*
+╰══• ೋ•✧๑🐰๑✧•ೋ •══╯
 ║_-~-__-~-__-~-__-~-__-~-__-~-__-~-__-~-__-~-__-~-__
 ║
-║ ֪ ׂ⛓️ ̶ ׁ ֪ 𝐍𝐨𝐦𝐛𝐫𝐞: ${name}
-║ ֪ ׁ🌫️  𝇌 𝐄𝐝𝐚𝐝: ${age} *Años*
+║ ֪ ׂ✨ ̶ ׁ ֪ 𝐍𝐨𝐦𝐛𝐫𝐞 𝐝𝐞 𝐀𝐠𝐞𝐧𝐭𝐞: ${name}
+║ ֪ ׁ⚡  𝇌 𝐄𝐝𝐚𝐝: ${age} *Años*
 ║
-║ *𝙶𝚛𝚊𝚌𝚒𝚜 𝚙𝚘𝚛 𝚛𝚎𝚐𝚒𝚜𝚝𝚛𝚊𝚛𝚝𝚎* 
-║📝 *𝚄𝚝𝚒𝚕𝚒𝚣𝚊* *.menu* *𝚙𝚊𝚛𝚊* *𝚟𝚎𝚛* *𝚎𝚕* *𝚖𝚎𝚗ú* *𝚍𝚎* *𝚌𝚘𝚖𝚊𝚗𝚍𝚘𝚜.*
+║ *Es un placer tenerte a bordo. Espero que*
+║ *estés listo para un poco de acción y diversión.*
+║ *Usa* *.menu* *para ver qué podemos hacer.*
 ║
 ║
-║ ✨ 𝗥𝗲𝗰𝗼𝗺𝗽𝗲𝗻𝘀𝗮𝘀:
-║• 15 Estrellas 🌟
-║• 5 BlackCoins 🪙
-║• 245 Experiencia 💸
-║• 12 Tokens 💰
-╚══✦「꧙꧙꧙꧙꧙꧙꧙꧙꧙꧙꧙꧙」`
+║ ✨ 𝐏𝐚𝐪𝐮𝐞𝐭𝐞 𝐝𝐞 𝐁𝐢𝐞𝐧𝐯𝐞𝐧𝐢𝐝𝐚:
+║ • 10,000 Dennies 💵
+║ • 15 W-Engine Parts ⚙️
+║ • 500 de Experiencia 📈
+║ • Nivel de Agente +1 🌟
+╚══✦「 Victoria para los Conejos 」`
 
+  // Envío del mensaje con una tarjeta personalizada
   conn.sendMessage(m.chat, {
     text: regbot,
     contextInfo: {
       externalAdReply: {
-        title: '⊱『✅𝆺𝅥 𝗥𝗘𝗚𝗜𝗦𝗧𝗥𝗔𝗗𝗢(𝗔) 𝆹𝅥✅』⊰',
-        body: wm,
-        thumbnailUrl: 'https://files.catbox.moe/60u7cp.jpg', 
+        title: '⊱『✅𝆺𝅥 REGISTRO COMPLETADO 𝆹𝅥✅』⊰',
+        body: 'Victoria para los Conejos', // Lema de su facción
+        thumbnailUrl: icons,
         sourceUrl: canales,
         mediaType: 1,
         showAdAttribution: true,
@@ -70,6 +81,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
   }, { quoted: m })
 }
 
+// Comandos para activar el handler
 handler.help = ['reg']
 handler.tags = ['rg']
 handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar'] 
