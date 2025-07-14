@@ -11,6 +11,9 @@ const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 const packname = '˚🄴🄻🄻🄴🄽-🄹🄾🄴-🄱🄾🅃';
 
+// Asumiendo que 'redes' es una variable global o definida en otro lugar. Si no, defínela aquí.
+const redes = 'https://www.example.com'; 
+
 let handler = async (m, { conn, usedPrefix }) => {
   // --- 1. Lectura de la base de datos de medios ---
   let enlacesMultimedia;
@@ -53,22 +56,22 @@ let handler = async (m, { conn, usedPrefix }) => {
     nombre = 'Usuario';
   }
 
+  // --- VERSIÓN FINAL CORREGIDA ---
   let horaUsuario = 'No disponible';
   try {
-    const numeroParseado = new PhoneNumber(m.sender);
-    console.log(`[DEBUG] Analizando JID: ${m.sender}`);
-    const esValido = numeroParseado.isValid();
-    console.log(`[DEBUG] ¿Número válido?: ${esValido}`);
-
-    if (esValido) {
-      const zonasHorarias = numeroParseado.getTimezones();
-      console.log(`[DEBUG] Zonas horarias encontradas: ${JSON.stringify(zonasHorarias)}`);
-      if (zonasHorarias && zonasHorarias.length > 0) {
-        const zonaHorariaUsuario = zonasHorarias[0];
-        console.log(`[DEBUG] Usando zona horaria: ${zonaHorariaUsuario}`);
-        horaUsuario = moment().tz(zonaHorariaUsuario).format('h:mm A');
-      } else {
-        console.log('[DEBUG] El número es válido pero no se encontraron zonas horarias.');
+    // Solo intentamos obtener la hora si el JID es de un usuario estándar (@s.whatsapp.net).
+    if (m.sender.endsWith('@s.whatsapp.net')) {
+      const numeroUsuario = m.sender.split('@')[0]; // Extraemos solo el número.
+      
+      // Añadimos el '+' para asegurar el formato internacional E.164
+      const numeroParseado = new PhoneNumber('+' + numeroUsuario);
+      
+      if (numeroParseado.isValid()) {
+        const zonasHorarias = numeroParseado.getTimezones();
+        if (zonasHorarias && zonasHorarias.length > 0) {
+          const zonaHorariaUsuario = zonasHorarias[0];
+          horaUsuario = moment().tz(zonaHorariaUsuario).format('h:mm A');
+        }
       }
     }
   } catch (e) {
@@ -120,7 +123,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 | 👤 *Usuario:* ${nombre}
 | 🌎 *Hora Santo Domingo:* ${horaSantoDomingo}
 | 🕒 *Tu Hora (Estimada):* ${horaUsuario}
-| 🤖 *Bot:* ${esPrincipal ? 'Principal' : `Sub-Bot | Principal: ${numeroPrincipal}`}
+| 🤖 *Bot:* ${esPrincipal ? 'Principal' : `Sub-Bot | Principal: wa.me/${numeroPrincipal}`}
 | 📦 *Comandos:* ${totalComandos}
 | ⏱️ *Tiempo Activo:* ${tiempoActividad}
 | 👥 *Usuarios Reg:* ${totalRegistros}
