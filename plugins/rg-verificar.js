@@ -4,17 +4,25 @@ import { createHash } from 'crypto'
 let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
 
 // Define la variable 'canales' con una URL relevante si es necesario, o déjala como está
-const canales = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x';
+const canales = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x'; // URL oficial de Zenless Zone Zero
 
-let handler = async function (m, { conn, text, usedPrefix, command }) {
+// Se añade un objeto vacío como valor por defecto {} para evitar el TypeError
+let handler = async function (m, { conn, text, usedPrefix, command } = {}) {
+  // Verificación para asegurar que las dependencias existen antes de usarlas
+  if (!conn || !text || !m) {
+    // Si falta algo esencial, se detiene la ejecución para evitar más errores.
+    // Puedes poner un console.log('Faltan objetos esenciales en el handler de registro.');
+    return;
+  }
+  
   let user = global.db.data.users[m.sender]
   let name2 = conn.getName(m.sender)
 
   // Verifica si el usuario ya está registrado
   if (user.registered === true) throw `*『 ⚠️ 』Parece que ya estás en mis registros, conejito. Si quieres empezar de nuevo, usa #unreg.*`
   
-  // Verifica si el formato del texto es correcto
-  if (!Reg.test(text)) throw `*『 ⚙️ 』Vaya, parece que te has liado un poco. El formato correcto es:*\n\n#reg *TuNombre.TuEdad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.19*`
+  // Se verifica que 'text' exista y que el formato sea el correcto
+  if (!text || !Reg.test(text)) throw `*『 ⚙️ 』Vaya, parece que te has liado un poco. El formato correcto es:*\n\n#reg *TuNombre.TuEdad*\n\n\`\`\`Ejemplo:\`\`\`\n#reg *${name2}.19*`
 
   let [_, name, splitter, age] = text.match(Reg)
 
@@ -71,7 +79,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
       externalAdReply: {
         title: '⊱『✅𝆺𝅥 REGISTRO COMPLETADO 𝆹𝅥✅』⊰',
         body: 'Victoria para los Conejos', // Lema de su facción
-        thumbnailUrl: icons,
+        thumbnailUrl: icons, // URL de una imagen de Ellen Joe
         sourceUrl: canales,
         mediaType: 1,
         showAdAttribution: true,
