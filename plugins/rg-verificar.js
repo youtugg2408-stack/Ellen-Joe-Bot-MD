@@ -4,7 +4,7 @@ import { createHash } from 'crypto'
 let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
 
 // Define la variable 'canales' con una URL relevante si es necesario, o déjala como está
-const canales = 'https://zenless.hoyoverse.com/en-us/'; // URL oficial de Zenless Zone Zero
+const canales = 'https://whatsapp.com/channel/0029VbAuMiNCBtxOKcBfw71x';
 
 let handler = async function (m, { conn, text, usedPrefix, command }) {
   let user = global.db.data.users[m.sender]
