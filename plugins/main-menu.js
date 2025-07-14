@@ -8,7 +8,7 @@ const cooldowns = new Map();
 const ultimoMenuEnviado = new Map();
 
 const newsletterJid = '120363418071540900@newsletter';
-const newsletterName = '*Ellen-Joe-Bot-OFICIAL*';
+const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 const packname = '˚🄴🄻🄻🄴🄽-🄹🄾🄴-🄱🄾🅃';
 
 let handler = async (m, { conn, usedPrefix }) => {
