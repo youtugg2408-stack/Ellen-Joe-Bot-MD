@@ -66,16 +66,17 @@ let handler = async (m, { conn, usedPrefix }) => {
       // Añadimos el '+' para asegurar el formato internacional E.164
       const numeroParseado = new PhoneNumber('+' + numeroUsuario);
       
+      // Se corrige el método y la lógica de comprobación
       if (numeroParseado.isValid()) {
-        const zonasHorarias = numeroParseado.getTimezones();
-        if (zonasHorarias && zonasHorarias.length > 0) {
-          const zonaHorariaUsuario = zonasHorarias[0];
+        const zonaHorariaUsuario = numeroParseado.getTimezone(); // MÉTODO CORRECTO
+        if (zonaHorariaUsuario) { // Se comprueba si se obtuvo una zona horaria
           horaUsuario = moment().tz(zonaHorariaUsuario).format('h:mm A');
         }
       }
     }
   } catch (e) {
-    console.error("Error al procesar el número con awesome-phonenumber:", e.message);
+    // Se mantiene el log de errores por si algo más falla
+    console.error("Error al procesar el número de teléfono:", e.message);
   }
 
   // --- 4. Recopilar información y construir el menú ---
