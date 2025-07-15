@@ -10,12 +10,12 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     const isDebugMode = m.text.includes('-debug on');
 
     try {
-        // --- Obtener Metadatos y Roles ---
+        // --- LÓGICA MOVIDA AQUÍ PARA EVITAR EL CRASH AL INICIAR ---
+        // Se ejecuta solo cuando el comando es llamado, no al cargar el archivo.
         const groupMetadata = await conn.groupMetadata(m.chat);
         const groupAdmins = groupMetadata.participants.filter(p => p.admin).map(p => p.id);
         
-        // --- SOLUCIÓN DEFINITIVA: OBTENER EL ID DEL ESTADO DE AUTENTICACIÓN ---
-        // Esta es la forma más confiable de obtener el JID del bot, ya que viene directamente de la sesión.
+        // Obtenemos el ID del bot desde la sesión. Esta es la forma más confiable.
         const botId = conn.authState.creds.me.id;
         
         const botIsAdmin = groupAdmins.includes(botId);
@@ -73,7 +73,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
     } catch (e) {
         console.error(e);
-        const errorDebug = `*Error Detallado (Debug):*\n\`\`\`${e}\`\`\`
+        const errorDebug = `*Error Detallado (Debug):*\n\`\`\`${e}\`\`\``;
         await conn.reply(m.chat, `❌ Ocurrió un error al ejecutar la acción.\n\n${errorDebug}`, m);
     }
 };
