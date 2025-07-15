@@ -1,12 +1,12 @@
 import { smsg } from './lib/simple.js'
-import { format } from 'util' 
+import { format } from 'util'
 import * as ws from 'ws';
 import { fileURLToPath } from 'url'
 import path, { join } from 'path'
 import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
-import failureHandler from './lib/respuesta.js'; // << AÑADIDO >> Importamos nuestro nuevo manejador de errores
+import failureHandler from './lib/respuesta.js';
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -18,10 +18,10 @@ const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function (
 const normalizeJid = jid => jid?.replace(/[^0-9]/g, '')
 const cleanJid = jid => jid?.split(':')[0] || ''
 
-// << MODIFICADO >> Definimos la función global dfail aquí arriba para que esté disponible en todo el archivo.
+// Definición global y centralizada de la función de error.
 global.dfail = (type, m, conn) => {
     // Llama al manejador de errores externo.
-    // La variable 'global.comando' se asigna más abajo en el código antes de que se llame a fail().
+    // La variable 'global.comando' se asigna más abajo antes de que se llame a fail().
     failureHandler(type, conn, m, global.comando);
 };
 
@@ -205,6 +205,9 @@ export async function handler(chatUpdate) {
             const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
             let _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix
             let match = (_prefix instanceof RegExp ? [[_prefix.exec(m.text), _prefix]] : Array.isArray(_prefix) ? _prefix.map(p => { let re = p instanceof RegExp ? p : new RegExp(str2Regex(p)); return [re.exec(m.text), re] }) : typeof _prefix === 'string' ? [[new RegExp(str2Regex(_prefix)).exec(m.text), new RegExp(str2Regex(_prefix))]] : [[[], new RegExp]]).find(p => p[1])
+            
+            if (!match) continue
+
             if (typeof plugin.before === 'function') {
                 if (await plugin.before.call(this, m, { match, conn: this, participants, groupMetadata, user, bot, isROwner, isOwner, isRAdmin, isAdmin, isBotAdmin, isPrems, chatUpdate, __dirname: ___dirname, __filename }))
                     continue
@@ -220,7 +223,7 @@ export async function handler(chatUpdate) {
                 let fail = plugin.fail || global.dfail
                 let isAccept = plugin.command instanceof RegExp ? plugin.command.test(command) : Array.isArray(plugin.command) ? plugin.command.some(cmd => cmd instanceof RegExp ? cmd.test(command) : cmd === command) : typeof plugin.command === 'string' ? plugin.command === command : false
 
-                global.comando = command // <<== Esta línea es importante, asigna el comando para que dfail pueda usarlo.
+                global.comando = command
 
                 if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) || (m.id.startsWith('B24E') && m.id.length === 20))) return
 
@@ -356,15 +359,17 @@ export async function handler(chatUpdate) {
         let settingsREAD = global.db.data.settings[this.user.jid] || {}  
         if (opts['autoread']) await this.readMessages([m.key])
 
-        if (db.data.chats[m.chat].reaction && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi)) {
-            let emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"])
-            if (!m.fromMe) return this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
+        // Bloque de reacciones corregido
+        const reactionRegex = /(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi;
+        if (db.data.chats[m.chat]?.reaction && m.text.match(reactionRegex)) {
+            const emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"]);
+            if (!m.fromMe) {
+                this.sendMessage(m.chat, { react: { text: emot, key: m.key } });
+            }
         }
-        function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]}
+        function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]; }
     }
 }
-
-// << MODIFICADO >> La antigua función dfail fue eliminada de aquí y movida/reemplazada al principio del archivo.
 
 const file = global.__filename(import.meta.url, true);
 
