@@ -286,14 +286,14 @@ export async function handler(chatUpdate) {
                 try {
                     await plugin.call(this, m, extra)
                     if (!isPrems) m.coin = m.coin || plugin.coin || false
-                } catch (e) {
-                    m.error = e
-                    console.error(e)
-                    if (e) {
-                        let text = format(e)
-                        for (let key of Object.values(global.APIKeys))
-                            text = text.replace(new RegExp(key, 'g'), 'Administrador')
-                        m.reply(text)
+               } catch (e) {
+    m.error = e
+    console.error(e)
+    if (e) {
+        let text = format(e)
+        for (let key of Object.values(global.APIKeys))
+            text = text.replace(new RegExp(key, 'g'), 'Administrador')
+                       m.reply(text)
                     }
                 } finally {
                     if (typeof plugin.after === 'function') {
