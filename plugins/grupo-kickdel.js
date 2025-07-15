@@ -4,7 +4,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
         return conn.reply(m.chat, `🛡️ Este comando solo se puede usar en grupos.`, m);
     }
     if (!m.quoted) {
-        return conn.reply(m.chat, `🛡️ Debes citar el mensaje del usuario.\n\n*Ejemplo:*\n${usedPrefix + command}`, m);
+        return conn.reply(m.chat, `🛡️ Debes citar el mensaje de un usuario para usar este comando.\n\n*Ejemplo:*\n${usedPrefix + command}`, m);
     }
 
     const isDebugMode = m.text.includes('-debug on');
@@ -12,34 +12,26 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     try {
         // --- Obtener Metadatos y Roles ---
         const groupMetadata = await conn.groupMetadata(m.chat);
-        const groupParticipants = groupMetadata.participants;
-        const groupAdmins = groupParticipants.filter(p => p.admin).map(p => p.id);
+        const groupAdmins = groupMetadata.participants.filter(p => p.admin).map(p => p.id);
         
-        // --- LÓGICA DE DOBLE VERIFICACIÓN DE ID ---
-        // 1. ID estándar del bot (ej: 52...@s.whatsapp.net)
-        const standardBotId = conn.user.id || conn.user.jid;
+        // --- SOLUCIÓN DEFINITIVA: OBTENER EL ID DEL ESTADO DE AUTENTICACIÓN ---
+        // Esta es la forma más confiable de obtener el JID del bot, ya que viene directamente de la sesión.
+        const botId = conn.authState.creds.me.id;
         
-        // 2. ID específico del grupo (puede ser @lid o el mismo estándar)
-        const botParticipant = groupParticipants.find(p => p.id.startsWith(standardBotId.split(':')[0]));
-        const groupSpecificBotId = botParticipant ? botParticipant.id : null;
-
-        // 3. Comprobación final: ¿Alguno de los dos IDs es admin?
-        const botIsAdmin = groupAdmins.includes(standardBotId) || (groupSpecificBotId && groupAdmins.includes(groupSpecificBotId));
+        const botIsAdmin = groupAdmins.includes(botId);
         const userIsAdmin = groupAdmins.includes(m.sender);
 
         if (isDebugMode) {
             const debugMessage = `*--- 🐞 MODO DEBUG ACTIVADO 🐞 ---*
 
-*🔍 Doble Verificación de ID del Bot:*
-- *ID Estándar (@s.whatsapp.net):* \`${standardBotId}\`
-- *ID del Grupo (@lid):* \`${groupSpecificBotId || 'No detectado'}\`
+*🔍 Verificación de ID del Bot (Método AuthState):*
+- *ID del Bot (desde credenciales):* \`${botId}\`
 
 *🔑 Verificación de Permisos:*
-- *¿ID Estándar es Admin?:* ${groupAdmins.includes(standardBotId) ? '✅' : '❌'}
-- *¿ID del Grupo es Admin?:* ${groupSpecificBotId && groupAdmins.includes(groupSpecificBotId) ? '✅' : '❌'}
-- *Resultado Final (Bot es Admin):* ${botIsAdmin ? '✅ Sí' : '❌ No'}
+- *¿El Bot es Admin?:* ${botIsAdmin ? '✅ Sí' : '❌ No'}
+- *¿El Usuario es Admin?:* ${userIsAdmin ? '✅ Sí' : '❌ No'}
 
-*📋 Admins Detectados:*
+*📋 Admins Detectados en el Grupo:*
 \`\`\`${JSON.stringify(groupAdmins, null, 2)}\`\`\`
 ----------------------------------`;
             await conn.reply(m.chat, debugMessage, m);
@@ -59,8 +51,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
         const ownerGroup = groupMetadata.owner || '';
         const ownerBot = global.owner[0][0] + '@s.whatsapp.net';
 
-        // Comprobamos contra ambos posibles IDs del bot para evitar auto-expulsión
-        if (targetUser === standardBotId || (groupSpecificBotId && targetUser === groupSpecificBotId)) {
+        if (targetUser === botId) {
             return conn.reply(m.chat, `😂 No me puedo auto-expulsar.`, m);
         }
         if (targetUser === ownerGroup) {
@@ -82,7 +73,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
     } catch (e) {
         console.error(e);
-        const errorDebug = `*Error Detallado (Debug):*\n\`\`\`${e}\`\`\``;
+        const errorDebug = `*Error Detallado (Debug):*\n\`\`\`${e}\`\`\`
         await conn.reply(m.chat, `❌ Ocurrió un error al ejecutar la acción.\n\n${errorDebug}`, m);
     }
 };
