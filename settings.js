@@ -45,6 +45,24 @@ global.EllenJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
+global.fkontak = {
+	key: {
+		participant: '0@s.whatsapp.net',
+		remoteJid: 'status@broadcast'
+	},
+	message: {
+		contactMessage: {
+			displayName: `Ellen-Joe Bot`,
+			vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;Ellen-Joe Bot;;;\nFN:Ellen-Joe Bot\nitem1.TEL;waid=1234567890:1234567890\nitem1.X-ABLabel:Bot\nEND:VCARD`
+		}
+	}
+};
+
+// Define APIKeys como un objeto vacío para evitar el segundo error.
+// Esto es necesario aunque no uses API keys.
+global.APIKeys = {};
+//*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
+
 global.packname = '✦⃟⛧┋ ➪ _ELLEN JOE BOT_ 🌸┋⃟✧'
 global.botname = '🕊️⃟⋆≛⃝  𝐄𝐥𝐥𝐞𝐧 𝐉𝐨𝐞 𝐁𝐨𝐭⃛ 🔥⃝ℓє'
 global.wm = '‧˚꒰🍷꒱ ፝͜⁞E͢l͢l͢e͢n͢-J͢o͢e͢-B͢o͢t͢-M͢D͢✰⃔⃝🦋'
