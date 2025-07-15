@@ -5,6 +5,7 @@ import axios from 'axios';
 
 // --- Constantes y Configuración ---
 const SIZE_LIMIT_MB = 100;
+const MIN_AUDIO_SIZE_BYTES = 50000; // Umbral para detectar audios corruptos/vacíos (50 KB)
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 
@@ -51,15 +52,36 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     const mode = args[0].toLowerCase();
     await m.react("📥");
 
-    const sendMediaFile = async (downloadUrl, title) => {
-      if (mode === "audio") {
-        await conn.sendMessage(m.chat, {
-          audio: { url: downloadUrl },
-          mimetype: "audio/mpeg",
-          fileName: `${title}.mp3`,
-        }, { quoted: m });
-        await m.react("🎧");
-      } else {
+    /**
+     * Envía un archivo multimedia y verifica su integridad antes de enviarlo.
+     * @param {string} downloadUrl - La URL del archivo a descargar.
+     * @param {string} title - El título del archivo.
+     * @param {'audio'|'video'} currentMode - El modo de descarga actual.
+     */
+    const sendMediaFile = async (downloadUrl, title, currentMode) => {
+      // --- NUEVA VERIFICACIÓN PARA AUDIO ---
+      if (currentMode === "audio") {
+        try {
+          const headRes = await axios.head(downloadUrl);
+          const fileSize = parseInt(headRes.headers['content-length'] || "0");
+          
+          if (fileSize < MIN_AUDIO_SIZE_BYTES) {
+            console.log(`Fallo detectado: El tamaño del audio (${fileSize} bytes) es menor al umbral de ${MIN_AUDIO_SIZE_BYTES} bytes.`);
+            // Lanzar un error para ser capturado y activar el sistema de respaldo.
+            throw new Error('Audio de 0 segundos o corrupto detectado.');
+          }
+
+          await conn.sendMessage(m.chat, {
+            audio: { url: downloadUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`,
+          }, { quoted: m });
+          await m.react("🎧");
+        } catch (error) {
+           // Si axios.head falla o el tamaño es muy pequeño, se propaga el error.
+           throw error;
+        }
+      } else { // Lógica existente para video
         const headRes = await axios.head(downloadUrl);
         const fileSize = parseInt(headRes.headers['content-length'] || "0") / (1024 * 1024);
         const asDocument = fileSize > SIZE_LIMIT_MB;
@@ -77,7 +99,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
     const urlToDownload = isInputUrl ? queryOrUrl : video.url;
 
-    // --- LÓGICA DE DESCARGA ---
+    // --- LÓGICA DE DESCARGA MEJORADA ---
 
     // Nivel 1: Intento con la API Principal
     try {
@@ -87,26 +109,29 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
       const res = await fetch(dlApi);
       const json = await res.json();
       if (json.status === 200 && json.result?.download?.url) {
-        console.log("Éxito con API Principal.");
-        await sendMediaFile(json.result.download.url, json.result.metadata.title || video.title);
-        return;
+        console.log("Éxito con API Principal. Verificando integridad del archivo...");
+        await sendMediaFile(json.result.download.url, json.result.metadata.title || video.title, mode);
+        return; // Termina si todo fue exitoso
       }
       throw new Error("API Principal no devolvió URL válida.");
     } catch (e) {
-      console.log(`Fallo API Principal: ${e.message}. Pasando al protocolo de respaldo.`);
+      console.log(`Fallo Protocolo 1: ${e.message}. Pasando al protocolo de respaldo.`);
+      // Notificar al usuario que se intentará un respaldo.
+      await conn.reply(m.chat, `🦈 El primer método de extracción falló. Intentando protocolo de respaldo...`, m);
 
       // Nivel 2: Intento con el Protocolo de Respaldo Final (ogmp3)
       try {
         console.log("Protocolo 2: Respaldo final (ogmp3)");
         const downloadResult = await ogmp3.download(urlToDownload, null, mode);
         if (downloadResult.status && downloadResult.result?.download) {
-          console.log("Éxito con el respaldo (ogmp3).");
-          await sendMediaFile(downloadResult.result.download, downloadResult.result.title);
-          return;
+          console.log("Éxito con el respaldo (ogmp3). Verificando integridad del archivo...");
+          await sendMediaFile(downloadResult.result.download, downloadResult.result.title, mode);
+          return; // Termina si el respaldo fue exitoso
         }
         throw new Error("El respaldo (ogmp3) también falló.");
       } catch (e2) {
-        console.error(`Todos los protocolos fallaron: ${e2.message}`);
+        console.error(`Error fatal: Todos los protocolos de descarga fallaron. Error final: ${e2.message}`);
+        await conn.reply(m.chat, `🦈 *Misión Abortada, ${name}.* Todos los protocolos de extracción fallaron. El objetivo podría estar protegido o ser inaccesible.`, m);
         await m.react("❌");
       }
     }
