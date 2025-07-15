@@ -1,25 +1,46 @@
 let handler = async (m, { conn, usedPrefix, command }) => {
-    // --- Verificación Interna #1: Uso en Grupo ---
-    // Esta comprobación reemplaza a `handler.group = true`
+    // --- Verificación Interna #1: Uso en Grupo y Mensaje Citado ---
     if (!m.isGroup) {
         return conn.reply(m.chat, `🛡️ Este comando solo se puede usar en grupos.`, m);
     }
-    
-    // Verificación de objetivo (mensaje citado)
     if (!m.quoted) {
         return conn.reply(m.chat, `🛡️ Debes citar el mensaje del usuario que deseas expulsar y eliminar.\n\n*Ejemplo:*\n${usedPrefix + command}`, m);
     }
+
+    // --- Activación del Modo Debug ---
+    // Comprueba si el texto del comando incluye el flag '-debug on'
+    const isDebugMode = m.text.includes('-debug on');
 
     try {
         // --- Obtener Metadatos y Roles ---
         const groupMetadata = await conn.groupMetadata(m.chat);
         const groupAdmins = groupMetadata.participants.filter(p => p.admin).map(p => p.id);
         
-        // --- Verificación Interna #2: Permisos de Administrador ---
-        // Estas comprobaciones reemplazan a `handler.botAdmin = true` y `handler.admin = true`
-        const botIsAdmin = groupAdmins.includes(conn.user.jid);
+        // Usamos conn.user.id que es más consistente.
+        const botId = conn.user.id || conn.user.jid; 
+        const botIsAdmin = groupAdmins.includes(botId);
         const userIsAdmin = groupAdmins.includes(m.sender);
 
+        // --- Si el Modo Debug está activado, envía toda la información al chat ---
+        if (isDebugMode) {
+            const debugMessage = `*--- 🐞 MODO DEBUG ACTIVADO 🐞 ---*
+
+*ℹ️ Información General:*
+- *ID del Bot:* \`${botId}\`
+- *ID del Usuario (Sender):* \`${m.sender}\`
+- *ID del Grupo:* \`${m.chat}\`
+
+*🔑 Verificación de Permisos:*
+- *¿El Bot es Admin?:* ${botIsAdmin ? '✅ Sí' : '❌ No'}
+- *¿El Usuario es Admin?:* ${userIsAdmin ? '✅ Sí' : '❌ No'}
+
+*📋 Lista Completa de Admins Detectados:*
+\`\`\`${JSON.stringify(groupAdmins, null, 2)}\`\`\`
+----------------------------------`;
+            await conn.reply(m.chat, debugMessage, m);
+        }
+
+        // --- Verificaciones de Permisos (se ejecutan siempre) ---
         if (!botIsAdmin) {
             return conn.reply(m.chat, `❌ El bot necesita ser administrador para usar este comando.`, m);
         }
@@ -27,15 +48,13 @@ let handler = async (m, { conn, usedPrefix, command }) => {
             return conn.reply(m.chat, `❌ Solo los administradores pueden usar este comando.`, m);
         }
 
-        // --- Identificar al Usuario Objetivo ---
+        // --- Identificar y verificar al Usuario Objetivo ---
         let targetUser = m.quoted.sender;
         const targetIsAdmin = groupAdmins.includes(targetUser);
-
-        // --- Comprobaciones de Seguridad ---
         const ownerGroup = groupMetadata.owner || '';
         const ownerBot = global.owner[0][0] + '@s.whatsapp.net';
 
-        if (targetUser === conn.user.jid) {
+        if (targetUser === botId) {
             return conn.reply(m.chat, `😂 No me puedo auto-expulsar.`, m);
         }
         if (targetUser === ownerGroup) {
@@ -51,21 +70,12 @@ let handler = async (m, { conn, usedPrefix, command }) => {
         // --- Ejecutar Acciones (Eliminar y Expulsar) ---
         const userMention = `@${targetUser.split('@')[0]}`;
         
-        // 1. Eliminar el mensaje citado
         await conn.sendMessage(m.chat, { delete: m.quoted.vM.key });
-
-        // 2. Expulsar al usuario
         await conn.groupParticipantsUpdate(m.chat, [targetUser], 'remove');
-
-        // 3. Mensaje de confirmación
-        await conn.reply(m.chat, `✅ El mensaje de ${userMention} fue eliminado y el usuario fue expulsado del grupo.`, m, { mentions: [targetUser] });
+        await conn.reply(m.chat, `✅ ¡Hecho! El mensaje de ${userMention} fue eliminado y el usuario fue expulsado.`, m, { mentions: [targetUser] });
 
     } catch (e) {
-        // --- Manejo de Errores con Debug ---
-        // Se registra el error completo en la consola del servidor/PC
         console.error(e);
-        
-        // Se envía un mensaje de error detallado al chat para facilitar la depuración
         const errorDebug = `*Error Detallado (Debug):*\n\`\`\`${e}\`\`\``;
         await conn.reply(m.chat, `❌ Ocurrió un error al ejecutar la acción.\n\n${errorDebug}`, m);
     }
@@ -74,10 +84,5 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 handler.help = ['kickdel'];
 handler.tags = ['grupo'];
 handler.command = ['kickdel'];
-
-// Se han eliminado las siguientes propiedades para que el comando use su propio sistema de verificación:
-// handler.group = true; 
-// handler.admin = true;
-// handler.botAdmin = true;
 
 export default handler;
