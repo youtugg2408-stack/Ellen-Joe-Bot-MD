@@ -305,14 +305,6 @@ conn.ev.off('creds.update', conn.credsUpdate)
 }
 
 conn.handler = handler.handler.bind(global.conn)
-  // Escuchar comandos reenviados desde botones (respuestas.js)
-conn.on('handler:command', async (fakeMessage) => {
-  try {
-    await handler.handler.call(conn, { messages: [fakeMessage] })
-  } catch (err) {
-    console.error("❌ Error al ejecutar comando desde botón:", err)
-  }
-});
 conn.connectionUpdate = connectionUpdate.bind(global.conn)
 conn.credsUpdate = saveCreds.bind(global.conn, true)
 
