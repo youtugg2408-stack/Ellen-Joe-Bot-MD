@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import fetch from 'node-fetch';
+import fetch from 'node-fetch'; // Keep this for now, but we'll use axios for JSON fetching
 import moment from 'moment-timezone';
 import PhoneNumber from 'awesome-phonenumber';
+import axios from 'axios'; // Import axios for fetching remote JSON
 
 const cooldowns = new Map();
 const ultimoMenuEnviado = new Map();
@@ -10,6 +11,11 @@ const ultimoMenuEnviado = new Map();
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 const packname = '˚🄴🄻🄻🄴🄽-🄹🄾🄴-🄱🄾🅃';
+
+// --- Global variable for repository info (customize this!) ---
+const GITHUB_REPO_OWNER = 'nevi-dev';
+const GITHUB_REPO_NAME = 'Ellen-Joe-Bot-MD';
+const GITHUB_BRANCH = 'main';
 
 let handler = async (m, { conn, usedPrefix }) => {
   // --- 1. Lectura de la base de datos de medios ---
@@ -56,19 +62,19 @@ let handler = async (m, { conn, usedPrefix }) => {
   let horaUsuario = 'No disponible';
   try {
     const numeroParseado = new PhoneNumber(m.sender);
-    console.log(`[DEBUG] Analizando JID: ${m.sender}`);
+    // console.log(`[DEBUG] Analizando JID: ${m.sender}`); // Keep or remove debug logs as needed
     const esValido = numeroParseado.isValid();
-    console.log(`[DEBUG] ¿Número válido?: ${esValido}`);
+    // console.log(`[DEBUG] ¿Número válido?: ${esValido}`);
 
     if (esValido) {
       const zonasHorarias = numeroParseado.getTimezones();
-      console.log(`[DEBUG] Zonas horarias encontradas: ${JSON.stringify(zonasHorarias)}`);
+      // console.log(`[DEBUG] Zonas horarias encontradas: ${JSON.stringify(zonasHorarias)}`);
       if (zonasHorarias && zonasHorarias.length > 0) {
         const zonaHorariaUsuario = zonasHorarias[0];
-        console.log(`[DEBUG] Usando zona horaria: ${zonaHorariaUsuario}`);
+        // console.log(`[DEBUG] Usando zona horaria: ${zonaHorariaUsuario}`);
         horaUsuario = moment().tz(zonaHorariaUsuario).format('h:mm A');
       } else {
-        console.log('[DEBUG] El número es válido pero no se encontraron zonas horarias.');
+        // console.log('[DEBUG] El número es válido pero no se encontraron zonas horarias.');
       }
     }
   } catch (e) {
@@ -115,11 +121,55 @@ let handler = async (m, { conn, usedPrefix }) => {
     return `[${emoji} ${tag.toUpperCase()}]\n` + cmds.map(cmd => `> ${cmd}`).join('\n');
   }).join('\n\n');
 
+  // --- Version Check Logic ---
+  let localVersion = 'N/A';
+  let serverVersion = 'N/A';
+  let updateStatus = 'Desconocido';
+
+  try {
+    // Get local version from package.json
+    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const packageJsonRaw = fs.readFileSync(packageJsonPath, 'utf8');
+    const packageJson = JSON.parse(packageJsonRaw);
+    localVersion = packageJson.version || 'N/A';
+  } catch (error) {
+    console.error("Error al leer la versión local de package.json:", error.message);
+    localVersion = 'Error';
+  }
+
+  try {
+    // Get server version from GitHub
+    const githubPackageJsonUrl = `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${GITHUB_BRANCH}/package.json`;
+    const response = await axios.get(githubPackageJsonUrl);
+    const githubPackageJson = response.data;
+    serverVersion = githubPackageJson.version || 'N/A';
+
+    if (localVersion !== 'N/A' && serverVersion !== 'N/A') {
+      if (localVersion === serverVersion) {
+        updateStatus = '✅ En última versión';
+      } else {
+        updateStatus = `⚠️ Actualización disponible. Actualiza con *${usedPrefix}update*`;
+      }
+    }
+  } catch (error) {
+    console.error("Error al obtener la versión del servidor de GitHub:", error.message);
+    serverVersion = 'Error';
+    updateStatus = '❌ No se pudo verificar la actualización';
+  }
+  // --- End Version Check Logic ---
+
+
   const encabezado = `
 🦈 |--- *Ellen-Joe-Bot | MODO TIBURÓN* ---| 🦈
 | 👤 *Usuario:* ${nombre}
 | 🌎 *Hora Santo Domingo:* ${horaSantoDomingo}
 | 🕒 *Tu Hora (Estimada):* ${horaUsuario}
+|-------------------------------------------|
+| 🚀 *VERSION DEL BOT*
+| ➡️ *Local:* ${localVersion}
+| ➡️ *Servidor:* ${serverVersion}
+| 📊 *Estado:* ${updateStatus}
+|-------------------------------------------|
 | 🤖 *Bot:* ${esPrincipal ? 'Principal' : `Sub-Bot | Principal: wa.me/${numeroPrincipal}`}
 | 📦 *Comandos:* ${totalComandos}
 | ⏱️ *Tiempo Activo:* ${tiempoActividad}
@@ -143,7 +193,7 @@ let handler = async (m, { conn, usedPrefix }) => {
       title: packname,
       body: '🦈 Menú de Comandos | Ellen-Joe-Bot 🦈',
       thumbnailUrl: miniaturaRandom,
-      sourceUrl: redes,
+      sourceUrl: redes, // Make sure 'redes' is defined elsewhere in your global scope or file
       mediaType: 1,
       renderLargerThumbnail: false
     }
