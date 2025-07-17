@@ -63,7 +63,7 @@ global.fkontak = {
 global.APIKeys = {};
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.packname = '✦⃟⛧┋ ➪ _ELLEN JOE BOT_ 🌸┋⃟✧'
+global.packname = '🦈⟶꯭̽𝑬𝒍𝒍𝒆𝒏 ꯭𝑱𝒐𝒆͙𝆭͢͟⎯̽―̥ 𝑺𝒉𝒂𝒓𝒌 𝑸𝒖𝒆𝒆𝒏'
 global.botname = '🕊️⃟⋆≛⃝  𝐄𝐥𝐥𝐞𝐧 𝐉𝐨𝐞 𝐁𝐨𝐭⃛ 🔥⃝ℓє'
 global.wm = '‧˚꒰🍷꒱ ፝͜⁞E͢l͢l͢e͢n͢-J͢o͢e͢-B͢o͢t͢-M͢D͢✰⃔⃝🦋'
 global.author = 'Made By 𐔌nevi-dev ͡꒱ ۫'
