@@ -67,7 +67,7 @@ global.packname = '🦈⟶꯭̽𝑬𝒍𝒍𝒆𝒏 ꯭𝑱𝒐𝒆͙𝆭͢͟⎯
 global.botname = '⏤͟͟͞͞⸙ְ̻࠭🦈ᩙ 𝙀𝙡𝙡𝙚𝙣 𝙅𝙤𝙚 𝘽𝙤𝙩 𝙈𝘿 𑂘⃘۪〬🫐ᩙ⸙ְ̻࠭'
 global.wm = '🌹⟶꯭̽𝐄𝐥𝐥𝐞᪱͢𝐧 ͞ ̵𝆭⎯꯭̽𝐉𝐨࡙ͥ͞𝐞ͣ͟ 𝐁𝐨࡙ͫ𝐭꯭͠⎯̽―̥ 𝐌𝐃 🌹'
 global.author = '𐔌 𝗡𝗲𝘃𝗶-𝗗𝗲𝘃 ❝ 𝗠𝗮𝗱𝗲 𝗪𝗶𝘁𝗵 𝗟𝗼𝘃𝗲 ❞ 𓆩 ͡꒱'
-global.dev = '⌬ Modified by: nevi-dev ⚙️💻 '
+global.dev = '⚙️ ⌬ 𝙲𝚞𝚜𝚝𝚘𝚖 𝙼𝚘𝚍𝚜 𝙱𝚢 𐔌𝚗𝚎𝚟𝚒-𝚍𝚎𝚟 💻🛠️'
 global.textbot = '⏤͟͞ू⃪ 𝑬𝒍𝒍𝒆𝒏-𝑱𝒐𝒆-𝑩𝒐𝒕🌸⃝𖤐 • 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗕𝘆 ⁿᵉᵛⁱ⁻ᵈᵉᵛ'
 global.etiqueta = 'ˑ 𓈒 𐔌 n͙e͙v͙i͙-d͙e͙v͙ ͡꒱ ۫'
 
