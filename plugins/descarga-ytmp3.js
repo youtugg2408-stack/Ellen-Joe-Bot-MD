@@ -22,8 +22,8 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
     externalAdReply: {
       title: 'Ellen Joe: Pista localizada. 🦈', // Título actualizado
       body: `Procesando solicitud para el/la Proxy ${name}...`, // Cuerpo actualizado
-      thumbnail: icons, // Asegúrate de que 'icons' y 'redes' estén definidos globalmente o pasados
-      sourceUrl: redes,
+      thumbnail: global.icono, // Asegúrate de que 'icons' y 'redes' estén definidos globalmente o pasados
+      sourceUrl: global.redes,
       mediaType: 1,
       renderLargerThumbnail: false
     }
