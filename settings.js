@@ -65,7 +65,7 @@ global.APIKeys = {};
 
 global.packname = '🦈⟶꯭̽𝑬𝒍𝒍𝒆𝒏 ꯭𝑱𝒐𝒆͙𝆭͢͟⎯̽―̥ 𝑺𝒉𝒂𝒓𝒌 𝑸𝒖𝒆𝒆𝒏'
 global.botname = '⏤͟͟͞͞⸙ְ̻࠭🦈ᩙ 𝙀𝙡𝙡𝙚𝙣 𝙅𝙤𝙚 𝘽𝙤𝙩 𝙈𝘿 𑂘⃘۪〬🫐ᩙ⸙ְ̻࠭'
-global.wm = '‧˚꒰🍷꒱ ፝͜⁞E͢l͢l͢e͢n͢-J͢o͢e͢-B͢o͢t͢-M͢D͢✰⃔⃝🦋'
+global.wm = '🌹⟶꯭̽𝐄𝐥𝐥𝐞᪱͢𝐧 ͞ ̵𝆭⎯꯭̽𝐉𝐨࡙ͥ͞𝐞ͣ͟ 𝐁𝐨࡙ͫ𝐭꯭͠⎯̽―̥ 𝐌𝐃 🌹'
 global.author = 'Made By 𐔌nevi-dev ͡꒱ ۫'
 global.dev = '⌬ Modified by: nevi-dev ⚙️💻 '
 global.textbot = '⏤͟͞ू⃪ 𝑬𝒍𝒍𝒆𝒏-𝑱𝒐𝒆-𝑩𝒐𝒕🌸⃝𖤐 • 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗕𝘆 ⁿᵉᵛⁱ⁻ᵈᵉᵛ'
