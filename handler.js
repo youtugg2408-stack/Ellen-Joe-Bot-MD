@@ -387,3 +387,5 @@ watchFile(file, async () => {
         }
     }
 });
+
+export default { handler }
