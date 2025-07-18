@@ -305,6 +305,14 @@ conn.ev.off('creds.update', conn.credsUpdate)
 }
 
 conn.handler = handler.handler.bind(global.conn)
+
+conn.on('handler:command', async (fakeMessage) => {
+  try {
+    await handler.handler.call(conn, { messages: [fakeMessage] })
+  } catch (err) {
+    console.error("❌ Error al ejecutar comando desde botón:", err)
+  }
+})
 conn.connectionUpdate = connectionUpdate.bind(global.conn)
 conn.credsUpdate = saveCreds.bind(global.conn, true)
 
@@ -318,15 +326,6 @@ const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('
 }
 
 conn.ev.on('messages.upsert', conn.handler)
-conn.handler = handler.handler.bind(conn)
-
-conn.on('handler:command', async (fakeMessage) => {
-  try {
-    await handler.handler.call(conn, { messages: [fakeMessage] })
-  } catch (err) {
-    console.error("❌ Error al ejecutar comando desde botón:", err)
-  }
-})
 conn.ev.on('connection.update', conn.connectionUpdate)
 conn.ev.on('creds.update', conn.credsUpdate)
 isInit = false
