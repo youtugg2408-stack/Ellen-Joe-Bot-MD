@@ -7,13 +7,11 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 
-// --- Constantes y Configuración de Transmisión (Estilo Ellen Joe) ---
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏ𝐄\'s 𝐒ervice';
 
 const searchAnime = async (query) => {
     const url = `https://tioanime.com/directorio?q=${encodeURIComponent(query)}`;
-
     try {
         const response = await axios.get(url);
         const html = response.data;
@@ -24,25 +22,24 @@ const searchAnime = async (query) => {
             const name = $(element).find('h3.title').text().trim();
             const id = $(element).find('a').attr('href').split('/').pop();
             const image = $(element).find('img').attr('src');
-            const animeUrl = `https://tioanime.com${$(element).find('a').attr('href')}`; 
-
+            const animeUrl = `https://tioanime.com${$(element).find('a').attr('href')}`;
             results.push({
                 name,
                 id,
                 image: `https://tioanime.com${image}`,
-                url: animeUrl, 
+                url: animeUrl,
             });
         });
 
         return results;
     } catch (error) {
         console.error('Error searching for anime:', error.message);
-        return { error: 'Failed to retrieve results. The target might be offline or the query is invalid.' };
+        return { error: 'No se pudo recuperar resultados. TioAnime podría estar caído o la búsqueda es inválida.' };
     }
 };
 
 let handler = async (m, { conn, command, args, text, usedPrefix }) => {
-    const name = conn.getName(m.sender); // Identifying the Proxy
+    const name = conn.getName(m.sender);
 
     const contextInfo = {
         mentionedJid: [m.sender],
@@ -55,11 +52,11 @@ let handler = async (m, { conn, command, args, text, usedPrefix }) => {
         },
         externalAdReply: {
             title: 'Ellen Joe: Pista localizada. 🦈',
-            body: `Processing request for Proxy ${name}...`,
-            thumbnail: icons, // Ensure 'icons' and 'redes' are globally defined
-            sourceUrl: redes,
+            body: `Procesando solicitud para Proxy ${name}...`,
+            thumbnailUrl: 'https://i.imgur.com/Uw6IGg4.jpeg',
+            sourceUrl: 'https://tioanime.com',
             mediaType: 1,
-            renderLargerThumbnail: false
+            renderLargerThumbnail: true
         }
     };
 
@@ -67,53 +64,55 @@ let handler = async (m, { conn, command, args, text, usedPrefix }) => {
         return conn.reply(m.chat, `🦈 *Rastro frío, Proxy ${name}.* Necesito la designación del anime para iniciar el barrido.`, m, { contextInfo, quoted: m });
     }
 
-    m.react('🔄'); // Reaction for processing
-    conn.reply(m.chat, `🔄 *Iniciando protocolo de barrido de anime, Proxy ${name}.* Aguarda, la carga de datos está siendo procesada.`, m, { contextInfo, quoted: m });
+    m.react('🔄');
+    conn.reply(m.chat, `🔄 *Iniciando protocolo de barrido de anime, Proxy ${name}.* Aguarda...`, m, { contextInfo, quoted: m });
 
     try {
         const results = await searchAnime(args[0]);
 
         if (results.error) {
-            await m.react('❌'); // Error reaction
-            return conn.reply(m.chat, `❌ *Fallo en el barrido, Proxy ${name}.*\n${results.error}. Verifica la designación o informa de la anomalía.`, m, { contextInfo, quoted: m });
+            await m.react('❌');
+            return conn.reply(m.chat, `❌ *Fallo en el barrido, Proxy ${name}.*\n${results.error}`, m, { contextInfo, quoted: m });
         }
+
         if (results.length === 0) {
-            await m.react('❌'); // Error reaction
-            return conn.reply(m.chat, `❌ *Carga de datos fallida, Proxy ${name}.*\nNo se encontraron resultados para "${args[0]}". Verifica la designación.`, m, { contextInfo, quoted: m });
+            await m.react('❌');
+            return conn.reply(m.chat, `❌ *Carga fallida, Proxy ${name}.*\nNo se encontraron resultados para "${args[0]}".`, m, { contextInfo, quoted: m });
         }
 
         const carouselMessages = [];
+
         for (const { name: animeName, id, url, image } of results) {
-            // Using a single button for simplicity and direct navigation to info.
-            // The original carousel structure had empty arrays, which might not render correctly.
-            // The 'buttonParamsJson' for 'url' type has 'display_text', 'url', 'merchant_url'.
             carouselMessages.push({
-                'header': {
-                    'title': '', // Left blank as per original, or could be animeName
-                    'hasMediaAttachment': true,
-                    'imageMessage': await conn.generateWAMessageContent({'image':{'url': image}},{'upload': conn.waUploadToServer}).then(msg => msg.imageMessage)
+                header: {
+                    title: animeName,
+                    hasMediaAttachment: true,
+                    imageMessage: {
+                        url: image,
+                        mimetype: 'image/jpeg'
+                    }
                 },
-                'body': {
-                    'text': `╭━━━━[ 𝙰𝚗𝚒𝚖𝚎 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙳𝚎𝚜𝚒𝚐𝚗𝚊𝚌𝚒𝚘́𝚗 𝙴𝚗𝚌𝚘𝚗𝚝𝚛𝚊𝚍𝚊 ]━━━━⬣\n\n📺 *Designación:* ${animeName}\n🔖 *Identificador:* ${id}\n\n*Selecciona la opción para obtener información detallada del anime.*\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━⬣`
+                body: {
+                    text: `╭━━━━[ 𝙰𝚗𝚒𝚖𝚎 𝙳𝚎𝚌𝚘𝚍𝚎𝚍 ]━━━━⬣\n\n📺 *Título:* ${animeName}\n🆔 *ID:* ${id}\n\n_Selecciona una opción para continuar._\n╰━━━━━━━━━━━━━━━━━━━━⬣`
                 },
-                'footer': {
-                    'text': `Procesado por Ellen Joe's Service`
+                footer: {
+                    text: `📡 Ellen Joe's Service`
                 },
-                'nativeFlowMessage': {
-                    'buttons': [
+                nativeFlowMessage: {
+                    buttons: [
                         {
-                            'name': "quick_reply", // Use quick_reply for bot command
-                            'buttonParamsJson': JSON.stringify({
-                                'display_text': "Obtener Info Detallada",
-                                'id': `${usedPrefix}animeinfo ${url}`
+                            name: "quick_reply",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "📘 Info Detallada",
+                                id: `${usedPrefix}animeinfo ${url}`
                             })
                         },
                         {
-                            'name': "cta_url", // Use cta_url for direct link
-                            'buttonParamsJson': JSON.stringify({
-                                'display_text': "Ver en TioAnime 🔗",
-                                'url': url,
-                                'merchant_url': url
+                            name: "cta_url",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "🌐 Ver en TioAnime",
+                                url: url,
+                                merchant_url: url
                             })
                         }
                     ]
@@ -121,45 +120,44 @@ let handler = async (m, { conn, command, args, text, usedPrefix }) => {
             });
         }
 
-        // Send carousel message
         await conn.relayMessage(m.chat, {
-            'viewOnceMessage': {
-                'message': {
-                    'messageContextInfo': {
-                        'deviceListMetadata': {},
-                        'deviceListMetadataVersion': 2
+            viewOnceMessage: {
+                message: {
+                    messageContextInfo: {
+                        deviceListMetadata: {},
+                        deviceListMetadataVersion: 2
                     },
-                    'interactiveMessage': proto.Message.InteractiveMessage.fromObject({
-                        'body': proto.Message.InteractiveMessage.Body.create({
-                            'text': `╭━━━━[ 𝙰𝚗𝚒𝚖𝚎 𝚂𝚎𝚊𝚛𝚌𝚑: 𝚁𝚎𝚜𝚞𝚕𝚝𝚊𝚍𝚘𝚜 𝙳𝚎𝚌𝚘𝚍𝚒𝚏𝚒𝚌𝚊𝚍𝚘𝚜 ]━━━━⬣\n\n*Término de Búsqueda:* ${args[0]}\n\n_Desliza para ver las designaciones encontradas._\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━⬣`
+                    interactiveMessage: proto.Message.InteractiveMessage.fromObject({
+                        body: proto.Message.InteractiveMessage.Body.create({
+                            text: `╭━━━━[ Anime Search 🧩 ]━━━━⬣\n\n🔎 *Término:* ${args[0]}\n\n_Desliza las tarjetas para ver resultados._\n╰━━━━━━━━━━━━━━━━━━━━⬣`
                         }),
-                        'footer': proto.Message.InteractiveMessage.Footer.create({
-                            'text': `⪛✰ Barrido de Anime - Ellen Joe's Service ✰⪜`
+                        footer: proto.Message.InteractiveMessage.Footer.create({
+                            text: `🦈 Resultados por Ellen Joe's Service`
                         }),
-                        'header': proto.Message.InteractiveMessage.Header.create({
-                            'hasMediaAttachment': false
+                        header: proto.Message.InteractiveMessage.Header.create({
+                            hasMediaAttachment: false
                         }),
-                        'carouselMessage': proto.Message.InteractiveMessage.CarouselMessage.fromObject({
-                            'cards': carouselMessages
+                        carouselMessage: proto.Message.InteractiveMessage.CarouselMessage.fromObject({
+                            cards: carouselMessages
                         })
                     })
                 }
             }
-        }, { 'quoted': m });
-        
-        await m.react('✅'); // Success reaction
+        }, { quoted: m });
+
+        await m.react('✅');
 
     } catch (error) {
-        console.error("Error processing Anime Search:", error);
-        await m.react('❌'); // Error reaction
-        conn.reply(m.chat, `⚠️ *Anomalía crítica en la operación de Anime Search, Proxy ${name}.*\nNo pude completar la búsqueda. Verifica el término o informa del error.\nDetalles: ${error.message}`, m, { contextInfo, quoted: m });
+        console.error("Error en Anime Search:", error);
+        await m.react('❌');
+        conn.reply(m.chat, `⚠️ *Anomalía crítica, Proxy ${name}.*\nNo pude completar la búsqueda.\n*Detalles:* ${error.message}`, m, { contextInfo, quoted: m });
     }
-}
+};
 
 handler.help = ['animes <nombre>'];
 handler.command = ['animes', 'animesearch', 'animess'];
 handler.tags = ['buscador'];
-handler.premium = true; // Retained premium requirement
+handler.premium = true;
 handler.register = true;
 handler.group = true;
 
