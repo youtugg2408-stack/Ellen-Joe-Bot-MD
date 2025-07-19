@@ -48,7 +48,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 };
 
-handler.command = /^anime(search|buscar|find)?$/i;
+handler.command = ['animes']
 handler.help = ['animesearch <nombre>'];
 handler.tags = ['anime'];
 
