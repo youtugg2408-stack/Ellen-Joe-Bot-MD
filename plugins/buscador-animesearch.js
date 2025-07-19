@@ -6,6 +6,7 @@
 
 import axios from 'axios';
 import cheerio from 'cheerio';
+import { proto } from '@whiskeysockets/baileys';
 
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏ𝐄\'s 𝐒ervice';
