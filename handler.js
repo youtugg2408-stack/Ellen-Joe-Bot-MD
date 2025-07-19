@@ -8,6 +8,7 @@ import chalk from 'chalk'
 import fetch from 'node-fetch'
 import failureHandler from './lib/respuesta.js';
 import { manejarRespuestasBotones } from './lib/botones.js';
+import { manejarRespuestasStickers } from './lib/stickers.js';
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -37,6 +38,8 @@ if (!m) return
 
 // Manejo de botones con archivo externo
 if (await manejarRespuestasBotones(this, m)) return;
+// Manejo de stickers con archivo externo
+if (await manejarRespuestasStickers(this, m)) return;
 
     if (m.isGroup && global.conns && global.conns.length > 1) {
         let botsEnGrupo = global.conns.filter(c => c.user && c.user.jid && c.ws && c.ws.socket && c.ws.socket.readyState !== 3)
