@@ -3,16 +3,13 @@ import { ogmp3 } from '../lib/youtubedl.js';
 import yts from "yt-search";
 import axios from 'axios';
 
-// --- Constantes y Configuración ---
 const SIZE_LIMIT_MB = 100;
-const MIN_AUDIO_SIZE_BYTES = 50000; // Umbral para audios corruptos
+const MIN_AUDIO_SIZE_BYTES = 50000;
 const newsletterJid = '120363418071540900@newsletter';
-const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
+const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
-
-  // Limpiar argumentos
   args = args.filter(v => v?.trim());
 
   const contextInfo = {
@@ -25,8 +22,8 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
       serverMessageId: -1
     },
     externalAdReply: {
-      title: 'Ellen Joe: Pista localizada. 🦈',
-      body: `Procesando solicitud para el/la Proxy ${name}...`,
+      title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
+      body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
       thumbnail: icons,
       sourceUrl: redes,
       mediaType: 1,
@@ -35,7 +32,11 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   };
 
   if (!args[0]) {
-    return conn.reply(m.chat, `🦈 *Hora de cazar, Proxy ${name}.* ¿Qué objetivo de audio o video rastreamos hoy?\n\nEjemplo:\n${usedPrefix}play Unusual Love - ZZZ`, m, { contextInfo });
+    return conn.reply(m.chat, `🦈 *¿᥎іᥒіs𝗍ᥱ ᥲ ⍴ᥱძіrmᥱ ᥲᥣg᥆ sіᥒ sᥲᑲᥱr 𝗊ᥙᥱ́?*
+ძі ᥣ᥆ 𝗊ᥙᥱ 𝗊ᥙіᥱrᥱs... ᥆ ᥎ᥱ𝗍ᥱ.
+
+🎧 ᥱȷᥱm⍴ᥣ᥆:
+${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   }
 
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
@@ -47,11 +48,13 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     search = await yts(queryOrUrl);
     video = search.videos?.[0];
   } catch (e) {
-    return conn.reply(m.chat, `❌ Error buscando el objetivo. Intenta de nuevo.`, m, { contextInfo });
+    return conn.reply(m.chat, `🖤 *𝗊ᥙᥱ́ ⍴ᥲ𝗍ᥱ́𝗍іᥴ᥆...*
+ᥒ᥆ ᥣ᥆grᥱ́ ᥱᥒᥴ᥆ᥒ𝗍rᥲr ᥒᥲძᥲ ᥴ᥆ᥒ ᥣ᥆ 𝗊ᥙᥱ ⍴ᥱძіs𝗍ᥱ`, m, { contextInfo });
   }
 
   if (!video) {
-    return conn.reply(m.chat, `🦈 *El objetivo se escabulló...* No pude localizar nada para: "${queryOrUrl}"`, m, { contextInfo });
+    return conn.reply(m.chat, `🦈 *ᥱs𝗍ᥲ ᥴ᥆sᥲ mᥙrі᥆́ ᥲᥒ𝗍ᥱs ძᥱ ᥱm⍴ᥱzᥲr.*
+ᥒᥲძᥲ ᥱᥒᥴ᥆ᥒ𝗍rᥲძ᥆ ᥴ᥆ᥒ "${queryOrUrl}"`, m, { contextInfo });
   }
 
   if (isMode) {
@@ -64,9 +67,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
           const headRes = await axios.head(downloadUrl);
           const fileSize = parseInt(headRes.headers['content-length'] || "0");
 
-          if (fileSize < MIN_AUDIO_SIZE_BYTES) {
-            throw new Error('Audio de 0 segundos o corrupto detectado.');
-          }
+          if (fileSize < MIN_AUDIO_SIZE_BYTES) throw new Error('Silencio disfrazado de archivo.');
 
           await conn.sendMessage(m.chat, {
             audio: { url: downloadUrl },
@@ -77,7 +78,8 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
         } else {
           const mediaOptions = currentMode === 'audio'
             ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-            : { video: { url: downloadUrl }, caption: `📹 *Presa capturada, ${name}.*\n⚙️ *Archivo:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
+            : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
+🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
 
           await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
           await m.react(currentMode === 'audio' ? "🎧" : "📽️");
@@ -90,7 +92,6 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     const urlToDownload = isInputUrl ? queryOrUrl : video.url;
 
     try {
-      console.log("Protocolo 1: API Principal (vreden.my.id)");
       const endpoint = mode === "audio" ? "ytmp3" : "ytmp4";
       const dlApi = `https://api.vreden.my.id/api/${endpoint}?url=${encodeURIComponent(urlToDownload)}`;
       const res = await fetch(dlApi);
@@ -100,48 +101,49 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
         await sendMediaFile(json.result.download.url, json.result.metadata.title || video.title, mode, "API_PRINCIPAL");
         return;
       }
-      throw new Error("API Principal falló.");
+      throw new Error("API principal... derrumbada.");
     } catch (e) {
-      console.warn("Fallo protocolo API_PRINCIPAL:", e.message);
-
       try {
-        console.log("Protocolo 2: ogmp3");
         const downloadResult = await ogmp3.download(urlToDownload, null, mode);
 
         if (downloadResult.status && downloadResult.result?.download) {
           await sendMediaFile(downloadResult.result.download, downloadResult.result.title, mode, "OGMP3");
           return;
         }
-        throw new Error("ogmp3 falló.");
+        throw new Error("ogmp3... silencioso.");
       } catch (e2) {
-        console.error("Todos los protocolos fallaron:", e2.message);
-        await conn.reply(m.chat, `🦈 *Misión Abortada, ${name}.* Todos los protocolos de extracción fallaron.`, m);
+        await conn.reply(m.chat, `💔 *𝖿ᥲᥣᥣᥱ́. ⍴ᥱr᥆ 𝗍ᥙ́ mᥲ́s.*
+ᥒ᥆ ⍴ᥙძᥱ 𝗍rᥲᥱr𝗍ᥱ ᥒᥲძᥲ.`, m);
         await m.react("❌");
       }
     }
     return;
   }
 
-  // --- Botones si aún no se seleccionó modo ---
   const buttons = [
-    { buttonId: `${usedPrefix}play audio ${video.url}`, buttonText: { displayText: '🎵 Extraer Audio' }, type: 1 },
-    { buttonId: `${usedPrefix}play video ${video.url}`, buttonText: { displayText: '📹 Extraer Video' }, type: 1 }
+    { buttonId: `${usedPrefix}play audio ${video.url}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 },
+    { buttonId: `${usedPrefix}play video ${video.url}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 }
   ];
 
   const caption = `
-╭───🦈 *¡OBJETIVO ADQUIRIDO, ${name}!* 🦈───
-│💿 *Archivo:* ${video.title}
-│⏱️ *Duración:* ${video.timestamp}
-│👁️ *Vistas:* ${video.views.toLocaleString()}
-│👤 *Fuente:* ${video.author.name}
-│🗓️ *Fecha de subida:* ${video.ago}
-│🔗 *URL Original:* ${video.url}
-╰───────────────────────────────`;
+┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪۪۪۪۪ٜ݊᷼⁔᮫ּׅ̫ׄ࣪︵᮫ּ๋ׅׅ۪۪۪۪ׅ࣪࣪͡⌒🌀𔗨⃪̤̤̤ٜ۫۫۫҈҈҈҈҉҉᷒ᰰ꤬۫۫۫𔗨̤̤̤𐇽─۪۪۪۪ٜ᷼┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪۪۪۪۪ٜ݊᷼𔗨̤̤̤ٜ۫۫۫💜⃪҈҈҈҈҉҉᷒ᰰ꤬۫۫۫𔗨̤̤̤𐇽⁔᮫ּׅ̫ׄ࣪︵᮫ּ๋ׅׅ۪۪۪۪ׅ࣪࣪͡⌒─۪۪۪۪ٜ᷼┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪࣪᷼
+₊‧꒰ 🎧꒱ 𝙀𝙇𝙇𝙀𝙉 𝙅𝙊𝙀 𝘽𝙊𝙏 — 𝙋𝙇𝘼𝙔 𝙈𝙊𝘿𝙀 ✧˖°
+︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶
+
+> ૢ⃘꒰🎧⃝︩֟፝𐴲ⳋᩧ᪲ `*Título:* ${video.title}`
+> ૢ⃘꒰⏱️⃝︩֟፝𐴲ⳋᩧ᪲ `*Duración:* ${video.timestamp}`
+> ૢ⃘꒰👀⃝︩֟፝𐴲ⳋᩧ᪲ `*Vistas:* ${video.views.toLocaleString()}`
+> ૢ⃘꒰⏱️⃝︩֟፝𐴲ⳋᩧ᪲ `*Duración:* ${video.timestamp}`
+> ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ `*Subido por:* ${video.author.name}`
+> ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ `*Hace:* ${video.ago}`
+> ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ `*URL:* ${video.url}`;`
+⌣᮫ֶຸ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪〪⃨〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+     ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
   await conn.sendMessage(m.chat, {
     image: { url: video.thumbnail },
     caption,
-    footer: 'Elige cómo devorar los datos, Proxy.',
+    footer: 'Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.',
     buttons,
     headerType: 4
   }, { quoted: m });
@@ -151,6 +153,6 @@ handler.help = ['play'].map(v => v + ' <búsqueda o URL>');
 handler.tags = ['descargas'];
 handler.command = ['play'];
 handler.register = true;
-handler.prefix = /^[./#]/; // Soporte para múltiples prefijos
+handler.prefix = /^[./#]/;
 
 export default handler;
