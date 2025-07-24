@@ -321,15 +321,21 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
        chat.antiTraba = isEnable;
       break;
       
-      case 'antifake': 
-      case 'antivirtuales':
+    case 'antifake': 
+    case 'antivirtuales':
       if (m.isGroup) {
         if (!(isAdmin || isOwner)) {
           global.dfail('admin', m, conn);
           throw false;
         }
+        chat.antifake = isEnable;
+      } else {
+        if (!isOwner && m.chat !== conn.user.jid) {
+          global.dfail('rowner', m, conn);
+          throw false;
+        }
+        bot.antifakePriv = isEnable;
       }
-      chat.antifake = isEnable;
       break;
   }
   
