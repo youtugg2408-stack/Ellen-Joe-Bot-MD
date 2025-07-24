@@ -1,52 +1,48 @@
 import db from '../lib/database.js'
+
 let handler = m => m
-handler.before = async function (m, {conn, isAdmin, isBotAdmin} ) {
-if (!m.isGroup) return !1
-let chat = global.db.data.chats[m.chat]
-if (isBotAdmin && chat.antifake) {
-if (m.sender.startsWith('6' || '6')) {
-global.db.data.users[m.sender].block = true
 
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('90' || '90')) {
-global.db.data.users[m.sender].block = true
+handler.before = async function (m, { conn, isAdmin, isBotAdmin }) {
+  const botJid = conn.user.jid // este es el número del bot actual
+  const sender = m.sender
+  const chatId = m.chat
+  const isPrivate = !m.isGroup
+  const numero = sender.split('@')[0]
+  const prefijosBloqueados = ['6', '90', '212', '92', '93', '94', '7', '49', '2', '91', '48']
 
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('212' || '212')) {
-global.db.data.users[m.sender].block = true
+  // Inicializa datos si no existen
+  global.db.data.settings = global.db.data.settings || {}
+  global.db.data.settings[botJid] = global.db.data.settings[botJid] || {}
 
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('92' || '92')) {
-global.db.data.users[m.sender].block = true
+  if (!isPrivate) {
+    // ========== ANTIFAKE EN GRUPOS ==========
+    let chat = global.db.data.chats[chatId]
+    if (isBotAdmin && chat?.antifake) {
+      for (let prefijo of prefijosBloqueados) {
+        if (numero.startsWith(prefijo)) {
+          global.db.data.users[sender].block = true
+          await conn.groupParticipantsUpdate(chatId, [sender], 'remove')
+          break
+        }
+      }
+    }
+  } else {
+    // ========== ANTIFAKE EN PRIVADO ==========
+    let antifakePriv = global.db.data.settings[botJid].antifakePriv
+    if (antifakePriv) {
+      for (let prefijo of prefijosBloqueados) {
+        if (numero.startsWith(prefijo)) {
+          global.db.data.users[sender].block = true
+          try {
+            await conn.sendMessage(sender, { text: '🚫 Usuario bloqueado por antifake.' })
+          } catch {}
+          await conn.chatModify({ clear: { messages: [{ id: m.key.id }] } }, sender)
+          await conn.updateBlockStatus(sender, 'block')
+          break
+        }
+      }
+    }
+  }
+}
 
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('93' || '93')) {
-global.db.data.users[m.sender].block = true
-
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('94' || '94')) {
-global.db.data.users[m.sender].block = true
-
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('7' || '7')) {
-global.db.data.users[m.sender].block = true
-
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('49' || '49')) {
-global.db.data.users[m.sender].block = true
-
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('2' || '2')) {
-global.db.data.users[m.sender].block = true
-
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('91' || '91')) {
-global.db.data.users[m.sender].block = true
-
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')}
-if (m.sender.startsWith('48' || '48')) {
-global.db.data.users[m.sender].block = true
-
-await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')} 
-}}
 export default handler
