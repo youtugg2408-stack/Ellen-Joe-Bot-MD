@@ -153,6 +153,17 @@ nano settings.js
 
 ---
 
+## **`🩵 AKIRAX HOST🩵`**
+<a href="https://home.akirax.net"><img src="https://qu.ax/bZYxO.jpg" height="100px"></a>
+</details>
+</details>
+ <summary><b>:paperclip: Enlaces Importantes</b></summary>
+
+- **Dash:** [`Aquí`](https://home.akirax.net)
+- **Panel:** [`Aquí`](https://console.akirax.net)
+
+---
+
 ## 👑 𝐂𝐫𝐞𝐚𝐝𝐨𝐫 𝐝𝐞 Ellen Joe
 
 
