@@ -13,7 +13,7 @@ conn.sendMessage(m.chat, { text: resSimi.resultado.simsimi }, { quoted: m });
 throw `${msm} Ocurrió un error.`;
 }};
 
-handler.help = ['simi', 'bot'];
+handler.help = ['simi'];
 handler.tags = ['fun'];
 handler.group = true;
 handler.register = true
