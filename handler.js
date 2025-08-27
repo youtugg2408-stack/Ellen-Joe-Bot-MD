@@ -34,7 +34,11 @@ global.dfail = async (type, m, conn) => {
 export async function handler(chatUpdate) {
     this.msgqueque = this.msgqueque || []
 this.uptime = this.uptime || Date.now()
+// ...
 if (!chatUpdate) return
+
+// AÑADE ESTA LÍNEA
+if (chatUpdate.messages[0]?.key?.remoteJid === 'status@broadcast') return;
 
 this.pushMessage(chatUpdate.messages).catch(console.error)
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
