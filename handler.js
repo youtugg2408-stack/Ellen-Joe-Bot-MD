@@ -9,7 +9,7 @@ import fetch from 'node-fetch'
 import failureHandler from './lib/respuesta.js';
 import { manejarRespuestasBotones } from './lib/botones.js';
 import { manejarRespuestasStickers } from './lib/stickers.js';
-import { getLanguage, translateIfNeeded, setLanguage } from './lib/traductor-a.js';
+import { getLanguage, translateIfNeeded, setLanguage } from './lib/traductor.js';
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -22,10 +22,13 @@ const normalizeJid = jid => jid?.replace(/[^0-9]/g, '')
 const cleanJid = jid => jid?.split(':')[0] || ''
 
 // Definición global y centralizada de la función de error.
-global.dfail = (type, m, conn) => {
-    // Llama al manejador de errores externo.
-    // La variable 'global.comando' se asigna más abajo antes de que se llame a fail().
-    failureHandler(type, conn, m, global.comando);
+global.dfail = async (type, m, conn) => {
+    // 1. Obtiene el idioma del usuario.
+    const lang = getLanguage(m.sender);
+    
+    // 2. Llama al manejador de errores, pasando el tipo de error y el idioma del usuario.
+    // El manejador se encargará de buscar el mensaje correcto, traducirlo y enviarlo.
+    failureHandler(type, conn, m, global.comando, lang);
 };
 
 export async function handler(chatUpdate) {
