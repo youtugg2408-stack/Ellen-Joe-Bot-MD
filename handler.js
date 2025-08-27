@@ -136,9 +136,96 @@ export async function handler(chatUpdate) {
                 }
 
         } catch (e) { console.error(e) }
+                    
+conn.reply(m.chat, `❮✦❯ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)       
+                    continue
+                }
+                let extra = { match, usedPrefix, noPrefix, _args, args, command, text, conn: this, participants, groupMetadata, user, bot, isROwner, isOwner, isRAdmin, isAdmin, isBotAdmin, isPrems, chatUpdate, __dirname: ___dirname, __filename }
+                try {
+                    await plugin.call(this, m, extra)
+                    if (!isPrems) m.coin = m.coin || plugin.coin || false
+               } catch (e) {
+    m.error = e
+    console.error(e)
+    if (e) {
+        let text = format(e)
+        for (let key of Object.values(global.APIKeys))
+            text = text.replace(new RegExp(key, 'g'), 'Administrador')
+                       m.reply(text)
+                    }
+                } finally {
+                    if (typeof plugin.after === 'function') {
+                        try {
+                            await plugin.after.call(this, m, extra)
+                        } catch (e) {
+                            console.error(e)
+                        }
+                    }
+                    if (m.coin) conn.reply(m.chat, `❮✦❯ Utilizaste ${+m.coin} ${moneda}`, m)
+                }
+                break
+            }
+        }
+    } catch (e) {
+        console.error(e)
+    } finally {
+        if (opts['queque'] && m.text) {
+            const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id)
+            if (quequeIndex !== -1)
+                this.msgqueque.splice(quequeIndex, 1)
+        }
+        let user, stats = global.db.data.stats
+        if (m) { 
+            let utente = global.db.data.users[m.sender]
+            if (utente.muto == true) {
+                let bang = m.key.id
+                let cancellazzione = m.key.participant
+                await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: bang, participant: cancellazzione }})
+            }
+            if (m.sender && (user = global.db.data.users[m.sender])) {
+                user.exp += m.exp
+                user.coin -= m.coin * 1
+            }
 
-        // Aquí continúa todo tu código tal cual, sin cortes, manejando plugins, stats, spam, reacciones, etc.
-        // El resto del handler permanece idéntico a tu versión original.
+            let stat
+            if (m.plugin) {
+                let now = +new Date
+                if (m.plugin in stats) {
+                    stat = stats[m.plugin]
+                    if (!isNumber(stat.total)) stat.total = 1
+                    if (!isNumber(stat.success)) stat.success = m.error != null ? 0 : 1
+                    if (!isNumber(stat.last)) stat.last = now
+                    if (!isNumber(stat.lastSuccess)) stat.lastSuccess = m.error != null ? 0 : now
+                } else
+                    stat = stats[m.plugin] = {
+                        total: 1, success: m.error != null ? 0 : 1, last: now, lastSuccess: m.error != null ? 0 : now
+                    }
+                stat.total += 1
+                stat.last = now
+                if (m.error == null) {
+                    stat.success += 1
+                    stat.lastSuccess = now
+                }
+            }
+        }
+
+        try {
+            if (!opts['noprint']) await (await import(`./lib/print.js`)).default(m, this)
+        } catch (e) { 
+            console.log(m, m.quoted, e)
+        }
+        let settingsREAD = global.db.data.settings[this.user.jid] || {}  
+        if (opts['autoread']) await this.readMessages([m.key])
+
+        // Bloque de reacciones corregido
+        const reactionRegex = /(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi;
+        if (db.data.chats[m.chat]?.reaction && m.text.match(reactionRegex)) {
+            const emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"]);
+            if (!m.fromMe) {
+                this.sendMessage(m.chat, { react: { text: emot, key: m.key } });
+            }
+        }
+        function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]; }
     }
 }
 
