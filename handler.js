@@ -37,17 +37,9 @@ this.uptime = this.uptime || Date.now()
 // ...
 if (!chatUpdate) return
 
-// AÑADE ESTA LÍNEA
-if (chatUpdate.messages[0]?.key?.remoteJid === 'status@broadcast') return;
-
 this.pushMessage(chatUpdate.messages).catch(console.error)
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
 if (!m) return;
-
-// --- INICIO DE LA NUEVA VALIDACIÓN ---
-if (!m.sender || m.key.remoteJid === 'status@broadcast') {
-    return;
-}
 
 // Manejo de botones con archivo externo
 if (await manejarRespuestasBotones(this, m)) return;
@@ -62,17 +54,20 @@ if (await manejarRespuestasStickers(this, m)) return;
 
     if (global.db.data == null)
         await global.loadDatabase()       
-    // ... (código existente)
+
     try {
         m = smsg(this, m) || m;
         if (!m) return;
-
-        // --- INICIO DEL CÓDIGO DE TRADUCCIÓN ---
         
-        // Obtiene el idioma del usuario (por defecto 'es')
-        const userLang = getLanguage(m.sender);
+        // --- INICIO DE LAS VALIDACIONES ---
+        // Ignora mensajes sin un remitente válido o de estados de WhatsApp.
+        if (m.chat === 'status@broadcast' || !m.sender) {
+            return;
+        }
+        // --- FIN DE LAS VALIDACIONES ---
 
-        // Sobrescribe el método m.reply para que traduzca el texto antes de enviarlo
+        // Sobrescribe m.reply para que el bot traduzca las respuestas automáticamente.
+        const userLang = getLanguage(m.sender);
         m.reply = async (text, quoted, options) => {
             if (!text) return;
             const translatedText = await translateIfNeeded(text, userLang);
