@@ -9,7 +9,7 @@ import fetch from 'node-fetch'
 import failureHandler from './lib/respuesta.js';
 import { manejarRespuestasBotones } from './lib/botones.js';
 import { manejarRespuestasStickers } from './lib/stickers.js';
-import { sendTranslated } from './lib/traducir.js'; // ✅ Traducción inteligente
+import { sendTranslated } from './lib/traductor.js'; // ✅ Traducción inteligente
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
