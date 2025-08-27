@@ -50,10 +50,22 @@ if (await manejarRespuestasStickers(this, m)) return;
 
     if (global.db.data == null)
         await global.loadDatabase()       
+    // ... (código existente)
     try {
-        m = smsg(this, m) || m
-        if (!m)
-            return
+        m = smsg(this, m) || m;
+        if (!m) return;
+
+        // --- INICIO DEL CÓDIGO DE TRADUCCIÓN ---
+        
+        // Obtiene el idioma del usuario (por defecto 'es')
+        const userLang = getLanguage(m.sender);
+
+        // Sobrescribe el método m.reply para que traduzca el texto antes de enviarlo
+        m.reply = async (text, quoted, options) => {
+            if (!text) return;
+            const translatedText = await translateIfNeeded(text, userLang);
+            return this.sendMessage(m.chat, { text: translatedText }, { quoted, ...options });
+        };
         m.exp = 0
         m.coin = false
         try {
