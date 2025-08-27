@@ -73,6 +73,7 @@ if (await manejarRespuestasStickers(this, m)) return;
             const translatedText = await translateIfNeeded(text, userLang);
             return this.sendMessage(m.chat, { text: translatedText }, { quoted, ...options });
         };
+
         m.exp = 0
         m.coin = false
         try {
