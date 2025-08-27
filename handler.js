@@ -23,35 +23,31 @@ const cleanJid = jid => jid?.split(':')[0] || ''
 
 // Definición global y centralizada de la función de error.
 global.dfail = async (type, m, conn) => {
-    // 1. Obtiene el idioma del usuario.
+    // Obtiene el idioma del usuario
     const lang = getLanguage(m.sender);
-    
-    // 2. Llama al manejador de errores, pasando el tipo de error y el idioma del usuario.
-    // El manejador se encargará de buscar el mensaje correcto, traducirlo y enviarlo.
+    // Llama al manejador de errores, pasando el tipo y el idioma para la traducción.
     failureHandler(type, conn, m, global.comando, lang);
 };
 
 export async function handler(chatUpdate) {
     this.msgqueque = this.msgqueque || []
-this.uptime = this.uptime || Date.now()
-// ...
-if (!chatUpdate) return
+    this.uptime = this.uptime || Date.now()
+    if (!chatUpdate) return
 
-this.pushMessage(chatUpdate.messages).catch(console.error)
-let m = chatUpdate.messages[chatUpdate.messages.length - 1]
-if (!m) return;
+    this.pushMessage(chatUpdate.messages).catch(console.error)
+    let m = chatUpdate.messages[chatUpdate.messages.length - 1]
+    if (!m) return
 
-// Manejo de botones con archivo externo
-if (await manejarRespuestasBotones(this, m)) return;
-// Manejo de stickers con archivo externo
-if (await manejarRespuestasStickers(this, m)) return;
+    // Manejo de botones y stickers
+    if (await manejarRespuestasBotones(this, m)) return;
+    if (await manejarRespuestasStickers(this, m)) return;
 
     if (m.isGroup && global.conns && global.conns.length > 1) {
         let botsEnGrupo = global.conns.filter(c => c.user && c.user.jid && c.ws && c.ws.socket && c.ws.socket.readyState !== 3)
         let elegido = botsEnGrupo[Math.floor(Math.random() * botsEnGrupo.length)]
         if (this.user.jid !== elegido.user.jid) return
     }
-
+    
     if (global.db.data == null)
         await global.loadDatabase()       
 
@@ -59,8 +55,8 @@ if (await manejarRespuestasStickers(this, m)) return;
         m = smsg(this, m) || m;
         if (!m) return;
         
-        // --- INICIO DE LAS VALIDACIONES ---
-        // Ignora mensajes sin un remitente válido o de estados de WhatsApp.
+        // --- INICIO DE LAS VALIDACIONES CRÍTICAS ---
+        // Ignora mensajes de estados o sin un remitente válido.
         if (m.chat === 'status@broadcast' || !m.sender) {
             return;
         }
@@ -73,9 +69,22 @@ if (await manejarRespuestasStickers(this, m)) return;
             const translatedText = await translateIfNeeded(text, userLang);
             return this.sendMessage(m.chat, { text: translatedText }, { quoted, ...options });
         };
+        
+        // Comando para cambiar el idioma
+        if (m.text.toLowerCase().startsWith('!idioma')) {
+            const newLang = m.text.toLowerCase().split(' ')[1];
+            if (newLang) {
+                setLanguage(m.sender, newLang);
+                m.reply(`¡Idioma cambiado a "${newLang}" correctamente!`);
+            } else {
+                m.reply('Por favor, especifica un idioma. Ejemplo: !idioma en');
+            }
+            return; 
+        }
 
         m.exp = 0
         m.coin = false
+
         try {
             let user = global.db.data.users[m.sender]
             if (typeof user !== 'object')
@@ -120,7 +129,7 @@ if (await manejarRespuestasStickers(this, m)) return;
                 if (!isNumber(user.warn)) user.warn = 0
             } else
                 global.db.data.users[m.sender] = {
-                    exp: 0, coin: 10, joincount: 1, diamond: 3, lastadventure: 0, health: 100, lastclaim: 0, lastcofre: 0, lastdiamantes: 0, lastcode: 0, lastduel: 0, lastpago: 0, lastmining: 0, lastcodereg: 0, muto: false, registered: false, genre: '', birth: '', marry: '', description: '', packstickers: null, name: m.name, age: -1, regTime: -1, afk: -1, afkReason: '', banned: false, useDocument: false, bank: 0, level: 0, role: 'Nuv', premium: false, premiumTime: 0                 
+                    exp: 0, coin: 10, joincount: 1, diamond: 3, lastadventure: 0, health: 100, lastclaim: 0, lastcofre: 0, lastdiamantes: 0, lastcode: 0, lastduel: 0, lastpago: 0, lastmining: 0, lastcodereg: 0, muto: false, registered: false, genre: '', birth: '', marry: '', description: '', packstickers: null, name: m.name, age: -1, regTime: -1, afk: -1, afkReason: '', banned: false, useDocument: false, bank: 0, level: 0, role: 'Nuv', premium: false, premiumTime: 0
                 }
             let chat = global.db.data.chats[m.chat]
             if (typeof chat !== 'object')
@@ -313,14 +322,14 @@ if (await manejarRespuestasStickers(this, m)) return;
                 try {
                     await plugin.call(this, m, extra)
                     if (!isPrems) m.coin = m.coin || plugin.coin || false
-               } catch (e) {
-    m.error = e
-    console.error(e)
-    if (e) {
-        let text = format(e)
-        for (let key of Object.values(global.APIKeys))
-            text = text.replace(new RegExp(key, 'g'), 'Administrador')
-                       m.reply(text)
+                } catch (e) {
+                    m.error = e
+                    console.error(e)
+                    if (e) {
+                        let text = format(e)
+                        for (let key of Object.values(global.APIKeys))
+                            text = text.replace(new RegExp(key, 'g'), 'Administrador')
+                        m.reply(text)
                     }
                 } finally {
                     if (typeof plugin.after === 'function') {
@@ -354,62 +363,3 @@ if (await manejarRespuestasStickers(this, m)) return;
             if (m.sender && (user = global.db.data.users[m.sender])) {
                 user.exp += m.exp
                 user.coin -= m.coin * 1
-            }
-
-            let stat
-            if (m.plugin) {
-                let now = +new Date
-                if (m.plugin in stats) {
-                    stat = stats[m.plugin]
-                    if (!isNumber(stat.total)) stat.total = 1
-                    if (!isNumber(stat.success)) stat.success = m.error != null ? 0 : 1
-                    if (!isNumber(stat.last)) stat.last = now
-                    if (!isNumber(stat.lastSuccess)) stat.lastSuccess = m.error != null ? 0 : now
-                } else
-                    stat = stats[m.plugin] = {
-                        total: 1, success: m.error != null ? 0 : 1, last: now, lastSuccess: m.error != null ? 0 : now
-                    }
-                stat.total += 1
-                stat.last = now
-                if (m.error == null) {
-                    stat.success += 1
-                    stat.lastSuccess = now
-                }
-            }
-        }
-
-        try {
-            if (!opts['noprint']) await (await import(`./lib/print.js`)).default(m, this)
-        } catch (e) { 
-            console.log(m, m.quoted, e)
-        }
-        let settingsREAD = global.db.data.settings[this.user.jid] || {}  
-        if (opts['autoread']) await this.readMessages([m.key])
-
-        // Bloque de reacciones corregido
-        const reactionRegex = /(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi;
-        if (db.data.chats[m.chat]?.reaction && m.text.match(reactionRegex)) {
-            const emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"]);
-            if (!m.fromMe) {
-                this.sendMessage(m.chat, { react: { text: emot, key: m.key } });
-            }
-        }
-        function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]; }
-    }
-}
-
-const file = global.__filename(import.meta.url, true);
-
-// NO TOCAR
-watchFile(file, async () => {
-    unwatchFile(file);
-    console.log(chalk.green('Actualizando "handler.js"'));
-    if (global.conns && global.conns.length > 0 ) {
-        const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
-        for (const userr of users) {
-            userr.subreloadHandler(false)
-        }
-    }
-});
-
-export default { handler }
