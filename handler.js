@@ -9,7 +9,7 @@ import fetch from 'node-fetch'
 import failureHandler from './lib/respuesta.js';
 import { manejarRespuestasBotones } from './lib/botones.js';
 import { manejarRespuestasStickers } from './lib/stickers.js';
-import { sendTranslated } from './lib/traductor.js'; // ✅ traductor
+import { sendTranslated } from './lib/traductor.js'; // ✅ traductor inteligente
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -54,38 +54,18 @@ export async function handler(chatUpdate) {
         m.exp = 0
         m.coin = false
 
-        // ⚡ Definir sistema de traducción para replies
-        const replyTranslated = async (text, chatId = m.chat) => {
+        // ⚡ Crear versión traducida de reply
+        m._reply = async (text, chatId = m.chat) => {
             return sendTranslated(this, chatId, text, m.sender);
         };
 
-        // ✅ m._reply = nuestra función traducida
-        m._reply = replyTranslated;
-
-        // ✅ Redefinimos m.reply para que apunte a _reply
-        Object.defineProperty(m, "reply", {
-            value: replyTranslated,
-            writable: true,
-            configurable: true,
-            enumerable: false
-        });
-
-        // ✅ conn._reply
         this._reply = async (jid, text, quoted, options = {}) => {
             return sendTranslated(this, jid, text, quoted?.sender || m.sender);
         };
 
-        Object.defineProperty(this, "reply", {
-            value: this._reply,
-            writable: true,
-            configurable: true,
-            enumerable: false
-        });
-
         // -------------------------
-        // Aquí sigue tu lógica normal
+        // Tu lógica normal del handler
         // -------------------------
-
         let user = global.db.data.users[m.sender]
         if (typeof user !== 'object')
             global.db.data.users[m.sender] = {}
@@ -135,7 +115,7 @@ export async function handler(chatUpdate) {
 
         // ⚡ Aquí seguiría TODO el resto de tu handler normal
         // (plugins, comandos, validaciones, etc.)
-        // Lo único que cambió es que ahora m.reply y conn.reply pasan por traducción
+        // Ahora simplemente usas m._reply o conn._reply para mandar mensajes traducidos
 
     } catch (e) {
         console.error(e)
