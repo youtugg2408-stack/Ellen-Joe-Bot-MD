@@ -42,7 +42,12 @@ if (chatUpdate.messages[0]?.key?.remoteJid === 'status@broadcast') return;
 
 this.pushMessage(chatUpdate.messages).catch(console.error)
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
-if (!m) return
+if (!m) return;
+
+// --- INICIO DE LA NUEVA VALIDACIÓN ---
+if (!m.sender || m.key.remoteJid === 'status@broadcast') {
+    return;
+}
 
 // Manejo de botones con archivo externo
 if (await manejarRespuestasBotones(this, m)) return;
