@@ -110,13 +110,19 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         throw new Error("No se pudo obtener el tamaño del archivo o falló el envío. Se intentará de nuevo.");
       }
     };
+
+    // Obtener el título antes de llamar a la API
+    let videoTitle = 'Título Desconocido';
+    try {
+        const videoInfo = await yts.getInfo(queryOrUrl);
+        videoTitle = videoInfo.title;
+    } catch (infoError) {
+        console.error("No se pudo obtener el título del video:", infoError);
+    }
     
     let neviDownloadId = null;
 
     try {
-      // Intenta obtener el título con yts.getInfo para que no falle la API
-      const videoInfo = await yts.getInfo(queryOrUrl);
-      
       // --- Lógica para la NEVI API ---
       const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
       const format = mode === "audio" ? "mp3" : "mp4";
@@ -136,7 +142,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       neviDownloadId = json.download_id;
 
       if (json.ok && json.download_url) {
-        await sendMediaFile(json.download_url, json.info.title || videoInfo.title, mode);
+        await sendMediaFile(json.download_url, json.info.title || videoTitle, mode);
         // Notificar a la API que la descarga ha sido exitosa.
         await notifyApiDone(neviDownloadId, true);
         return;
