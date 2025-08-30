@@ -1,8 +1,11 @@
-//código creado por Dioneibi-rip
-//modificado por nevi-dev
 import fetch from 'node-fetch';
+import crypto from 'crypto'; // Necesitas importar el módulo crypto para el hash SHA-256
 
 // --- Constantes y Configuración de Transmisión ---
+// Las variables de la API de NEVI se han movido aquí para el manejador
+const NEVI_API_KEY = 'ellen'; 
+const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
+
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 
@@ -19,10 +22,10 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
       serverMessageId: -1
     },
     externalAdReply: {
-      title: 'Ellen Joe: Pista localizada. 🦈',
-      body: `Procesando solicitud para el/la Proxy ${name}...`,
-      thumbnail: icons, // Asegúrate de que 'icons' y 'redes' estén definidos globalmente o pasados
-      sourceUrl: redes,
+      title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
+      body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
+      thumbnail: global.icons,
+      sourceUrl: global.redes,
       mediaType: 1,
       renderLargerThumbnail: false
     }
@@ -46,56 +49,47 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
     );
 
     const url = args[0];
-    const api = `https://api.vreden.my.id/api/ytmp4?url=${encodeURIComponent(url)}`;
-    const res = await fetch(api);
+    
+    // --- Lógica para la NEVI API ---
+    const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
+    const res = await fetch(neviApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+      },
+      body: JSON.stringify({
+        url: url,
+        format: "mp4" // La API de NEVI requiere el formato explícito
+      }),
+    });
+
     const json = await res.json();
 
-    if (json.status !== 200 || !json.result?.download?.url) {
-      return conn.reply(
-        m.chat,
-        `❌ *Extracción fallida, Proxy ${name}.*\nEl objetivo se ha escapado o la señal es inestable. Razón: ${json.message || 'Respuesta inválida del servidor.'}`,
-        m,
-        { contextInfo, quoted: m }
-      );
+    if (json.ok && json.download_url) {
+        // Enviar video si la respuesta es exitosa
+        await conn.sendMessage(
+            m.chat,
+            {
+                video: { url: json.download_url },
+                caption:
+`╭━━━━[ 𝚈𝚃𝙼𝙿𝟺 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙿𝚛𝚎𝚜𝚊 𝙲𝚊𝚙𝚝𝚞𝚛𝚊𝚍𝚊 ]━━━━⬣
+📹 *Designación:* ${json.info.title}
+🧑‍💻 *Fuente Operacional:* ${json.info.author}
+🕒 *Duración del Flujo:* ${json.info.timestamp}
+👁️ *Registros de Observación:* ${json.info.views.toLocaleString()}
+📄 *Manifiesto de Carga:*
+${json.info.description}
+╰━━━━━━━━━━━━━━━━━━⬣`,
+                mimetype: 'video/mp4',
+                fileName: json.info.title + '.mp4'
+            },
+            { contextInfo, quoted: m }
+        );
+    } else {
+        throw new Error(`Extracción de video fallida, Proxy ${name}. La señal es inestable. Razón: ${json.message || 'Respuesta inválida del servidor.'}`);
     }
 
-    const {
-      title,
-      description,
-      timestamp,
-      views,
-      author,
-    } = json.result.metadata;
-
-    const {
-      url: downloadURL,
-      quality,
-      filename
-    } = json.result.download;
-
-    const videoRes = await fetch(downloadURL);
-    const videoBuffer = await videoRes.buffer();
-
-    await conn.sendMessage(
-      m.chat,
-      {
-        video: videoBuffer,
-        caption:
-`╭━━━━[ 𝚈𝚃𝙼𝙿𝟺 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙿𝚛𝚎𝚜𝚊 𝙲𝚊𝚙𝚝𝚞𝚛𝚊𝚍𝚊 ]━━━━⬣
-📹 *Designación:* ${title}
-🧑‍💻 *Fuente Operacional:* ${author?.name || 'Desconocida'}
-🕒 *Duración del Flujo:* ${timestamp}
-📅 *Fecha de Registro:* ${json.result.metadata.ago}
-👁️ *Registros de Observación:* ${views.toLocaleString()}
-🎞️ *Calidad de Transmisión:* ${quality}
-📄 *Manifiesto de Carga:*
-${description}
-╰━━━━━━━━━━━━━━━━━━⬣`,
-        mimetype: 'video/mp4',
-        fileName: filename
-      },
-      { contextInfo, quoted: m }
-    );
   } catch (e) {
     console.error(e);
     await conn.reply(
