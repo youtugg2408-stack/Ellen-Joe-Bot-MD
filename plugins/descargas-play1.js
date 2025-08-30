@@ -8,6 +8,11 @@ const MIN_AUDIO_SIZE_BYTES = 50000;
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 
+// API de NeviAPI
+const NEVI_API_URL = 'http://neviapi.ddns.net:8000';
+// Clave "ellen" en formato SHA256
+const NEVI_API_KEY = '81822709e370d061f03403d15c8988a876a3f9c6487e4ac87d21c430e70f6128'; 
+
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
   args = args.filter(v => v?.trim());
@@ -46,75 +51,58 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   let video;
 
   if (isMode && isInputUrl) {
-    // Si se especificó el modo (audio/video) y se proporcionó una URL, la usamos directamente
     video = { url: queryOrUrl };
     await m.react("📥");
 
     const mode = args[0].toLowerCase();
-    const sendMediaFile = async (downloadUrl, title, currentMode, protocolo) => {
+    const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
-        if (currentMode === "audio" && protocolo === "API_PRINCIPAL") {
-          const headRes = await axios.head(downloadUrl);
-          const fileSize = parseInt(headRes.headers['content-length'] || "0");
-          if (fileSize < MIN_AUDIO_SIZE_BYTES) {
-            throw new Error('Silencio disfrazado de archivo.');
-          }
-          await conn.sendMessage(m.chat, { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }, { quoted: m });
-          await m.react("🎧");
-        } else {
-          const mediaOptions = currentMode === 'audio'
-            ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-            : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
+        const mediaOptions = currentMode === 'audio'
+          ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+          : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
 🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
-          await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-          await m.react(currentMode === 'audio' ? "🎧" : "📽️");
-        }
+        
+        await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+        await m.react(currentMode === 'audio' ? "🎧" : "📽️");
       } catch (error) {
         throw error;
       }
     };
-    
-    // Obtener metadatos para el título y la miniatura
+
     let videoInfo;
     try {
         videoInfo = await yts.getInfo(queryOrUrl);
     } catch (e) {
         console.error("Error al obtener info de la URL para la descarga:", e);
-        // En caso de fallo, usamos un título genérico
         videoInfo = { title: 'Archivo de YouTube', thumbnail: 'URL_NO_DISPONIBLE' };
     }
 
     try {
-      const endpoint = mode === "audio" ? "ytmp3" : "ytmp4";
-      const dlApi = `https://api.vreden.my.id/api/${endpoint}?url=${encodeURIComponent(queryOrUrl)}`;
-      const res = await fetch(dlApi);
-      const json = await res.json();
-      if (json.status === 200 && json.result?.download?.url) {
-        await sendMediaFile(json.result.download.url, json.result.metadata?.title || videoInfo.title, mode, "API_PRINCIPAL");
-        return;
-      }
-      throw new Error("API principal... derrumbada.");
-    } catch (e) {
-      console.error("Error con API_PRINCIPAL:", e);
-      await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
-*API_PRINCIPAL falló.* Razón: ${e.message}`, m);
+      const response = await fetch(`${NEVI_API_URL}/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': NEVI_API_KEY
+        },
+        body: JSON.stringify({ url: queryOrUrl })
+      });
+      const json = await response.json();
 
-      try {
-        const downloadResult = await ogmp3.download(queryOrUrl, null, mode);
-        if (downloadResult.status && downloadResult.result?.download) {
-          await sendMediaFile(downloadResult.result.download, downloadResult.result.title, mode, "OGMP3");
-          return;
-        }
-        throw new Error("ogmp3... silencioso.");
-      } catch (e2) {
-        console.error("Error con ogmp3:", e2);
-        await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
-*ogmp3 falló.* Razón: ${e2.message}`, m);
-        
-        await conn.reply(m.chat, `💔 *fallé. pero tú más.*
-no pude traerte nada.`, m);
-        await m.react("❌");
+      if (response.status !== 200 || !json.download_url) {
+        throw new Error(`Error en la API: ${json.error || 'No se pudo obtener el enlace de descarga.'}`);
       }
+
+      const title = videoInfo.title || 'Archivo de YouTube';
+      await sendMediaFile(json.download_url, title, mode);
+      return;
+    } catch (e) {
+      console.error("Error con NeviAPI:", e);
+      await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
+*NeviAPI falló.* Razón: ${e.message}`, m);
+
+      await conn.reply(m.chat, `💔 *fallé. pero tú más.*
+no pude traerte nada.`, m);
+      await m.react("❌");
     }
     return;
   }
@@ -169,7 +157,7 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
 > ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Subido por:* ${video.author.name}
 > ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ *Hace:* ${video.ago}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${video.url}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪〪⃨〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
   await conn.sendMessage(m.chat, {
