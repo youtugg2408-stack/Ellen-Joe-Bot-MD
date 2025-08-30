@@ -28,7 +28,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     },
     externalAdReply: {
       title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
-      body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
+      body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 sᴏʟɪᴄɪᴛᴜᴅ, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
       thumbnail: icons, // Asumiendo que 'icons' está definido globalmente
       sourceUrl: redes, // Asumiendo que 'redes' está definido globalmente
       mediaType: 1,
@@ -61,7 +61,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
           ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
           : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
 🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
-        
+
         await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
         await m.react(currentMode === 'audio' ? "🎧" : "📽️");
       } catch (error) {
@@ -88,6 +88,12 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         body: JSON.stringify({ url: queryOrUrl, format: apiFormat })
       });
       const json = await response.json();
+
+      // Muestra la respuesta de la API, sin importar si fue exitosa o no.
+      await conn.reply(m.chat, `*Respuesta de la API:*
+\`\`\`json
+${JSON.stringify(json, null, 2)}
+\`\`\``, m);
 
       if (response.status !== 200 || !json.result?.download_url) {
         throw new Error(`Error en la API: ${json.detail || 'No se pudo obtener el enlace de descarga.'}`);
