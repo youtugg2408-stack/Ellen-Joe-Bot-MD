@@ -78,22 +78,23 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     }
 
     try {
+      const apiFormat = mode === 'audio' ? 'mp3' : 'mp4';
       const response = await fetch(`${NEVI_API_URL}/download`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': NEVI_API_KEY
         },
-        body: JSON.stringify({ url: queryOrUrl })
+        body: JSON.stringify({ url: queryOrUrl, format: apiFormat })
       });
       const json = await response.json();
 
-      if (response.status !== 200 || !json.download_url) {
-        throw new Error(`Error en la API: ${json.error || 'No se pudo obtener el enlace de descarga.'}`);
+      if (response.status !== 200 || !json.result?.download_url) {
+        throw new Error(`Error en la API: ${json.detail || 'No se pudo obtener el enlace de descarga.'}`);
       }
 
-      const title = videoInfo.title || 'Archivo de YouTube';
-      await sendMediaFile(json.download_url, title, mode);
+      const title = json.result.title || videoInfo.title || 'Archivo de YouTube';
+      await sendMediaFile(json.result.download_url, title, mode);
       return;
     } catch (e) {
       console.error("Error con NeviAPI:", e);
