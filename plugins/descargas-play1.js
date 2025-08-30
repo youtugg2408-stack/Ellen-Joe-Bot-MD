@@ -8,8 +8,7 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 
-// Reemplaza 'TU_CLAVE_API' con tu clave real.
-// Si no tienes una clave, no podrás usar esta API.
+// La clave se envía como un hash SHA256
 const NEVI_API_KEY = 'ellen';
 const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
 
@@ -61,87 +60,103 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
     const mode = args[0].toLowerCase();
 
-    // --- Lógica de la función de envío de archivos (Modificada para usar stream) ---
-    const sendMediaFile = async (downloadUrl, title, currentMode) => {
+    // Función principal para manejar la descarga de la API de NEVI
+    const handleNeviApiDownload = async () => {
+      // 1. Obtener los metadatos de YouTube para el título y otros datos
+      let videoInfo;
       try {
-        const isAudio = currentMode === 'audio';
-        const mediaMimetype = isAudio ? 'audio/mpeg' : 'video/mp4';
-        const fileName = `${title}.${isAudio ? 'mp3' : 'mp4'}`;
-
-        // Obtener el stream de datos del archivo
-        const response = await axios({
-          method: 'get',
-          url: downloadUrl,
-          responseType: 'stream'
-        });
-
-        const contentLength = response.headers['content-length'];
-        const fileSizeMb = contentLength / (1024 * 1024);
-
-        if (fileSizeMb > SIZE_LIMIT_MB) {
-          // Envía el archivo como documento si es muy grande
-          await conn.sendMessage(m.chat, {
-            document: response.data,
-            fileName,
-            mimetype: mediaMimetype,
-            caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), lo envío como documento. Puede tardar más en descargar.*
-🖤 *Título:* ${title}`
-          }, { quoted: m });
-          await m.react("📄");
-        } else {
-          // Envía el archivo como audio o video
-          const mediaOptions = isAudio
-            ? { audio: response.data, mimetype: mediaMimetype, fileName }
-            : { video: response.data, caption: `🎬 *Listo.* 🖤 *Título:* ${title}`, fileName, mimetype: mediaMimetype };
-          
-          await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-          await m.react(isAudio ? "🎧" : "📽️");
-        }
-      } catch (error) {
-        console.error("Error al enviar el archivo:", error);
-        throw new Error("No se pudo obtener el tamaño del archivo o falló el envío.");
+        videoInfo = await yts.getInfo(queryOrUrl);
+      } catch (e) {
+        console.error("Error al obtener info de la URL:", e);
+        videoInfo = { title: 'Archivo de YouTube' };
       }
-    };
-
-    // Obtener metadatos para el título
-    let videoInfo;
-    try {
-      videoInfo = await yts.getInfo(queryOrUrl);
-    } catch (e) {
-      console.error("Error al obtener info de la URL:", e);
-      videoInfo = { title: 'Archivo de YouTube' };
-    }
-
-    try {
-      // --- Lógica para la NEVI API ---
+      
+      // 2. Hacer la petición a la API de NEVI para generar el archivo
       const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
       const format = mode === "audio" ? "mp3" : "mp4";
+      const neviHeaders = { 'Content-Type': 'application/json', 'X-Auth-Sha256': NEVI_API_KEY_SHA256 };
+
       const res = await fetch(neviApiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Auth-Sha256': NEVI_API_KEY_SHA256,
-        },
-        body: JSON.stringify({
-          url: queryOrUrl,
-          format: format
-        }),
+        headers: neviHeaders,
+        body: JSON.stringify({ url: queryOrUrl, format: format }),
       });
 
       const json = await res.json();
 
-      if (json.ok && json.download_url) {
-        await sendMediaFile(json.download_url, json.info.title || videoInfo.title, mode);
-        return;
+      if (!json.ok || !json.download_url) {
+        throw new Error(`NEVI API... derrumbada. Estado: ${json.ok ? 'OK, pero sin URL de descarga' : 'Fallido'}`);
       }
-      throw new Error(`NEVI API... derrumbada. Estado: ${json.ok ? 'OK, pero sin URL de descarga' : 'Fallido'}`);
-    } catch (e) {
-      console.error("Error con NEVI API:", e);
-      await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
-*NEVI API falló.* Razón: ${e.message}`, m);
+      
+      const fileId = json.id;
+      const downloadUrl = `http://neviapi.ddns.net:8000${json.download_url}`;
+      const title = json.info.title || videoInfo.title;
 
+      // 3. Petición HEAD para obtener el tamaño del archivo
+      let fileSizeMb;
       try {
-        // --- Lógica de respaldo con ogmp3 ---
+        const headResponse = await axios.head(downloadUrl, { headers: neviHeaders });
+        const contentLength = headResponse.headers['content-length'];
+        fileSizeMb = contentLength / (1024 * 1024);
+      } catch (headError) {
+        console.error("Error en la petición HEAD:", headError);
+        throw new Error("No se pudo obtener el tamaño del archivo. Intentando con la lógica de respaldo.");
+      }
+
+      const isAudio = mode === 'audio';
+      const mediaMimetype = isAudio ? 'audio/mpeg' : 'video/mp4';
+      const fileName = `${title}.${isAudio ? 'mp3' : 'mp4'}`;
+      
+      // 4. Petición GET para descargar el archivo
+      const mediaOptions = {
+        quoted: m,
+        headers: neviHeaders
+      };
+
+      if (fileSizeMb > SIZE_LIMIT_MB) {
+        // Enviar como documento si es demasiado grande
+        mediaOptions.document = { url: downloadUrl };
+        mediaOptions.fileName = fileName;
+        mediaOptions.mimetype = mediaMimetype;
+        mediaOptions.caption = `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), lo envío como documento. Puede tardar más en descargar.*
+🖤 *Título:* ${title}`;
+        await conn.sendMessage(m.chat, mediaOptions);
+        await m.react("📄");
+      } else {
+        // Enviar como audio o video
+        if (isAudio) {
+          mediaOptions.audio = { url: downloadUrl };
+          mediaOptions.mimetype = mediaMimetype;
+          mediaOptions.fileName = fileName;
+        } else {
+          mediaOptions.video = { url: downloadUrl };
+          mediaOptions.caption = `🎬 *Listo.* 🖤 *Título:* ${title}`;
+          mediaOptions.fileName = fileName;
+          mediaOptions.mimetype = mediaMimetype;
+        }
+        await conn.sendMessage(m.chat, mediaOptions);
+        await m.react(isAudio ? "🎧" : "📽️");
+      }
+      
+      // 5. Notificar al servidor que la descarga ha terminado
+      try {
+        await axios.post(`http://neviapi.ddns.net:8000/done/${fileId}`, {}, { headers: neviHeaders });
+      } catch (doneError) {
+        console.error("Error al notificar la descarga al servidor:", doneError);
+      }
+    };
+    
+    // Ejecutar la lógica de la API de NEVI con un fallback
+    try {
+      await handleNeviApiDownload();
+      return;
+    } catch (apiError) {
+      console.error("Fallo con la API de NEVI, recurriendo a la lógica de respaldo:", apiError);
+      await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
+*NEVI API falló.* Razón: ${apiError.message}`, m);
+
+      // --- Lógica de respaldo con ogmp3 ---
+      try {
         const tmpDir = path.join(process.cwd(), './tmp');
         if (!fs.existsSync(tmpDir)) {
           fs.mkdirSync(tmpDir, { recursive: true });
@@ -249,7 +264,7 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
 > ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Subido por:* ${video.author.name}
 > ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ *Hace:* ${video.ago}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${video.url}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〫〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
   await conn.sendMessage(m.chat, {
