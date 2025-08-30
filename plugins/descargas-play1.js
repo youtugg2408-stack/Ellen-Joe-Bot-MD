@@ -55,7 +55,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     await m.react("📥");
 
     const mode = args[0].toLowerCase();
-    
+
     // --- LÓGICA DE DESCARGA CON NEVIAPI (PRIMERA OPCIÓN) ---
     try {
       const apiFormat = mode === 'audio' ? 'mp3' : 'mp4';
@@ -69,21 +69,22 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       });
       const json = await response.json();
 
-      if (response.status !== 200 || !json.result?.download_url) {
+      // Corregido: Accede a download_url y title directamente desde 'json'
+      if (response.status !== 200 || !json.download_url) {
         throw new Error(`Error en la API: ${json.detail || 'No se pudo obtener el enlace de descarga.'}`);
       }
 
-      const title = json.result.title || 'Archivo de YouTube';
+      const title = json.title || 'Archivo de YouTube';
       const mediaOptions = mode === 'audio'
-          ? { audio: { url: json.result.download_url }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-          : { video: { url: json.result.download_url }, caption: `🎬 *Listo.*
+        ? { audio: { url: json.download_url }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+        : { video: { url: json.download_url }, caption: `🎬 *Listo.*
 🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
 
       await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
       await m.react(mode === 'audio' ? "🎧" : "📽️");
       return;
+
     } catch (e) {
-      // **CAMBIO AQUÍ**: Muestra el motivo del error.
       const errorMessage = e.message || "No se pudo determinar la causa del error.";
       console.error("Error con NeviAPI. Intentando con la alternativa (ogmp3)...", e);
       await conn.reply(m.chat, `⚠️ *¡Error de conexión!*
