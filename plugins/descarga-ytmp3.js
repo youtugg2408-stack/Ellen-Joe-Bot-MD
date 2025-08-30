@@ -1,8 +1,11 @@
-//código creado por Dioneibi-rip
-//modificado por nevi-dev
 import fetch from 'node-fetch';
+import crypto from 'crypto'; // Necesitas importar el módulo crypto para el hash SHA-256
 
 // --- Constantes y Configuración de Transmisión ---
+// Las variables de la API de NEVI se han movido aquí para el manejador
+const NEVI_API_KEY = 'ellen'; 
+const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
+
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 
@@ -20,9 +23,9 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
       serverMessageId: -1
     },
     externalAdReply: {
-      title: 'Ellen Joe: Pista localizada. 🦈', // Título actualizado
-      body: `Procesando solicitud para el/la Proxy ${name}...`, // Cuerpo actualizado
-      thumbnail: global.icono, // Asegúrate de que 'icons' y 'redes' estén definidos globalmente o pasados
+      title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
+      body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
+      thumbnail: global.icons,
       sourceUrl: global.redes,
       mediaType: 1,
       renderLargerThumbnail: false
@@ -47,60 +50,47 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
     );
 
     const url = args[0];
-    const apiUrl = `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`;
-    const res = await fetch(apiUrl);
+    
+    // --- Lógica para la NEVI API ---
+    const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
+    const res = await fetch(neviApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+      },
+      body: JSON.stringify({
+        url: url,
+        format: "mp3" // La API de NEVI requiere el formato explícito
+      }),
+    });
+
     const json = await res.json();
 
-    if (json.status !== 200 || !json.result?.download?.url) {
-      return conn.reply(
-        m.chat,
-        `❌ *Extracción de audio fallida, Proxy ${name}.*\nEl objetivo se ha escapado o la señal es inestable. Razón: ${json.message || 'Respuesta inválida del servidor.'}`,
-        m,
-        { contextInfo, quoted: m }
-      );
-    }
-
-    // Metadata
-    const meta = json.result.metadata;
-    const title = meta.title;
-    const description = meta.description;
-    const timestamp = meta.timestamp;
-    const views = meta.views.toLocaleString();
-    const ago = meta.ago;
-    const authorName = meta.author?.name || 'Desconocido';
-    // Download info
-    const downloadURL = json.result.download.url;
-    const quality = json.result.download.quality;
-    const filename = json.result.download.filename;
-
-    const audioRes = await fetch(downloadURL);
-    const audioBuffer = await audioRes.buffer();
-
-    // Caption con estilo Ellen Joe
-    const caption = `
+    if (json.ok && json.download_url) {
+        // Enviar audio si la respuesta es exitosa
+        await conn.sendMessage(
+            m.chat,
+            {
+                audio: { url: json.download_url },
+                mimetype: 'audio/mpeg',
+                fileName: json.info.title + '.mp3',
+                ptt: false,
+                caption: `
 ╭━━━━[ 𝚈𝚃𝙼𝙿𝟹 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙵𝚕𝚞𝚓𝚘 𝙰𝚞𝚍𝚒𝚘 𝚂𝚎𝚐𝚞𝚛𝚘 ]━━━━⬣
-📌 *Designación de Audio:* ${title}
-👤 *Fuente Operacional:* ${authorName}
-⏱️ *Duración del Flujo:* ${timestamp}
-📅 *Fecha de Registro:* ${ago}
-👁️ *Registros de Observación:* ${views}
-🎚️ *Calidad de Transmisión:* ${quality}
+📌 *Designación de Audio:* ${json.info.title}
+👤 *Fuente Operacional:* ${json.info.author}
+⏱️ *Duración del Flujo:* ${json.info.timestamp}
+👁️ *Registros de Observación:* ${json.info.views.toLocaleString()}
 📄 *Manifiesto de Carga (Descripción):*
-${description}
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━⬣`;
-
-    // Enviar audio
-    await conn.sendMessage(
-      m.chat,
-      {
-        audio: audioBuffer,
-        mimetype: 'audio/mpeg',
-        fileName: filename,
-        ptt: false, // Mantener ptt en false a menos que se solicite un mensaje de voz
-        caption
-      },
-      { contextInfo, quoted: m }
-    );
+${json.info.description}
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━⬣`
+            },
+            { contextInfo, quoted: m }
+        );
+    } else {
+        throw new Error(`Extracción de audio fallida, Proxy ${name}. La señal es inestable. Razón: ${json.message || 'Respuesta inválida del servidor.'}`);
+    }
 
   } catch (e) {
     console.error(e);
