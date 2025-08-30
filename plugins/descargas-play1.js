@@ -54,12 +54,64 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   const isInputUrl = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl);
 
   let video;
-
+  
+  // --- Lógica para obtener metadatos si es una URL o una búsqueda ---
+  if (isInputUrl) {
+    try {
+      const info = await yts.getInfo(queryOrUrl);
+      video = {
+        title: info.title,
+        timestamp: info.timestamp,
+        views: info.views,
+        author: { name: info.author.name },
+        ago: info.ago,
+        url: info.url,
+        thumbnail: info.thumbnail
+      };
+    } catch (e) {
+      console.error("Error al obtener info de la URL:", e);
+      return conn.reply(m.chat, `💔 *Fallé al procesar la URL.*
+Asegúrate de que sea una URL de YouTube válida.`, m, { contextInfo });
+    }
+  } else {
+    try {
+      const searchResult = await yts(queryOrUrl);
+      video = searchResult.videos?.[0];
+    } catch (e) {
+      console.error("Error durante la búsqueda en Youtube:", e);
+      return conn.reply(m.chat, `🖤 *qué patético...*
+no logré encontrar nada con lo que pediste`, m, { contextInfo });
+    }
+  }
+  
+  if (!video) {
+    return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*
+nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
+  }
+  
+  // --- Lógica de descarga (solo si se especificó el modo) ---
   if (isMode && isInputUrl) {
-    video = { url: queryOrUrl };
     await m.react("📥");
 
     const mode = args[0].toLowerCase();
+    
+    // Función para notificar a la API que la descarga ha terminado.
+    const notifyApiDone = async (downloadId, success) => {
+        try {
+            const doneUrl = `http://neviapi.ddns.net:8000/done/${downloadId}`;
+            await fetch(doneUrl, {
+                method: 'POST',
+                headers: {
+                    'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ success })
+            });
+            console.log(`Notificación a NEVI API de descarga terminada: ${downloadId}, éxito: ${success}`);
+        } catch (e) {
+            console.error("Error al notificar a la API:", e);
+        }
+    };
 
     // --- Lógica de la función de envío de archivos, ahora con el check de tamaño ---
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
@@ -93,15 +145,8 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         throw new Error("No se pudo obtener el tamaño del archivo o falló el envío. Se intentará de nuevo.");
       }
     };
-
-    // Obtener metadatos para el título
-    let videoInfo;
-    try {
-      videoInfo = await yts.getInfo(queryOrUrl);
-    } catch (e) {
-      console.error("Error al obtener info de la URL:", e);
-      videoInfo = { title: 'Archivo de YouTube' };
-    }
+    
+    let neviDownloadId = null;
 
     try {
       // --- Lógica para la NEVI API ---
@@ -120,14 +165,22 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       });
 
       const json = await res.json();
+      neviDownloadId = json.download_id;
 
       if (json.ok && json.download_url) {
-        await sendMediaFile(json.download_url, json.info.title || videoInfo.title, mode);
+        await sendMediaFile(json.download_url, json.info.title || video.title, mode);
+        // Notificar a la API que la descarga ha sido exitosa.
+        await notifyApiDone(neviDownloadId, true);
         return;
       }
       throw new Error(`NEVI API... derrumbada. Estado: ${json.ok ? 'OK, pero sin URL de descarga' : 'Fallido'}`);
     } catch (e) {
       console.error("Error con NEVI API:", e);
+      // Notificar a la API que la descarga ha fallado.
+      if (neviDownloadId) {
+          await notifyApiDone(neviDownloadId, false);
+      }
+      
       await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
 *NEVI API falló.* Razón: ${e.message}`, m);
 
@@ -185,41 +238,8 @@ no pude traerte nada.`, m);
     }
     return;
   }
-
-  // --- Lógica para la búsqueda de video (si no hay modo especificado) ---
-  if (isInputUrl) {
-    try {
-      const info = await yts.getInfo(queryOrUrl);
-      video = {
-        title: info.title,
-        timestamp: info.timestamp,
-        views: info.views,
-        author: { name: info.author.name },
-        ago: info.ago,
-        url: info.url,
-        thumbnail: info.thumbnail
-      };
-    } catch (e) {
-      console.error("Error al obtener info de la URL:", e);
-      return conn.reply(m.chat, `💔 *Fallé al procesar la URL.*
-Asegúrate de que sea una URL de YouTube válida.`, m, { contextInfo });
-    }
-  } else {
-    try {
-      const searchResult = await yts(queryOrUrl);
-      video = searchResult.videos?.[0];
-    } catch (e) {
-      console.error("Error durante la búsqueda en Youtube:", e);
-      return conn.reply(m.chat, `🖤 *qué patético...*
-no logré encontrar nada con lo que pediste`, m, { contextInfo });
-    }
-  }
-
-  if (!video) {
-    return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*
-nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
-  }
-
+  
+  // Si no se especificó un modo, envía la interfaz de botones
   const buttons = [
     { buttonId: `${usedPrefix}play audio ${video.url}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 },
     { buttonId: `${usedPrefix}play video ${video.url}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 }
