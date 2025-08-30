@@ -54,7 +54,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   const isInputUrl = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl);
 
   let video;
-  
+
   // --- Lógica para obtener metadatos si es una URL o una búsqueda ---
   if (isInputUrl) {
     try {
@@ -70,8 +70,8 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       };
     } catch (e) {
       console.error("Error al obtener info de la URL:", e);
-      return conn.reply(m.chat, `💔 *Fallé al procesar la URL.*
-Asegúrate de que sea una URL de YouTube válida.`, m, { contextInfo });
+      return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
+Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de YouTube válida?`, m, { contextInfo });
     }
   } else {
     try {
@@ -83,7 +83,7 @@ Asegúrate de que sea una URL de YouTube válida.`, m, { contextInfo });
 no logré encontrar nada con lo que pediste`, m, { contextInfo });
     }
   }
-  
+
   if (!video) {
     return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*
 nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
