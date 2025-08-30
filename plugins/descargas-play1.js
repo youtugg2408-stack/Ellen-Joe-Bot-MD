@@ -1,51 +1,37 @@
 import fetch from "node-fetch";
 import yts from "yt-search";
 import axios from 'axios';
-import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 import { ogmp3 } from '../lib/youtubedl.js';
 
 const NEVI_API_KEY = 'ellen';
-const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
 const SIZE_LIMIT_MB = 100;
 
-const newsletterJid = '120363418071540900@newsletter';
-const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
-
 const handler = async (m, { conn, args, usedPrefix }) => {
-    const name = conn.getName(m.sender);
     args = args.filter(v => v?.trim());
-    const contextInfo = {
-        mentionedJid: [m.sender],
-        isForwarded: true,
-        forwardingScore: 999,
-        forwardedNewsletterMessageInfo: { newsletterJid, newsletterName, serverMessageId: -1 },
-    };
-
     if (!args[0]) return conn.reply(m.chat,
-        `🦈 *¿Qué quieres reproducir?*\n🎧 Ejemplo:\n${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
+        `🦈 *¿Qué quieres reproducir?*\n🎧 Ejemplo:\n${usedPrefix}play moonlight - kali uchis`, m);
 
     const isMode = ["audio", "video"].includes(args[0].toLowerCase());
-    const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
     const mode = isMode ? args[0].toLowerCase() : null;
+    const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
 
-    // --- Siempre buscar con yt-search para obtener info ---
+    // --- Buscar info con yt-search ---
     let video;
     try {
         let searchResult;
         if (/^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl)) {
-            searchResult = await yts({ videoId: queryOrUrl.split('v=')[1] || queryOrUrl.split('/').pop() });
+            const id = queryOrUrl.split('v=')[1] || queryOrUrl.split('/').pop();
+            searchResult = await yts({ videoId: id });
         } else {
             const search = await yts(queryOrUrl);
             searchResult = search.videos?.[0];
         }
-
         if (!searchResult) throw new Error('No se encontró video');
-
         video = {
             title: searchResult.title,
-            timestamp: searchResult.timestamp,
+            duration: searchResult.timestamp,
             views: searchResult.views,
             author: { name: searchResult.author.name },
             ago: searchResult.ago,
@@ -53,39 +39,41 @@ const handler = async (m, { conn, args, usedPrefix }) => {
             thumbnail: searchResult.thumbnail
         };
     } catch {
-        return conn.reply(m.chat, `💔 *No se pudo obtener información del video*`, m, { contextInfo });
+        return conn.reply(m.chat, `💔 *No se pudo obtener información del video*`, m);
     }
 
-    // --- Mensaje inicial con botones ---
-    const buttons = [
-        { buttonId: `${usedPrefix}play audio ${video.url}`, buttonText: { displayText: '🎧 AUDIO' }, type: 1 },
-        { buttonId: `${usedPrefix}play video ${video.url}`, buttonText: { displayText: '🎬 VIDEO' }, type: 1 }
-    ];
+    // --- Mostrar botones si no se seleccionó modo ---
+    if (!mode) {
+        const buttons = [
+            { buttonId: `${usedPrefix}play audio ${video.url}`, buttonText: { displayText: '🎧 AUDIO' }, type: 1 },
+            { buttonId: `${usedPrefix}play video ${video.url}`, buttonText: { displayText: '🎬 VIDEO' }, type: 1 }
+        ];
 
-    const caption = `
-┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼
+        const caption = `
+┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪۪۪۪۪ٜ݊᷼⁔᮫ּׅ̫ׄ࣪︵᮫ּ๋ׅׅ۪۪۪۪ׅ࣪࣪͡⌒🌀𔗨⃪̤̤̤ٜ۫۫۫҈҈҈҈҉҉᷒ᰰ꤬۫۫۫𔗨̤̤̤𐇽─۪۪۪۪ٜ᷼┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪݊᷼
 ₊‧꒰ 🎧꒱ 𝙀𝙇𝙇𝙀𝙉 𝙅𝙊𝙀 𝘽𝙊𝙏 — 𝙋𝙇𝘼𝙔 𝙈𝙊𝘿𝙀 ✧˖°
+︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶
 
-> 🎧 *Título:* ${video.title}
-> ⏱️ *Duración:* ${video.timestamp}
-> 👀 *Vistas:* ${video.views.toLocaleString()}
-> 👤 *Subido por:* ${video.author.name}
-> 📅 *Hace:* ${video.ago}
-> 🔗 *URL:* ${video.url}
-
+> ૢ⃘꒰🎧⃝︩֟፝𐴲ⳋᩧ᪲ *Título:* ${video.title}
+> ૢ⃘꒰⏱️⃝︩֟፝𐴲ⳋᩧ᪲ *Duración:* ${video.duration}
+> ૢ⃘꒰👀⃝︩֟፝𐴲ⳋᩧ᪲ *Vistas:* ${video.views.toLocaleString()}
+> ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Subido por:* ${video.author.name}
+> ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ *Hace:* ${video.ago}
+> ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${video.url}
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+     ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝
 Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
 
-    await conn.sendMessage(m.chat, {
-        image: { url: video.thumbnail },
-        caption,
-        footer: 'Elige una opción:',
-        buttons,
-        headerType: 4,
-        contextInfo
-    }, { quoted: m });
+        return await conn.sendMessage(m.chat, {
+            image: { url: video.thumbnail },
+            caption,
+            footer: 'Elige una opción:',
+            buttons,
+            headerType: 4
+        }, { quoted: m });
+    }
 
-    if (!mode) return;
-
+    // --- Preparar tmp ---
     const tmpDir = path.join(process.cwd(), './tmp');
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
     const ext = mode === 'audio' ? 'mp3' : 'mp4';
@@ -94,11 +82,11 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
 
     let fileId = null;
 
-    // --- Intentar NEVI API ---
     try {
+        // --- Intentar NEVI API ---
         const res = await fetch(`http://neviapi.ddns.net:8000/youtube`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Auth-Sha256': NEVI_API_KEY_SHA256 },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: video.url, format: ext })
         });
         const json = await res.json();
@@ -106,13 +94,14 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
         fileId = json.id;
 
         const head = await axios.head(json.download_url);
-        const fileSizeMb = head.headers['content-length'] / (1024 * 1024);
+        const fileSizeMb = head.headers['content-length'] / (1024*1024);
 
         if (fileSizeMb > SIZE_LIMIT_MB) {
+            // Descargar a tmp y enviar como documento
             const writer = fs.createWriteStream(tempFilePath);
             const response = await axios.get(json.download_url, { responseType: 'stream' });
             response.data.pipe(writer);
-            await new Promise((resolve, reject) => { writer.on('finish', resolve); writer.on('error', reject); });
+            await new Promise((resolve, reject) => writer.on('finish', resolve).on('error', reject));
             const fileBuffer = fs.readFileSync(tempFilePath);
 
             await conn.sendMessage(m.chat, {
@@ -132,16 +121,16 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
             }, { quoted: m });
         }
     } catch {
-        // --- Fallback con ogmp3 ---
+        // Fallback con ogmp3
         try {
             await ogmp3.download(video.url, tempFilePath, mode);
             const stats = fs.statSync(tempFilePath);
-            const fileSizeMb = stats.size / (1024 * 1024);
+            const fileSizeMb = stats.size / (1024*1024);
             const fileBuffer = fs.readFileSync(tempFilePath);
 
             const mediaOptions = fileSizeMb > SIZE_LIMIT_MB
-                ? { document: fileBuffer, fileName: `${video.title}.${ext}`, mimetype: mode === 'audio' ? 'audio/mpeg' : 'video/mp4', caption: `⚠️ Archivo grande (${fileSizeMb.toFixed(2)} MB), enviado como documento.\nTítulo: ${video.title}` }
-                : mode === 'audio'
+                ? { document: fileBuffer, fileName: `${video.title}.${ext}`, mimetype: mode==='audio'?'audio/mpeg':'video/mp4', caption: `⚠️ Archivo grande (${fileSizeMb.toFixed(2)} MB), enviado como documento.\nTítulo: ${video.title}` }
+                : mode==='audio'
                     ? { audio: fileBuffer, mimetype: 'audio/mpeg', fileName: `${video.title}.mp3` }
                     : { video: fileBuffer, mimetype: 'video/mp4', fileName: `${video.title}.mp4`, caption: `🎬 Listo. Título: ${video.title}` };
 
