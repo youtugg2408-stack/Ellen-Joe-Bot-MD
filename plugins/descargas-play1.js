@@ -61,36 +61,45 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
     const mode = args[0].toLowerCase();
 
-    // --- Lógica de la función de envío de archivos, ahora con el check de tamaño ---
+    // --- Lógica de la función de envío de archivos (Modificada para usar stream) ---
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
-        const response = await axios.head(downloadUrl);
+        const isAudio = currentMode === 'audio';
+        const mediaMimetype = isAudio ? 'audio/mpeg' : 'video/mp4';
+        const fileName = `${title}.${isAudio ? 'mp3' : 'mp4'}`;
+
+        // Obtener el stream de datos del archivo
+        const response = await axios({
+          method: 'get',
+          url: downloadUrl,
+          responseType: 'stream'
+        });
+
         const contentLength = response.headers['content-length'];
         const fileSizeMb = contentLength / (1024 * 1024);
 
         if (fileSizeMb > SIZE_LIMIT_MB) {
-          // El archivo es demasiado grande, enviarlo como documento
+          // Envía el archivo como documento si es muy grande
           await conn.sendMessage(m.chat, {
-            document: { url: downloadUrl },
-            fileName: `${title}.${currentMode === 'audio' ? 'mp3' : 'mp4'}`,
-            mimetype: currentMode === 'audio' ? 'audio/mpeg' : 'video/mp4',
-            caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
+            document: response.data,
+            fileName,
+            mimetype: mediaMimetype,
+            caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), lo envío como documento. Puede tardar más en descargar.*
 🖤 *Título:* ${title}`
           }, { quoted: m });
-          await m.react("📄"); // React con un emoji de documento
+          await m.react("📄");
         } else {
-          // El archivo está dentro del límite, enviarlo como audio o video
-          const mediaOptions = currentMode === 'audio'
-            ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-            : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
-🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
-
+          // Envía el archivo como audio o video
+          const mediaOptions = isAudio
+            ? { audio: response.data, mimetype: mediaMimetype, fileName }
+            : { video: response.data, caption: `🎬 *Listo.* 🖤 *Título:* ${title}`, fileName, mimetype: mediaMimetype };
+          
           await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-          await m.react(currentMode === 'audio' ? "🎧" : "📽️");
+          await m.react(isAudio ? "🎧" : "📽️");
         }
       } catch (error) {
-        console.error("Error al obtener el tamaño del archivo o al enviarlo:", error);
-        throw new Error("No se pudo obtener el tamaño del archivo o falló el envío. Se intentará de nuevo.");
+        console.error("Error al enviar el archivo:", error);
+        throw new Error("No se pudo obtener el tamaño del archivo o falló el envío.");
       }
     };
 
@@ -133,7 +142,11 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
       try {
         // --- Lógica de respaldo con ogmp3 ---
-        const tempFilePath = path.join(process.cwd(), './tmp', `${Date.now()}_${mode === 'audio' ? 'audio' : 'video'}.tmp`);
+        const tmpDir = path.join(process.cwd(), './tmp');
+        if (!fs.existsSync(tmpDir)) {
+          fs.mkdirSync(tmpDir, { recursive: true });
+        }
+        const tempFilePath = path.join(tmpDir, `${Date.now()}_${mode === 'audio' ? 'audio' : 'video'}.tmp`);
         
         await m.react("🔃"); 
         const downloadResult = await ogmp3.download(queryOrUrl, tempFilePath, mode);
@@ -236,7 +249,7 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
 > ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Subido por:* ${video.author.name}
 > ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ *Hace:* ${video.ago}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${video.url}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〫〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
   await conn.sendMessage(m.chat, {
