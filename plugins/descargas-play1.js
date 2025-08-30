@@ -11,7 +11,7 @@ const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 // API de NeviAPI
 const NEVI_API_URL = 'http://neviapi.ddns.net:8000';
 // Clave "ellen" en formato SHA256
-const NEVI_API_KEY = '7975b4132aaa77d75069a5d2ab3c501413eb91d11d046815158103d5628d7405'; 
+const NEVI_API_KEY = '9348450360c2955c1da2a0e0d144cb8498b424c32b03d64d4e3a2fe4f07e2a6e';
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
@@ -55,28 +55,8 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     await m.react("📥");
 
     const mode = args[0].toLowerCase();
-    const sendMediaFile = async (downloadUrl, title, currentMode) => {
-      try {
-        const mediaOptions = currentMode === 'audio'
-          ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-          : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
-🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
-
-        await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-        await m.react(currentMode === 'audio' ? "🎧" : "📽️");
-      } catch (error) {
-        throw error;
-      }
-    };
-
-    let videoInfo;
-    try {
-        videoInfo = await yts.getInfo(queryOrUrl);
-    } catch (e) {
-        console.error("Error al obtener info de la URL para la descarga:", e);
-        videoInfo = { title: 'Archivo de YouTube', thumbnail: 'URL_NO_DISPONIBLE' };
-    }
-
+    
+    // --- LÓGICA DE DESCARGA CON NEVIAPI (PRIMERA OPCIÓN) ---
     try {
       const apiFormat = mode === 'audio' ? 'mp3' : 'mp4';
       const response = await fetch(`${NEVI_API_URL}/download`, {
@@ -89,27 +69,55 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       });
       const json = await response.json();
 
-      // Muestra la respuesta de la API, sin importar si fue exitosa o no.
-      await conn.reply(m.chat, `*Respuesta de la API:*
-\`\`\`json
-${JSON.stringify(json, null, 2)}
-\`\`\``, m);
-
       if (response.status !== 200 || !json.result?.download_url) {
         throw new Error(`Error en la API: ${json.detail || 'No se pudo obtener el enlace de descarga.'}`);
       }
 
-      const title = json.result.title || videoInfo.title || 'Archivo de YouTube';
-      await sendMediaFile(json.result.download_url, title, mode);
+      const title = json.result.title || 'Archivo de YouTube';
+      const mediaOptions = mode === 'audio'
+          ? { audio: { url: json.result.download_url }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+          : { video: { url: json.result.download_url }, caption: `🎬 *Listo.*
+🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
+
+      await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+      await m.react(mode === 'audio' ? "🎧" : "📽️");
       return;
     } catch (e) {
-      console.error("Error con NeviAPI:", e);
-      await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
-*NeviAPI falló.* Razón: ${e.message}`, m);
+      console.error("Error con NeviAPI. Intentando con la alternativa (ogmp3)...", e);
+      await conn.reply(m.chat, `⚠️ *¡Error de conexión!*
+No pude contactar a la API principal. Intentaré con un método alternativo...`, m);
 
-      await conn.reply(m.chat, `💔 *fallé. pero tú más.*
-no pude traerte nada.`, m);
-      await m.react("❌");
+      // --- LÓGICA DE DESCARGA CON OGMP3 (OPCIÓN DE RESERVA) ---
+      try {
+        const audio = await ogmp3(queryOrUrl);
+        const title = audio.title || 'Archivo de YouTube';
+
+        if (mode === 'audio' && audio.buffer) {
+          await conn.sendMessage(m.chat, {
+            audio: audio.buffer,
+            mimetype: 'audio/mpeg',
+            fileName: `${title}.mp3`
+          }, { quoted: m });
+          await m.react("🎧");
+        } else if (mode === 'video' && audio.buffer) {
+          await conn.sendMessage(m.chat, {
+            video: audio.buffer,
+            caption: `🎬 *Listo.*
+🖤 *Título:* ${title}`,
+            fileName: `${title}.mp4`,
+            mimetype: "video/mp4"
+          }, { quoted: m });
+          await m.react("📽️");
+        } else {
+          throw new Error('No se pudo obtener el archivo del video/audio.');
+        }
+        return;
+      } catch (e) {
+        console.error("Error con ogmp3:", e);
+        await conn.reply(m.chat, `💔 *Fallé por completo.*
+Ambos métodos de descarga fallaron. Intenta de nuevo más tarde.`, m);
+        await m.react("❌");
+      }
     }
     return;
   }
