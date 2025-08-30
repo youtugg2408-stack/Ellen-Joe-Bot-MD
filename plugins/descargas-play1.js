@@ -1,12 +1,13 @@
+// Importa las librerías necesarias
 import fetch from "node-fetch";
 import { ogmp3 } from '../lib/youtubedl.js';
 import yts from "yt-search";
 import axios from 'axios';
-import crypto from 'crypto'; // Necesitas importar el módulo crypto para el hash SHA-256
+import crypto from 'crypto';
 
 // Reemplaza 'TU_CLAVE_API' con tu clave real.
 // Si no tienes una clave, no podrás usar esta API.
-const NEVI_API_KEY = 'ellen'; 
+const NEVI_API_KEY = 'ellen';
 const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
 
 const SIZE_LIMIT_MB = 100;
@@ -30,8 +31,8 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     externalAdReply: {
       title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
       body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
-      thumbnail: icons,
-      sourceUrl: redes,
+      thumbnail: icons, // Asume que 'icons' está definido en otro lugar
+      sourceUrl: redes, // Asume que 'redes' está definido en otro lugar
       mediaType: 1,
       renderLargerThumbnail: false
     }
@@ -56,17 +57,37 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     await m.react("📥");
 
     const mode = args[0].toLowerCase();
+    
+    // --- Lógica de la función de envío de archivos, ahora con el check de tamaño ---
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
-        const mediaOptions = currentMode === 'audio'
-          ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-          : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
+        const response = await axios.head(downloadUrl);
+        const contentLength = response.headers['content-length'];
+        const fileSizeMb = contentLength / (1024 * 1024);
+
+        if (fileSizeMb > SIZE_LIMIT_MB) {
+          // El archivo es demasiado grande, enviarlo como documento
+          await conn.sendMessage(m.chat, {
+            document: { url: downloadUrl },
+            fileName: `${title}.${currentMode === 'audio' ? 'mp3' : 'mp4'}`,
+            mimetype: currentMode === 'audio' ? 'audio/mpeg' : 'video/mp4',
+            caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
+🖤 *Título:* ${title}`
+          }, { quoted: m });
+          await m.react("📄"); // React con un emoji de documento
+        } else {
+          // El archivo está dentro del límite, enviarlo como audio o video
+          const mediaOptions = currentMode === 'audio'
+            ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+            : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
 🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
-        
-        await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-        await m.react(currentMode === 'audio' ? "🎧" : "📽️");
+
+          await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+          await m.react(currentMode === 'audio' ? "🎧" : "📽️");
+        }
       } catch (error) {
-        throw error;
+        console.error("Error al obtener el tamaño del archivo o al enviarlo:", error);
+        throw new Error("No se pudo obtener el tamaño del archivo o falló el envío. Se intentará de nuevo.");
       }
     };
 
@@ -96,7 +117,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       });
 
       const json = await res.json();
-      
+
       if (json.ok && json.download_url) {
         await sendMediaFile(json.download_url, json.info.title || videoInfo.title, mode);
         return;
