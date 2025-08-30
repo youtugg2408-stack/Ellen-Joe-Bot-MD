@@ -29,30 +29,32 @@ const handler = async (m, { conn, args, usedPrefix }) => {
     const isMode = ["audio", "video"].includes(args[0].toLowerCase());
     const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
     const mode = isMode ? args[0].toLowerCase() : null;
-    const isInputUrl = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl);
 
+    // --- Siempre buscar con yt-search para obtener info ---
     let video;
     try {
-        if (isInputUrl) {
-            const info = await yts.getInfo(queryOrUrl);
-            video = {
-                title: info.title,
-                timestamp: info.timestamp,
-                views: info.views,
-                author: { name: info.author.name },
-                ago: info.ago,
-                url: info.url,
-                thumbnail: info.thumbnail
-            };
+        let searchResult;
+        if (/^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl)) {
+            searchResult = await yts({ videoId: queryOrUrl.split('v=')[1] || queryOrUrl.split('/').pop() });
         } else {
-            const searchResult = await yts(queryOrUrl);
-            video = searchResult.videos?.[0];
+            const search = await yts(queryOrUrl);
+            searchResult = search.videos?.[0];
         }
+
+        if (!searchResult) throw new Error('No se encontró video');
+
+        video = {
+            title: searchResult.title,
+            timestamp: searchResult.timestamp,
+            views: searchResult.views,
+            author: { name: searchResult.author.name },
+            ago: searchResult.ago,
+            url: searchResult.url,
+            thumbnail: searchResult.thumbnail
+        };
     } catch {
         return conn.reply(m.chat, `💔 *No se pudo obtener información del video*`, m, { contextInfo });
     }
-
-    if (!video) return conn.reply(m.chat, `🦈 *No se encontró nada para:* ${queryOrUrl}`, m, { contextInfo });
 
     // --- Mensaje inicial con botones ---
     const buttons = [
@@ -97,7 +99,7 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
         const res = await fetch(`http://neviapi.ddns.net:8000/youtube`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Auth-Sha256': NEVI_API_KEY_SHA256 },
-            body: JSON.stringify({ url: queryOrUrl, format: ext })
+            body: JSON.stringify({ url: video.url, format: ext })
         });
         const json = await res.json();
         if (!json.ok || !json.download_url) throw new Error('No se obtuvo URL de descarga');
@@ -107,7 +109,6 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
         const fileSizeMb = head.headers['content-length'] / (1024 * 1024);
 
         if (fileSizeMb > SIZE_LIMIT_MB) {
-            // Descargar primero a tmp
             const writer = fs.createWriteStream(tempFilePath);
             const response = await axios.get(json.download_url, { responseType: 'stream' });
             response.data.pipe(writer);
@@ -123,7 +124,6 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
 
             fs.unlinkSync(tempFilePath);
         } else {
-            // Enviar directo
             await conn.sendMessage(m.chat, {
                 [mode]: { url: json.download_url },
                 mimetype: mode === 'audio' ? 'audio/mpeg' : 'video/mp4',
@@ -134,7 +134,7 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
     } catch {
         // --- Fallback con ogmp3 ---
         try {
-            await ogmp3.download(queryOrUrl, tempFilePath, mode);
+            await ogmp3.download(video.url, tempFilePath, mode);
             const stats = fs.statSync(tempFilePath);
             const fileSizeMb = stats.size / (1024 * 1024);
             const fileBuffer = fs.readFileSync(tempFilePath);
@@ -151,7 +151,6 @@ Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.`;
             return conn.reply(m.chat, `⚠️ No se pudo descargar ni enviar el archivo`, m);
         }
     } finally {
-        // Notificar a NEVI API si descargamos desde ahí
         if (fileId) {
             try { await fetch(`http://neviapi.ddns.net:8000/done/${fileId}`, { method: 'POST', headers: { 'Authorization': `Bearer ${NEVI_API_KEY}` } }); } catch {}
         }
