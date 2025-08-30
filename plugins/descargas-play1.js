@@ -28,7 +28,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     },
     externalAdReply: {
       title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
-      body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 sᴏʟɪᴄɪᴛᴜᴅ, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
+      body: `✦ 𝙀sᴘᴇʀᴀɴᴅᴏ ᴛᴜ sᴏʟɪᴄɪᴛᴜᴅ, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
       thumbnail: icons, // Asumiendo que 'icons' está definido globalmente
       sourceUrl: redes, // Asumiendo que 'redes' está definido globalmente
       mediaType: 1,
@@ -59,25 +59,24 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     // --- LÓGICA DE DESCARGA CON NEVIAPI (PRIMERA OPCIÓN) ---
     try {
       const apiFormat = mode === 'audio' ? 'mp3' : 'mp4';
-      const response = await fetch(`${NEVI_API_URL}/download`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': NEVI_API_KEY
-        },
-        body: JSON.stringify({ url: queryOrUrl, format: apiFormat })
-      });
+      
+      // CAMBIO: Petición GET con parámetros en la URL, sin headers ni body
+      const downloadApiUrl = `${NEVI_API_URL}/download?url=${encodeURIComponent(queryOrUrl)}&format=${apiFormat}`;
+      const response = await fetch(downloadApiUrl, { method: 'GET' });
       const json = await response.json();
 
       // Corregido: Accede a download_url y title directamente desde 'json'
       if (response.status !== 200 || !json.download_url) {
         throw new Error(`Error en la API: ${json.detail || 'No se pudo obtener el enlace de descarga.'}`);
       }
-
+      
+      // CAMBIO: Construye la URL de descarga final con la clave 'pas'
+      const finalDownloadUrl = `${json.download_url}${NEVI_API_KEY}`;
+      
       const title = json.title || 'Archivo de YouTube';
       const mediaOptions = mode === 'audio'
-        ? { audio: { url: json.download_url }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-        : { video: { url: json.download_url }, caption: `🎬 *Listo.*
+        ? { audio: { url: finalDownloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+        : { video: { url: finalDownloadUrl }, caption: `🎬 *Listo.*
 🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
 
       await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
