@@ -2,6 +2,12 @@ import fetch from "node-fetch";
 import { ogmp3 } from '../lib/youtubedl.js';
 import yts from "yt-search";
 import axios from 'axios';
+import crypto from 'crypto'; // Necesitas importar el módulo crypto para el hash SHA-256
+
+// Reemplaza 'TU_CLAVE_API' con tu clave real.
+// Si no tienes una clave, no podrás usar esta API.
+const NEVI_API_KEY = 'ellen'; 
+const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
 
 const SIZE_LIMIT_MB = 100;
 const MIN_AUDIO_SIZE_BYTES = 50000;
@@ -24,8 +30,8 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     externalAdReply: {
       title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
       body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
-      thumbnail: icons, // Asumiendo que 'icons' está definido globalmente
-      sourceUrl: redes, // Asumiendo que 'redes' está definido globalmente
+      thumbnail: icons,
+      sourceUrl: redes,
       mediaType: 1,
       renderLargerThumbnail: false
     }
@@ -46,63 +52,66 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   let video;
 
   if (isMode && isInputUrl) {
-    // Si se especificó el modo (audio/video) y se proporcionó una URL, la usamos directamente
     video = { url: queryOrUrl };
     await m.react("📥");
 
     const mode = args[0].toLowerCase();
-    const sendMediaFile = async (downloadUrl, title, currentMode, protocolo) => {
+    const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
-        if (currentMode === "audio" && protocolo === "API_PRINCIPAL") {
-          const headRes = await axios.head(downloadUrl);
-          const fileSize = parseInt(headRes.headers['content-length'] || "0");
-          if (fileSize < MIN_AUDIO_SIZE_BYTES) {
-            throw new Error('Silencio disfrazado de archivo.');
-          }
-          await conn.sendMessage(m.chat, { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }, { quoted: m });
-          await m.react("🎧");
-        } else {
-          const mediaOptions = currentMode === 'audio'
-            ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-            : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
+        const mediaOptions = currentMode === 'audio'
+          ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+          : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
 🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
-          await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-          await m.react(currentMode === 'audio' ? "🎧" : "📽️");
-        }
+        
+        await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+        await m.react(currentMode === 'audio' ? "🎧" : "📽️");
       } catch (error) {
         throw error;
       }
     };
-    
-    // Obtener metadatos para el título y la miniatura
+
+    // Obtener metadatos para el título
     let videoInfo;
     try {
-        videoInfo = await yts.getInfo(queryOrUrl);
+      videoInfo = await yts.getInfo(queryOrUrl);
     } catch (e) {
-        console.error("Error al obtener info de la URL para la descarga:", e);
-        // En caso de fallo, usamos un título genérico
-        videoInfo = { title: 'Archivo de YouTube', thumbnail: 'URL_NO_DISPONIBLE' };
+      console.error("Error al obtener info de la URL:", e);
+      videoInfo = { title: 'Archivo de YouTube' };
     }
 
     try {
-      const endpoint = mode === "audio" ? "ytmp3" : "ytmp4";
-      const dlApi = `https://api.vreden.my.id/api/${endpoint}?url=${encodeURIComponent(queryOrUrl)}`;
-      const res = await fetch(dlApi);
+      // --- Lógica para la NEVI API ---
+      const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
+      const format = mode === "audio" ? "mp3" : "mp4";
+      const res = await fetch(neviApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+        },
+        body: JSON.stringify({
+          url: queryOrUrl,
+          format: format
+        }),
+      });
+
       const json = await res.json();
-      if (json.status === 200 && json.result?.download?.url) {
-        await sendMediaFile(json.result.download.url, json.result.metadata?.title || videoInfo.title, mode, "API_PRINCIPAL");
+      
+      if (json.ok && json.download_url) {
+        await sendMediaFile(json.download_url, json.info.title || videoInfo.title, mode);
         return;
       }
-      throw new Error("API principal... derrumbada.");
+      throw new Error(`NEVI API... derrumbada. Estado: ${json.ok ? 'OK, pero sin URL de descarga' : 'Fallido'}`);
     } catch (e) {
-      console.error("Error con API_PRINCIPAL:", e);
+      console.error("Error con NEVI API:", e);
       await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
-*API_PRINCIPAL falló.* Razón: ${e.message}`, m);
+*NEVI API falló.* Razón: ${e.message}`, m);
 
       try {
+        // --- Lógica de respaldo con ogmp3 ---
         const downloadResult = await ogmp3.download(queryOrUrl, null, mode);
         if (downloadResult.status && downloadResult.result?.download) {
-          await sendMediaFile(downloadResult.result.download, downloadResult.result.title, mode, "OGMP3");
+          await sendMediaFile(downloadResult.result.download, downloadResult.result.title, mode);
           return;
         }
         throw new Error("ogmp3... silencioso.");
@@ -110,7 +119,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         console.error("Error con ogmp3:", e2);
         await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
 *ogmp3 falló.* Razón: ${e2.message}`, m);
-        
+
         await conn.reply(m.chat, `💔 *fallé. pero tú más.*
 no pude traerte nada.`, m);
         await m.react("❌");
@@ -169,7 +178,7 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
 > ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Subido por:* ${video.author.name}
 > ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ *Hace:* ${video.ago}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${video.url}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪〪⃨〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
   await conn.sendMessage(m.chat, {
