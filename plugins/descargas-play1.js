@@ -7,7 +7,7 @@ const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 
 // API de NeviAPI
 const NEVI_API_URL = 'http://neviapi.ddns.net:8000';
-// Clave SHA256
+// Clave SHA256 ya válida
 const NEVI_API_KEY = '7975b4132aaa77d75069a5d2ab3c501413eb91d11d046815158103d5628d7405';
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {
@@ -52,7 +52,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     await m.react("📥");
     const mode = args[0].toLowerCase();
 
-    // --- DESCARGA CON NEVIAPI ---
     try {
       const apiFormat = mode === 'audio' ? 'mp3' : 'mp4';
       const downloadApiUrl = `${NEVI_API_URL}/download?url=${encodeURIComponent(queryOrUrl)}&format=${apiFormat}`;
@@ -64,7 +63,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         throw new Error(`Error en la API: ${json.detail || 'No se pudo obtener el enlace de descarga.'}`);
       }
 
-      // API devuelve "...?pas=" → aquí le añadimos la clave SHA256
+      // Aquí se pega la API KEY al pas=
       const finalDownloadUrl = `${json.download_url}${NEVI_API_KEY}`;
       const title = json.title || 'Archivo de YouTube';
 
