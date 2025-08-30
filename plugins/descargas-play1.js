@@ -11,7 +11,7 @@ const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 // API de NeviAPI
 const NEVI_API_URL = 'http://neviapi.ddns.net:8000';
 // Clave "ellen" en formato SHA256
-const NEVI_API_KEY = '9348450360c2955c1da2a0e0d144cb8498b424c32b03d64d4e3a2fe4f07e2a6e'; 
+const NEVI_API_KEY = '7975b4132aaa77d75069a5d2ab3c501413eb91d11d046815158103d5628d7405'; 
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
