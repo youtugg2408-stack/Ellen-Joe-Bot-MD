@@ -61,45 +61,36 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
     const mode = args[0].toLowerCase();
 
-    // --- Lógica de la función de envío de archivos (Modificada) ---
+    // --- Lógica de la función de envío de archivos, ahora con el check de tamaño ---
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
-        const isAudio = currentMode === 'audio';
-        const mediaMimetype = isAudio ? 'audio/mpeg' : 'video/mp4';
-        const fileName = `${title}.${isAudio ? 'mp3' : 'mp4'}`;
-
-        // Obtener el stream de datos del archivo
-        const response = await axios({
-          method: 'get',
-          url: downloadUrl,
-          responseType: 'stream'
-        });
-
+        const response = await axios.head(downloadUrl);
         const contentLength = response.headers['content-length'];
         const fileSizeMb = contentLength / (1024 * 1024);
 
         if (fileSizeMb > SIZE_LIMIT_MB) {
-          // Envía el archivo como documento si es muy grande
+          // El archivo es demasiado grande, enviarlo como documento
           await conn.sendMessage(m.chat, {
-            document: response.data,
-            fileName,
-            mimetype: mediaMimetype,
-            caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), lo envío como documento. Puede tardar más en descargar.*
+            document: { url: downloadUrl },
+            fileName: `${title}.${currentMode === 'audio' ? 'mp3' : 'mp4'}`,
+            mimetype: currentMode === 'audio' ? 'audio/mpeg' : 'video/mp4',
+            caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
 🖤 *Título:* ${title}`
           }, { quoted: m });
-          await m.react("📄");
+          await m.react("📄"); // React con un emoji de documento
         } else {
-          // Envía el archivo como audio o video
-          const mediaOptions = isAudio
-            ? { audio: response.data, mimetype: mediaMimetype, fileName }
-            : { video: response.data, caption: `🎬 *Listo.* 🖤 *Título:* ${title}`, fileName, mimetype: mediaMimetype };
-          
+          // El archivo está dentro del límite, enviarlo como audio o video
+          const mediaOptions = currentMode === 'audio'
+            ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+            : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
+🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
+
           await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-          await m.react(isAudio ? "🎧" : "📽️");
+          await m.react(currentMode === 'audio' ? "🎧" : "📽️");
         }
       } catch (error) {
-        console.error("Error al enviar el archivo:", error);
-        throw new Error("No se pudo obtener el tamaño del archivo o falló el envío.");
+        console.error("Error al obtener el tamaño del archivo o al enviarlo:", error);
+        throw new Error("No se pudo obtener el tamaño del archivo o falló el envío. Se intentará de nuevo.");
       }
     };
 
@@ -141,22 +132,37 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 *NEVI API falló.* Razón: ${e.message}`, m);
 
       try {
-        // --- Lógica de respaldo con ogmp3 (Modificada) ---
-        const tempFilePath = path.join(os.tmpdir(), `${Date.now()}_audio.mp3`);
+        // --- Lógica de respaldo con ogmp3 ---
+        const tempFilePath = path.join(process.cwd(), './tmp', `${Date.now()}_${mode === 'audio' ? 'audio' : 'video'}.tmp`);
         
         await m.react("🔃"); 
         const downloadResult = await ogmp3.download(queryOrUrl, tempFilePath, mode);
         
-        if (downloadResult.status && downloadResult.result?.download) {
-          const fileBuffer = fs.readFileSync(tempFilePath);
+        if (downloadResult.status && fs.existsSync(tempFilePath)) {
+          const stats = fs.statSync(tempFilePath);
+          const fileSizeMb = stats.size / (1024 * 1024);
           
-          const mediaOptions = mode === 'audio'
-              ? { audio: fileBuffer, mimetype: 'audio/mpeg', fileName: `${downloadResult.result.title}.mp3` }
-              : { video: fileBuffer, caption: `🎬 *Listo.* 🖤 *Título:* ${downloadResult.result.title}`, fileName: `${downloadResult.result.title}.mp4`, mimetype: 'video/mp4' };
+          let mediaOptions;
+          const fileBuffer = fs.readFileSync(tempFilePath);
+
+          if (fileSizeMb > SIZE_LIMIT_MB) {
+              mediaOptions = {
+                  document: fileBuffer,
+                  fileName: `${downloadResult.result.title}.${mode === 'audio' ? 'mp3' : 'mp4'}`,
+                  mimetype: mode === 'audio' ? 'audio/mpeg' : 'video/mp4',
+                  caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), lo envío como documento. Puede tardar más en descargar.*
+🖤 *Título:* ${downloadResult.result.title}`
+              };
+              await m.react("📄");
+          } else {
+              mediaOptions = mode === 'audio'
+                  ? { audio: fileBuffer, mimetype: 'audio/mpeg', fileName: `${downloadResult.result.title}.mp3` }
+                  : { video: fileBuffer, caption: `🎬 *Listo.* 🖤 *Título:* ${downloadResult.result.title}`, fileName: `${downloadResult.result.title}.mp4`, mimetype: 'video/mp4' };
+              await m.react(mode === 'audio' ? "🎧" : "📽️");
+          }
 
           await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
           fs.unlinkSync(tempFilePath);
-          await m.react(mode === 'audio' ? "🎧" : "📽️");
           return;
         }
         throw new Error("ogmp3 no pudo descargar el archivo.");
@@ -164,8 +170,9 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       } catch (e2) {
         console.error("Error con ogmp3:", e2);
         
+        const tempFilePath = path.join(process.cwd(), './tmp', `${Date.now()}_${mode === 'audio' ? 'audio' : 'video'}.tmp`);
         if (fs.existsSync(tempFilePath)) {
-          fs.unlinkSync(tempFilePath);
+            fs.unlinkSync(tempFilePath);
         }
         
         await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
