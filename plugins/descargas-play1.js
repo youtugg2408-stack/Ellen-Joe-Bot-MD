@@ -67,7 +67,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       try {
         videoInfo = await yts.getInfo(queryOrUrl);
       } catch (e) {
-        console.error("Error al obtener info de la URL:", e);
         videoInfo = { title: 'Archivo de YouTube' };
       }
       
@@ -82,13 +81,16 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         body: JSON.stringify({ url: queryOrUrl, format: format }),
       });
 
-      // --- Sección de depuración de la respuesta de la API ---
-      console.log('--- Respuesta de la API de NEVI ---');
-      console.log('Status:', res.status);
-      console.log('Status Text:', res.statusText);
       const json = await res.json();
-      console.log('Body:', json);
-      console.log('------------------------------------');
+
+      // --- Sección de depuración de la respuesta de la API ---
+      const debugMessage = `*--- Respuesta de la API de NEVI ---*
+*Status:* ${res.status}
+*Status Text:* ${res.statusText}
+*Body:* ${JSON.stringify(json, null, 2)}
+*------------------------------------*`;
+
+      await conn.reply(m.chat, debugMessage, m);
       // --- Fin de la sección de depuración ---
 
       if (!res.ok || !json.ok || !json.download_url) {
@@ -106,7 +108,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         const contentLength = headResponse.headers['content-length'];
         fileSizeMb = contentLength / (1024 * 1024);
       } catch (headError) {
-        console.error("Error en la petición HEAD:", headError);
         throw new Error("No se pudo obtener el tamaño del archivo. Intentando con la lógica de respaldo.");
       }
 
@@ -158,7 +159,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       await handleNeviApiDownload();
       return;
     } catch (apiError) {
-      console.error("Fallo con la API de NEVI, recurriendo a la lógica de respaldo:", apiError);
       await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
 *NEVI API falló.* Razón: ${apiError.message}`, m);
 
@@ -235,7 +235,6 @@ no pude traerte nada.`, m);
         thumbnail: info.thumbnail
       };
     } catch (e) {
-      console.error("Error al obtener info de la URL:", e);
       return conn.reply(m.chat, `💔 *Fallé al procesar la URL.*
 Asegúrate de que sea una URL de YouTube válida.`, m, { contextInfo });
     }
@@ -244,7 +243,6 @@ Asegúrate de que sea una URL de YouTube válida.`, m, { contextInfo });
       const searchResult = await yts(queryOrUrl);
       video = searchResult.videos?.[0];
     } catch (e) {
-      console.error("Error durante la búsqueda en Youtube:", e);
       return conn.reply(m.chat, `🖤 *qué patético...*
 no logré encontrar nada con lo que pediste`, m, { contextInfo });
     }
