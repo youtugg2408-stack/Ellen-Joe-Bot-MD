@@ -55,44 +55,9 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
   let video;
 
-  // --- Lógica para obtener metadatos si es una URL o una búsqueda ---
-  if (isInputUrl) {
-    try {
-      const info = await yts.getInfo(queryOrUrl);
-      video = {
-        title: info.title,
-        timestamp: info.timestamp,
-        views: info.views,
-        author: { name: info.author.name },
-        ago: info.ago,
-        url: info.url,
-        thumbnail: info.thumbnail
-      };
-    } catch (e) {
-      console.error("Error al obtener info de la URL:", e);
-      return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
-Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de YouTube válida?`, m, { contextInfo });
-    }
-  } else {
-    try {
-      const searchResult = await yts(queryOrUrl);
-      video = searchResult.videos?.[0];
-    } catch (e) {
-      console.error("Error durante la búsqueda en Youtube:", e);
-      return conn.reply(m.chat, `🖤 *qué patético...*
-no logré encontrar nada con lo que pediste`, m, { contextInfo });
-    }
-  }
-
-  if (!video) {
-    return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*
-nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
-  }
-  
-  // --- Lógica de descarga (solo si se especificó el modo) ---
+  // Si ya se especifica el modo y el enlace, va directo a la descarga
   if (isMode && isInputUrl) {
     await m.react("📥");
-
     const mode = args[0].toLowerCase();
     
     // Función para notificar a la API que la descarga ha terminado.
@@ -149,6 +114,9 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
     let neviDownloadId = null;
 
     try {
+      // Intenta obtener el título con yts.getInfo para que no falle la API
+      const videoInfo = await yts.getInfo(queryOrUrl);
+      
       // --- Lógica para la NEVI API ---
       const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
       const format = mode === "audio" ? "mp3" : "mp4";
@@ -168,7 +136,7 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
       neviDownloadId = json.download_id;
 
       if (json.ok && json.download_url) {
-        await sendMediaFile(json.download_url, json.info.title || video.title, mode);
+        await sendMediaFile(json.download_url, json.info.title || videoInfo.title, mode);
         // Notificar a la API que la descarga ha sido exitosa.
         await notifyApiDone(neviDownloadId, true);
         return;
@@ -237,6 +205,40 @@ no pude traerte nada.`, m);
       }
     }
     return;
+  }
+  
+  // --- Lógica de búsqueda o metadatos (si no se especifica el modo) ---
+  if (isInputUrl) {
+    try {
+      const info = await yts.getInfo(queryOrUrl);
+      video = {
+        title: info.title,
+        timestamp: info.timestamp,
+        views: info.views,
+        author: { name: info.author.name },
+        ago: info.ago,
+        url: info.url,
+        thumbnail: info.thumbnail
+      };
+    } catch (e) {
+      console.error("Error al obtener info de la URL:", e);
+      return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
+Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de YouTube válida?`, m, { contextInfo });
+    }
+  } else {
+    try {
+      const searchResult = await yts(queryOrUrl);
+      video = searchResult.videos?.[0];
+    } catch (e) {
+      console.error("Error durante la búsqueda en Youtube:", e);
+      return conn.reply(m.chat, `🖤 *qué patético...*
+no logré encontrar nada con lo que pediste`, m, { contextInfo });
+    }
+  }
+
+  if (!video) {
+    return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*
+nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
   }
   
   // Si no se especificó un modo, envía la interfaz de botones
