@@ -22,7 +22,7 @@ function generateSha256(key) {
   return crypto.createHash('sha256').update(key).digest('hex');
 }
 
-const API_URL = "http://neviapi.ddns.net";
+const API_URL = "http://neviapi.ddns.net:8000";
 const API_KEY = "ellen";
 const HASHED_KEY = generateSha256(API_KEY);
 
