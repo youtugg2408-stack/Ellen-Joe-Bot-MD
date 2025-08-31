@@ -44,7 +44,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
         },
         externalAdReply: {
             title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
-            body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
+            body: `✦ Esperando tu solicitud, ${name}.`,
             thumbnail: global.icons,
             sourceUrl: global.redes,
             mediaType: 1,
@@ -55,7 +55,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
     if (!args[0]) {
         return conn.reply(
             m.chat,
-            `🦈 *Rastro frío, Proxy ${name}.* Necesito un identificador de video para proceder. Dame el enlace.\n\n_Ejemplo: ${usedPrefix + command} https://youtube.com/watch?v=xxxxxxxxxxx_`,
+            `Necesito el enlace de un video para continuar. Por favor, proporciona un enlace de YouTube.\n\n_Ejemplo: ${usedPrefix + command} https://youtube.com/watch?v=xxxxxxxxxxx_`,
             m,
             { contextInfo, quoted: m }
         );
@@ -63,7 +63,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
 
     await conn.reply(
         m.chat,
-        `🔄 *Decodificando la señal, Proxy ${name}.* Aguarda. La presa está al alcance.`,
+        `Procesando la solicitud. Esto puede tardar unos momentos.`,
         m,
         { contextInfo, quoted: m }
     );
@@ -89,18 +89,28 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
         neviDownloadId = json.id;
 
         if (json.ok && json.download_url) {
+            // Lógica para formatear la duración a h:m:s
+            const durationInSeconds = json.info.duration;
+            const hours = Math.floor(durationInSeconds / 3600);
+            const minutes = Math.floor((durationInSeconds % 3600) / 60);
+            const seconds = durationInSeconds % 60;
+            const durationFormatted = [
+                hours,
+                minutes,
+                seconds
+            ].map(v => v.toString().padStart(2, '0')).join(':').replace(/^00:/, '');
+
             await conn.sendMessage(
                 m.chat, {
                     video: { url: json.download_url },
                     caption:
-`╭━━━━[ 𝚈𝚃𝙼𝙿𝟺 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙿𝚛𝚎𝚜𝚊 𝙲𝚊𝚙𝚝𝚞𝚛𝚊𝚍𝚊 ]━━━━⬣
-📹 *Designación:* ${json.info.title}
-🧑‍💻 *Fuente Operacional:* ${json.info.uploader}
-🕒 *Duración del Flujo:* ${json.info.duration}
-👁️ *Registros de Observación:* ${json.info.view_count.toLocaleString()}
-📄 *Manifiesto de Carga:*
-${json.info.description || 'Descripción no disponible.'}
-╰━━━━━━━━━━━━━━━━━━⬣`,
+`*¡Video descargado con éxito!*
+🎬 *Título:* ${json.info.title}
+👤 *Autor:* ${json.info.uploader}
+⏳ *Duración:* ${durationFormatted}
+👁️ *Vistas:* ${json.info.view_count.toLocaleString()}
+🔗 *Enlace:* ${json.info.channel_url}
+`,
                     mimetype: 'video/mp4',
                     fileName: json.info.title + '.mp4'
                 }, { contextInfo, quoted: m }
@@ -109,7 +119,7 @@ ${json.info.description || 'Descripción no disponible.'}
             await notifyApiDone(neviDownloadId, true);
 
         } else {
-            throw new Error(`Extracción de video fallida, Proxy ${name}. La señal es inestable. Razón: ${json.message || 'Respuesta inválida del servidor.'}`);
+            throw new Error(`No se pudo descargar el video. Razón: ${json.message || 'Respuesta inválida del servidor.'}`);
         }
 
     } catch (e) {
@@ -121,7 +131,7 @@ ${json.info.description || 'Descripción no disponible.'}
 
         await conn.reply(
             m.chat,
-            `⚠️ *Anomalía detectada, Proxy ${name}.*\nNo pude asegurar la carga de video. Repórtalo si persiste.\nDetalles: ${e.message}`,
+            `⚠️ Ha ocurrido un error al procesar la solicitud. Por favor, inténtalo de nuevo más tarde.\nDetalles: ${e.message}`,
             m,
             { contextInfo, quoted: m }
         );
