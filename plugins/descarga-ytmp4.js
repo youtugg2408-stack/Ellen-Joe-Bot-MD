@@ -72,7 +72,6 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
     let neviDownloadId = null;
 
     try {
-        // --- Lógica para la NEVI API ---
         const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
         const res = await fetch(neviApiUrl, {
             method: 'POST',
@@ -87,31 +86,26 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
         });
 
         const json = await res.json();
-        neviDownloadId = json.id; // Almacenar el ID de la descarga
+        neviDownloadId = json.id;
 
-        // --- Mostrar JSON para depuración ---
-        await conn.reply(m.chat, `*Respuesta de la API de NEVI:*\n\`\`\`json\n${JSON.stringify(json, null, 2)}\n\`\`\``, m);
-        
         if (json.ok && json.download_url) {
-            // Enviar video si la respuesta es exitosa
             await conn.sendMessage(
                 m.chat, {
                     video: { url: json.download_url },
                     caption:
 `╭━━━━[ 𝚈𝚃𝙼𝙿𝟺 𝙳𝚎𝚌𝚘𝚍𝚎𝚍: 𝙿𝚛𝚎𝚜𝚊 𝙲𝚊𝚙𝚝𝚞𝚛𝚊𝚍𝚊 ]━━━━⬣
 📹 *Designación:* ${json.info.title}
-🧑‍💻 *Fuente Operacional:* ${json.info.author}
-🕒 *Duración del Flujo:* ${json.info.timestamp}
-👁️ *Registros de Observación:* ${json.info.views.toLocaleString()}
+🧑‍💻 *Fuente Operacional:* ${json.info.uploader}
+🕒 *Duración del Flujo:* ${json.info.duration}
+👁️ *Registros de Observación:* ${json.info.view_count.toLocaleString()}
 📄 *Manifiesto de Carga:*
-${json.info.description}
+${json.info.description || 'Descripción no disponible.'}
 ╰━━━━━━━━━━━━━━━━━━⬣`,
                     mimetype: 'video/mp4',
                     fileName: json.info.title + '.mp4'
                 }, { contextInfo, quoted: m }
             );
 
-            // Notificar a la API que la descarga ha sido exitosa
             await notifyApiDone(neviDownloadId, true);
 
         } else {
@@ -121,7 +115,6 @@ ${json.info.description}
     } catch (e) {
         console.error(e);
 
-        // Notificar a la API que la descarga ha fallado
         if (neviDownloadId) {
             await notifyApiDone(neviDownloadId, false);
         }
