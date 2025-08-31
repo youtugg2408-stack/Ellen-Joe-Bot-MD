@@ -62,19 +62,19 @@ let handler = async (m, { conn }) => {
       },
     });
 
-    const responseText = await upscaleResponse.text();
-    let upscaleData;
-    try {
-      upscaleData = JSON.parse(responseText);
-    } catch (parseError) {
-      throw new Error(`La API devolvió una respuesta no válida: ${responseText}`);
-    }
+    const upscaleData = await upscaleResponse.json();
     
     if (!upscaleResponse.ok || !upscaleData.ok) {
-      // Formatear el JSON para que se vea bien en el mensaje
+      const errorMsg = `La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo.
+Error: ${upscaleData.error || "Desconocido"}`;
       const jsonString = JSON.stringify(upscaleData, null, 2);
-      throw new Error(`La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo.
-Error: ${upscaleData.error || "Desconocido"}
+      throw new Error(`${errorMsg}\n\n\`\`\`json\n${jsonString}\n\`\`\``);
+    }
+    
+    // Aquí el código verifica si la URL de descarga existe antes de intentar usarla
+    if (!upscaleData.download_url) {
+        const jsonString = JSON.stringify(upscaleData, null, 2);
+        throw new Error(`La API no devolvió una URL de descarga válida.
 \`\`\`json
 ${jsonString}
 \`\`\``);
