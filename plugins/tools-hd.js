@@ -3,60 +3,85 @@ import crypto from "crypto";
 import { FormData, Blob } from "formdata-node";
 import { fileTypeFromBuffer } from "file-type";
 
-const rwait = "⏳";  // Emoji espera
-const done = "✅";   // Emoji listo
-const error = "❌";  // Emoji error
-const emoji = "❕";  // Emoji info
+// Emojis y texto de Ellen
+const rwait = "⏳";
+const done = "✅";
+const error = "❌";
+const emoji = "❕";
 const ellen = "🦈 Ellen Joe aquí... *ugh* que flojera~";
 
 function formatBytes(bytes) {
-  if (bytes === 0) return '0 B';
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return "0 B";
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / 1024 ** i).toFixed(2)} ${sizes[i]}`;
 }
 
-async function catbox(content) {
-  const { ext, mime } = (await fileTypeFromBuffer(content)) || {};
-  const blob = new Blob([content.toArrayBuffer()], { type: mime });
-  const formData = new FormData();
-  const randomBytes = crypto.randomBytes(5).toString("hex");
-  formData.append("reqtype", "fileupload");
-  formData.append("fileToUpload", blob, randomBytes + "." + ext);
-
-  const response = await fetch("https://catbox.moe/user/api.php", {
-    method: "POST",
-    body: formData,
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36",
-    },
-  });
-
-  return await response.text();
+// Función para generar la API Key en SHA256
+function generateSha256(key) {
+  return crypto.createHash('sha256').update(key).digest('hex');
 }
+
+const API_URL = "http://neviapi.ddns.net";
+const API_KEY = "ellen";
+const HASHED_KEY = generateSha256(API_KEY);
 
 let handler = async (m, { conn }) => {
   let q = m.quoted ? m.quoted : null;
-  if (!q) return conn.reply(m.chat, `${ellen}\n${emoji} ¿Me haces trabajar sin darme una imagen? No, gracias… responde a una imagen primero.`, m);
-  let mime = (q.msg || q).mimetype || '';
-  if (!mime || !mime.startsWith("image/")) return conn.reply(m.chat, `${ellen}\n${emoji} Eso no es una imagen… ¿acaso me quieres ver bostezar?`, m);
+  if (!q)
+    return conn.reply(
+      m.chat,
+      `${ellen}\n${emoji} ¿Me haces trabajar sin darme una imagen? No, gracias… responde a una imagen primero.`,
+      m
+    );
+  let mime = (q.msg || q).mimetype || "";
+  if (!mime || !mime.startsWith("image/"))
+    return conn.reply(
+      m.chat,
+      `${ellen}\n${emoji} Eso no es una imagen… ¿acaso me quieres ver bostezar?`,
+      m
+    );
 
   await m.react(rwait);
 
   try {
     let media = await q.download();
-    if (!media || media.length === 0) throw new Error("Ni siquiera puedo descargar eso…");
+    if (!media || media.length === 0)
+      throw new Error("Ni siquiera puedo descargar eso…");
 
-    let urlCatbox = await catbox(media);
-    if (!urlCatbox || !urlCatbox.startsWith("http")) throw new Error("El servidor está de flojera como yo… no pude subir la imagen.");
+    const { ext, mime: fileMime } = (await fileTypeFromBuffer(media)) || {};
+    const blob = new Blob([media.toArrayBuffer()], { type: fileMime });
+    const formData = new FormData();
+    formData.append("file", blob, `image.${ext}`);
 
-    let apiUpscaleUrl = `https://api.stellarwa.xyz/tools/upscale?url=${encodeURIComponent(urlCatbox)}&apikey=stellar-o7UYR5SC`;
+    // Petición a la API /image/hd
+    const upscaleResponse = await fetch(`${API_URL}/image/hd`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "Authorization": `Bearer ${HASHED_KEY}`,
+      },
+    });
 
-    let resUpscale = await fetch(apiUpscaleUrl);
-    if (!resUpscale.ok) throw new Error("La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo.");
+    const upscaleData = await upscaleResponse.json();
+    if (!upscaleResponse.ok || !upscaleData.ok) {
+      throw new Error(`La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo. Error: ${upscaleData.error || "Desconocido"}`);
+    }
 
-    let bufferHD = Buffer.from(await resUpscale.arrayBuffer());
+    const downloadUrl = `${API_URL}${upscaleData.download_url}`;
+
+    // Petición GET para descargar la imagen mejorada
+    const downloadResponse = await fetch(downloadUrl, {
+      headers: {
+        "Authorization": `Bearer ${HASHED_KEY}`,
+      },
+    });
+
+    if (!downloadResponse.ok) {
+      throw new Error("No pude descargar la imagen mejorada.");
+    }
+
+    const bufferHD = Buffer.from(await downloadResponse.arrayBuffer());
 
     let textoEllen = `
 🦈 *Listo… aquí tienes tu imagen en HD...*
@@ -66,20 +91,38 @@ let handler = async (m, { conn }) => {
 💤 *Ahora… ¿puedo volver a mi siesta?*
 `;
 
-    await conn.sendMessage(m.chat, {
-      image: bufferHD,
-      caption: textoEllen.trim()
-    }, { quoted: m });
+    await conn.sendMessage(
+      m.chat,
+      {
+        image: bufferHD,
+        caption: textoEllen.trim(),
+      },
+      { quoted: m }
+    );
 
     await m.react(done);
+
+    // Petición para notificar a la API que el archivo ya se descargó y puede ser eliminado
+    const fileId = upscaleData.download_url.split("/").pop();
+    await fetch(`${API_URL}/done/${fileId}`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${HASHED_KEY}`,
+      },
+    });
+
   } catch (e) {
     console.error(e);
     await m.react(error);
-    return conn.reply(m.chat, `${ellen}\n⚠️ Algo salió mal… y no, no fue mi culpa… probablemente.\n\n*Error:* ${e.message}`, m);
+    return conn.reply(
+      m.chat,
+      `${ellen}\n⚠️ Algo salió mal… y no, no fue mi culpa… probablemente.\n\n*Error:* ${e.message}`,
+      m
+    );
   }
 };
 
-handler.help = ['hd'];
-handler.tags = ['ai'];
-handler.command = ['hd'];
+handler.help = ["hd"];
+handler.tags = ["ai"];
+handler.command = ["hd"];
 export default handler;
