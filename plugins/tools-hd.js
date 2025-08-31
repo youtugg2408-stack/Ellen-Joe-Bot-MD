@@ -54,12 +54,12 @@ let handler = async (m, { conn }) => {
     const formData = new FormData();
     formData.append("file", blob, `image.${ext}`);
 
-    // Petición a la API /image/hd
+    // Petición a la API /image/hd con el encabezado correcto
     const upscaleResponse = await fetch(`${API_URL}/image/hd`, {
       method: "POST",
       body: formData,
       headers: {
-        "Authorization": `Bearer ${HASHED_KEY}`,
+        "X-Auth-Sha256": HASHED_KEY,
       },
     });
 
@@ -73,7 +73,7 @@ let handler = async (m, { conn }) => {
     // Petición GET para descargar la imagen mejorada
     const downloadResponse = await fetch(downloadUrl, {
       headers: {
-        "Authorization": `Bearer ${HASHED_KEY}`,
+        "X-Auth-Sha256": HASHED_KEY,
       },
     });
 
@@ -107,7 +107,7 @@ let handler = async (m, { conn }) => {
     await fetch(`${API_URL}/done/${fileId}`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${HASHED_KEY}`,
+        "X-Auth-Sha256": HASHED_KEY,
       },
     });
 
