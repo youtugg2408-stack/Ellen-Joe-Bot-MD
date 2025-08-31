@@ -151,7 +151,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         await notifyApiDone(neviDownloadId, true);
         return;
       }
-      throw new Error(`NEVI API... derrumbada. Estado: ${json.ok ? 'OK, pero sin URL de descarga' : 'Fallido'}`);
+      throw new Error("NEVI API falló.");
     } catch (e) {
       console.error("Error con NEVI API:", e);
       // Notificar a la API que la descarga ha fallado.
@@ -159,8 +159,8 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
           await notifyApiDone(neviDownloadId, false);
       }
       
-      await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
-*NEVI API falló.* Razón: ${e.message}`, m);
+      await conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
+El servicio principal no está disponible, intentando con un servicio de respaldo...`, m);
 
       try {
         // --- Lógica de respaldo con ogmp3 ---
@@ -206,9 +206,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
             fs.unlinkSync(tempFilePath);
         }
         
-        await conn.reply(m.chat, `⚠️ *¡Error de Debug!*
-*ogmp3 falló.* Razón: ${e2.message}`, m);
-
         await conn.reply(m.chat, `💔 *fallé. pero tú más.*
 no pude traerte nada.`, m);
         await m.react("❌");
