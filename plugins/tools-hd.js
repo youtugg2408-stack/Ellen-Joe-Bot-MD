@@ -44,7 +44,6 @@ let handler = async (m, { conn }) => {
 
   await m.react(rwait);
 
-  let upscaleData;
   try {
     let media = await q.download();
     if (!media || media.length === 0)
@@ -63,24 +62,15 @@ let handler = async (m, { conn }) => {
       },
     });
 
-    upscaleData = await upscaleResponse.json();
+    const upscaleData = await upscaleResponse.json();
 
     if (!upscaleResponse.ok || !upscaleData.ok) {
-      const errorMsg = `La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo.
-Error: ${upscaleData.error || "Desconocido"}`;
-      const jsonString = JSON.stringify(upscaleData, null, 2);
-      throw new Error(`${errorMsg}\n\n\`\`\`json\n${jsonString}\n\`\`\``);
+      throw new Error(`La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo.
+Error: ${upscaleData.error || "Desconocido"}`);
     }
     
-    if (!upscaleData.download_url) {
-        const jsonString = JSON.stringify(upscaleData, null, 2);
-        throw new Error(`La API no devolvió una URL de descarga válida.
-\`\`\`json
-${jsonString}
-\`\`\``);
-    }
-
-    const downloadUrl = `${API_URL}${upscaleData.download_url}`;
+    // Usar directamente la URL que la API devuelve, sin concatenar el dominio base.
+    const downloadUrl = upscaleData.download_url;
 
     const downloadResponse = await fetch(downloadUrl, {
       headers: {
@@ -98,11 +88,6 @@ ${jsonString}
 🦈 *Listo… aquí tienes tu imagen en HD...*
 > Aunque sinceramente, no sé por qué me haces gastar energía en esto…
 > Supongo que ahora puedes ver cada pixel, feliz, ¿no?
-
-*Respuesta JSON de la API:*
-\`\`\`json
-${JSON.stringify(upscaleData, null, 2)}
-\`\`\`
 
 💤 *Ahora… ¿puedo volver a mi siesta?*
 `;
