@@ -54,7 +54,6 @@ let handler = async (m, { conn }) => {
     const formData = new FormData();
     formData.append("file", blob, `image.${ext}`);
 
-    // Petición a la API /image/hd con el encabezado correcto
     const upscaleResponse = await fetch(`${API_URL}/image/hd`, {
       method: "POST",
       body: formData,
@@ -63,14 +62,26 @@ let handler = async (m, { conn }) => {
       },
     });
 
-    const upscaleData = await upscaleResponse.json();
+    const responseText = await upscaleResponse.text();
+    let upscaleData;
+    try {
+      upscaleData = JSON.parse(responseText);
+    } catch (parseError) {
+      throw new Error(`La API devolvió una respuesta no válida: ${responseText}`);
+    }
+    
     if (!upscaleResponse.ok || !upscaleData.ok) {
-      throw new Error(`La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo. Error: ${upscaleData.error || "Desconocido"}`);
+      // Formatear el JSON para que se vea bien en el mensaje
+      const jsonString = JSON.stringify(upscaleData, null, 2);
+      throw new Error(`La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo.
+Error: ${upscaleData.error || "Desconocido"}
+\`\`\`json
+${jsonString}
+\`\`\``);
     }
 
     const downloadUrl = `${API_URL}${upscaleData.download_url}`;
 
-    // Petición GET para descargar la imagen mejorada
     const downloadResponse = await fetch(downloadUrl, {
       headers: {
         "X-Auth-Sha256": HASHED_KEY,
@@ -102,7 +113,6 @@ let handler = async (m, { conn }) => {
 
     await m.react(done);
 
-    // Petición para notificar a la API que el archivo ya se descargó y puede ser eliminado
     const fileId = upscaleData.download_url.split("/").pop();
     await fetch(`${API_URL}/done/${fileId}`, {
       method: "POST",
