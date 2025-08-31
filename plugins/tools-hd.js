@@ -44,6 +44,7 @@ let handler = async (m, { conn }) => {
 
   await m.react(rwait);
 
+  let upscaleData;
   try {
     let media = await q.download();
     if (!media || media.length === 0)
@@ -62,8 +63,8 @@ let handler = async (m, { conn }) => {
       },
     });
 
-    const upscaleData = await upscaleResponse.json();
-    
+    upscaleData = await upscaleResponse.json();
+
     if (!upscaleResponse.ok || !upscaleData.ok) {
       const errorMsg = `La API de HD se rindió, igual que yo después de 5 minutos de esfuerzo.
 Error: ${upscaleData.error || "Desconocido"}`;
@@ -71,7 +72,6 @@ Error: ${upscaleData.error || "Desconocido"}`;
       throw new Error(`${errorMsg}\n\n\`\`\`json\n${jsonString}\n\`\`\``);
     }
     
-    // Aquí el código verifica si la URL de descarga existe antes de intentar usarla
     if (!upscaleData.download_url) {
         const jsonString = JSON.stringify(upscaleData, null, 2);
         throw new Error(`La API no devolvió una URL de descarga válida.
@@ -98,6 +98,11 @@ ${jsonString}
 🦈 *Listo… aquí tienes tu imagen en HD...*
 > Aunque sinceramente, no sé por qué me haces gastar energía en esto…
 > Supongo que ahora puedes ver cada pixel, feliz, ¿no?
+
+*Respuesta JSON de la API:*
+\`\`\`json
+${JSON.stringify(upscaleData, null, 2)}
+\`\`\`
 
 💤 *Ahora… ¿puedo volver a mi siesta?*
 `;
