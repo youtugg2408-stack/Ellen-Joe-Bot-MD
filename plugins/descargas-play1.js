@@ -63,6 +63,10 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     // Función para notificar a la API que la descarga ha terminado.
     const notifyApiDone = async (downloadId, success) => {
         try {
+            if (!downloadId) {
+                console.warn("No se pudo notificar a la API, ID de descarga no disponible.");
+                return;
+            }
             const doneUrl = `http://neviapi.ddns.net:8000/done/${downloadId}`;
             await fetch(doneUrl, {
                 method: 'POST',
@@ -139,7 +143,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       });
 
       const json = await res.json();
-      neviDownloadId = json.download_id;
+      neviDownloadId = json.id; // Asignación segura del ID
 
       if (json.ok && json.download_url) {
         await sendMediaFile(json.download_url, json.info.title || videoTitle, mode);
