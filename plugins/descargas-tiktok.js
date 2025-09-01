@@ -54,13 +54,11 @@ ${usedPrefix}tiktok video https://www.tiktok.com/@user/video/123456789`, m, { co
   const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
   const isInputUrl = /^(https?:\/\/)?(www\.)?(vm\.)?tiktok\.com\/.+$/i.test(queryOrUrl);
   
-  // No se permite búsqueda, solo URLs de TikTok
   if (!isInputUrl) {
     return conn.reply(m.chat, `💔 *Esa no es una URL de TikTok.*
 Solo soporto URLs directas.`, m, { contextInfo });
   }
 
-  // Función para notificar a la API que la descarga ha terminado.
   const notifyApiDone = async (downloadId, success) => {
     try {
       if (!downloadId) {
@@ -82,7 +80,6 @@ Solo soporto URLs directas.`, m, { contextInfo });
     }
   };
 
-  // --- Lógica para enviar archivos de video/audio ---
   const sendMediaFile = async (downloadUrl, title, currentMode) => {
     try {
       const response = await axios.head(downloadUrl);
@@ -113,7 +110,6 @@ Solo soporto URLs directas.`, m, { contextInfo });
     }
   };
 
-  // --- Lógica para descargar, descomprimir y enviar imágenes ---
   const sendImagesFromZip = async (downloadUrl, title) => {
     const tempDir = path.join(process.cwd(), 'temp', `tiktok_img_${Date.now()}`);
     const tempZipPath = `${tempDir}.zip`;
@@ -165,14 +161,12 @@ Solo soporto URLs directas.`, m, { contextInfo });
   };
 
 
-  // Si ya se especifica el modo, va directo a la descarga
   if (isMode) {
     await m.react("📥");
     const mode = args[0].toLowerCase();
     let neviDownloadId = null;
 
     try {
-      // --- Lógica para la NEVI API de TikTok ---
       const neviApiUrl = `http://neviapi.ddns.net:8000/tiktok`;
       let format = mode === "audio" ? "mp3" : "mp4";
       if (mode === "images") {
@@ -226,8 +220,9 @@ No pude descargar el video de TikTok.`, m);
     return;
   }
   
-  // --- Lógica de metadatos (si no se especifica el modo) ---
   await m.react("🔎");
+  let neviSearchId = null;
+
   try {
     const neviApiUrl = `http://neviapi.ddns.net:8000/tiktok-search`;
     const res = await fetch(neviApiUrl, {
@@ -251,6 +246,8 @@ ${JSON.stringify(json, null, 2)}
       throw new Error("No se encontraron metadatos.");
     }
 
+    neviSearchId = json.id; // Asumimos que la API ahora retorna un ID
+
     const { author, music_info, title, dynamic_cover, is_slideshow } = json.info;
     
     const buttons = [];
@@ -269,18 +266,31 @@ ${JSON.stringify(json, null, 2)}
 > ૢ⃘꒰💬⃝︩֟፝𐴲ⳋᩧ᪲ *Descripción:* ${title || 'Sin descripción'}
 > ૢ⃘꒰🎵⃝︩֟፝𐴲ⳋᩧ᪲ *Música:* ${music_info?.title || 'Desconocida'}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${queryOrUrl}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〫〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
-    await conn.sendMessage(m.chat, {
-      image: { url: dynamic_cover?.url || FALLBACK_IMAGE_URL },
-      caption,
-      footer: 'Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.',
-      buttons,
-      headerType: 4,
-      contextInfo
-    }, { quoted: m });
-  
+    try {
+        await conn.sendMessage(m.chat, {
+            image: { url: dynamic_cover?.url || FALLBACK_IMAGE_URL },
+            caption,
+            footer: 'Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.',
+            buttons,
+            headerType: 4,
+            contextInfo
+        }, { quoted: m });
+
+        // Si la solicitud de búsqueda fue exitosa y la API retornó un ID, notifica la descarga de la miniatura.
+        if (neviSearchId) {
+            await notifyApiDone(neviSearchId, true);
+        }
+    } catch (e) {
+        console.error("Error al enviar el mensaje de vista previa:", e);
+        // Notifica el fallo si la API retornó un ID
+        if (neviSearchId) {
+            await notifyApiDone(neviSearchId, false);
+        }
+    }
+
   } catch (e) {
     console.error("Error al buscar metadatos de TikTok:", e);
     await conn.reply(m.chat, `*Respuesta de la API de búsqueda (Error):*
