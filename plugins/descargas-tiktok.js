@@ -184,10 +184,6 @@ Solo soporto URLs directas.`, m, { contextInfo });
       });
 
       const json = await res.json();
-      await conn.reply(m.chat, `*Respuesta de la API de descarga:*
-\`\`\`json
-${JSON.stringify(json, null, 2)}
-\`\`\``, m);
       
       neviDownloadId = json.id;
 
@@ -207,11 +203,6 @@ ${JSON.stringify(json, null, 2)}
       if (neviDownloadId) {
         await notifyApiDone(neviDownloadId, false);
       }
-      await conn.reply(m.chat, `*Respuesta de la API de descarga (Error):*
-\`\`\`json
-${JSON.stringify({ error: e.message, details: e.stack }, null, 2)}
-\`\`\``, m);
-
       return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
 No pude descargar el video de TikTok.`, m);
     }
@@ -235,10 +226,6 @@ No pude descargar el video de TikTok.`, m);
     });
     
     const json = await res.json();
-    await conn.reply(m.chat, `*Respuesta de la API de búsqueda:*
-\`\`\`json
-${JSON.stringify(json, null, 2)}
-\`\`\``, m);
 
     if (!json.ok || !json.info) {
       throw new Error("No se encontraron metadatos.");
@@ -246,21 +233,23 @@ ${JSON.stringify(json, null, 2)}
 
     neviSearchId = json.id; // Asumimos que la API ahora retorna un ID
 
-    const { author, music_info, title, is_slideshow } = json.info;
+    const { uploader, music_info, title, is_slideshow } = json.info;
     
     const buttons = [];
     if (is_slideshow) {
         buttons.push({ buttonId: `${usedPrefix}tiktok images ${queryOrUrl}`, buttonText: { displayText: '🖼️ 𝙄𝙈𝘼́𝙂𝙀𝙉𝙀𝙎' }, type: 1 });
+        buttons.push({ buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 });
+    } else {
+        buttons.push({ buttonId: `${usedPrefix}tiktok video ${queryOrUrl}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 });
+        buttons.push({ buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 });
     }
-    buttons.push({ buttonId: `${usedPrefix}tiktok video ${queryOrUrl}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 });
-    buttons.push({ buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 });
 
     const caption = `
 ┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪۪۪۪۪ٜ݊᷼⁔᮫ּׅ̫ׄ࣪︵᮫ּ๋ׅׅ۪۪۪۪ׅ࣪࣪͡⌒🌀𔗨⃪̤̤̤ٜ۫۫۫҈҈҈҈҉҉᷒ᰰ꤬۫۫۫𔗨̤̤̤𐇽─۪۪۪۪ٜ᷼┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪݊᷼
 ₊‧꒰ 🎧꒱ 𝙀𝙇𝙇𝙀𝙉 𝙅𝙊𝙀 𝘽𝙊𝙏 — 𝙋𝙇𝘼𝙔 𝙈𝙊𝘿𝙀 ✧˖°
 ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶
 
-> ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Autor:* ${author?.nickname || 'Desconocido'} (@${author?.unique_id || 'N/A'})
+> ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Autor:* ${uploader || 'Desconocido'}
 > ૢ⃘꒰💬⃝︩֟፝𐴲ⳋᩧ᪲ *Descripción:* ${title || 'Sin descripción'}
 > ૢ⃘꒰🎵⃝︩֟፝𐴲ⳋᩧ᪲ *Música:* ${music_info?.title || 'Desconocida'}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${queryOrUrl}
@@ -291,10 +280,6 @@ ${JSON.stringify(json, null, 2)}
 
   } catch (e) {
     console.error("Error al buscar metadatos de TikTok:", e);
-    await conn.reply(m.chat, `*Respuesta de la API de búsqueda (Error):*
-\`\`\`json
-${JSON.stringify({ error: e.message, details: e.stack }, null, 2)}
-\`\`\``, m);
     return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
 Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de TikTok válida?`, m, { contextInfo });
   }
