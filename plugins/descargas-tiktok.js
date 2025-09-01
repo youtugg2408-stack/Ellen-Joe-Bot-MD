@@ -41,8 +41,8 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 ძі ᥣ᥆ 𝗊ᥙᥱ 𝗊ᥙіᥱrᥱs... ᥆ ᥎ᥱ𝗍ᥱ.
 
 🎧 ᥱȷᥱm⍴ᥣ᥆s:
-${usedPrefix}tiktok-play https://www.tiktok.com/@user/video/123456789
-${usedPrefix}tiktok-play video https://www.tiktok.com/@user/video/123456789`, m, { contextInfo });
+${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789
+${usedPrefix}tiktok video https://www.tiktok.com/@user/video/123456789`, m, { contextInfo });
   }
 
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
@@ -133,6 +133,11 @@ Solo soporto URLs directas.`, m, { contextInfo });
       });
 
       const json = await res.json();
+      await conn.reply(m.chat, `*Respuesta de la API de descarga:*
+\`\`\`json
+${JSON.stringify(json, null, 2)}
+\`\`\``, m);
+      
       neviDownloadId = json.id; // Asignación segura del ID
 
       if (json.ok && json.download_url) {
@@ -147,6 +152,12 @@ Solo soporto URLs directas.`, m, { contextInfo });
       if (neviDownloadId) {
         await notifyApiDone(neviDownloadId, false);
       }
+      // Envía la respuesta de error de la API
+      await conn.reply(m.chat, `*Respuesta de la API de descarga (Error):*
+\`\`\`json
+${JSON.stringify({ error: e.message, details: e.stack }, null, 2)}
+\`\`\``, m);
+
       return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
 No pude descargar el video de TikTok.`, m);
     }
@@ -169,6 +180,11 @@ No pude descargar el video de TikTok.`, m);
     });
     
     const json = await res.json();
+    await conn.reply(m.chat, `*Respuesta de la API de búsqueda:*
+\`\`\`json
+${JSON.stringify(json, null, 2)}
+\`\`\``, m);
+
     if (!json.ok || !json.info) {
       throw new Error("No se encontraron metadatos.");
     }
@@ -176,8 +192,8 @@ No pude descargar el video de TikTok.`, m);
     const { author, music_info, title, dynamic_cover } = json.info;
     
     const buttons = [
-      { buttonId: `${usedPrefix}tiktok-play video ${queryOrUrl}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 },
-      { buttonId: `${usedPrefix}tiktok-play audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 }
+      { buttonId: `${usedPrefix}tiktok video ${queryOrUrl}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 },
+      { buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 }
     ];
 
     const caption = `
@@ -203,6 +219,11 @@ No pude descargar el video de TikTok.`, m);
   
   } catch (e) {
     console.error("Error al buscar metadatos de TikTok:", e);
+    // Envía la respuesta de error de la API
+    await conn.reply(m.chat, `*Respuesta de la API de búsqueda (Error):*
+\`\`\`json
+${JSON.stringify({ error: e.message, details: e.stack }, null, 2)}
+\`\`\``, m);
     return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
 Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de TikTok válida?`, m, { contextInfo });
   }
