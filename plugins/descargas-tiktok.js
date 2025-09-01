@@ -7,7 +7,6 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 
 // Reemplaza 'TU_CLAVE_API' con tu clave real.
-// Si no tienes una clave, no podrás usar esta API.
 const NEVI_API_KEY = 'ellen';
 const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
 
@@ -160,7 +159,6 @@ Solo soporto URLs directas.`, m, { contextInfo });
     }
   };
 
-
   if (isMode) {
     await m.react("📥");
     const mode = args[0].toLowerCase();
@@ -248,7 +246,7 @@ ${JSON.stringify(json, null, 2)}
 
     neviSearchId = json.id; // Asumimos que la API ahora retorna un ID
 
-    const { author, music_info, title, dynamic_cover, is_slideshow } = json.info;
+    const { author, music_info, title, is_slideshow } = json.info;
     
     const buttons = [];
     if (is_slideshow) {
@@ -271,7 +269,7 @@ ${JSON.stringify(json, null, 2)}
 
     try {
         await conn.sendMessage(m.chat, {
-            image: { url: dynamic_cover?.url || FALLBACK_IMAGE_URL },
+            image: { url: json.info?.download_url || FALLBACK_IMAGE_URL },
             caption,
             footer: 'Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.',
             buttons,
