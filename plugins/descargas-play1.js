@@ -14,7 +14,6 @@ import fs from 'fs';
 // 🔑 Configuración de API
 // ================================
 const NEVI_API_KEY = 'ellen';
-const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
 const NEVI_API_URL = 'http://neviapi.ddns.net:5000';
 const SIZE_LIMIT_MB = 100;
 
@@ -78,7 +77,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-KEY': NEVI_API_KEY_SHA256
+          'X-API-KEY': NEVI_API_KEY
         },
         body: JSON.stringify({ url: queryOrUrl, type: mode })
       });
