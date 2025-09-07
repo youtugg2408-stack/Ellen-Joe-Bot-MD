@@ -129,6 +129,11 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     let neviDownloadId = null;
 
     try {
+      // Validamos que `queryOrUrl` y `mode` no estén vacíos antes de la llamada a la API
+      if (!queryOrUrl || !mode) {
+          throw new Error("URL o modo de descarga no especificado.");
+      }
+      
       // Llamada al endpoint /download de la API
       const res = await fetch(NEVI_DOWNLOAD_ENDPOINT, {
         method: 'POST',
@@ -155,7 +160,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         await notifyApiDone(neviDownloadId, true);
         return;
       }
-      throw new Error("API falló o no devolvió un enlace de descarga válido.");
+      throw new Error(`API falló: ${json.message || 'No se devolvió un enlace de descarga válido.'}`);
 
     } catch (e) {
       console.error("Error con la API:", e);
