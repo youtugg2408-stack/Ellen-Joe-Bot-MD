@@ -60,28 +60,31 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     await m.react("📥");
     const mode = args[0].toLowerCase();
     
+    // --- Lógica de la API de Descarga ---
+    const NEVI_API_URL = 'http://neviapi.ddns.net:5000'; // Host y puerto de la API
+
     // Función para notificar a la API que la descarga ha terminado.
     const notifyApiDone = async (downloadId, success) => {
-        try {
-            if (!downloadId) {
-                console.warn("No se pudo notificar a la API, ID de descarga no disponible.");
-                return;
-            }
-            const doneUrl = `http://neviapi.ddns.net:8000/done/${downloadId}`;
-            await fetch(doneUrl, {
-                method: 'POST',
-                headers: {
-                    'X-Auth-Sha256': NEVI_API_KEY_SHA256,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ success })
-            });
-            console.log(`Notificación a NEVI API de descarga terminada: ${downloadId}, éxito: ${success}`);
-        } catch (e) {
-            console.error("Error al notificar a la API:", e);
+      try {
+        if (!downloadId) {
+          console.warn("No se pudo notificar a la API, ID de descarga no disponible.");
+          return;
         }
+        const doneUrl = `${NEVI_API_URL}/done/${downloadId}`;
+        await fetch(doneUrl, {
+          method: 'POST',
+          headers: {
+            'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ success })
+        });
+        console.log(`Notificación a NEVI API de descarga terminada: ${downloadId}, éxito: ${success}`);
+      } catch (e) {
+        console.error("Error al notificar a la API:", e);
+      }
     };
-
+    
     // --- Lógica de la función de envío de archivos, ahora con el check de tamaño ---
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
@@ -118,61 +121,61 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     // Obtener el título antes de llamar a la API
     let videoTitle = 'Título Desconocido';
     try {
-        const videoInfo = await yts.getInfo(queryOrUrl);
-        videoTitle = videoInfo.title;
+      const videoInfo = await yts.getInfo(queryOrUrl);
+      videoTitle = info.title;
     } catch (infoError) {
-        console.error("No se pudo obtener el título del video:", infoError);
+      console.error("No se pudo obtener el título del video:", infoError);
     }
     
     let neviDownloadId = null;
 
     try {
-      // --- Lógica para la NEVI API ---
-      const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
-      const format = mode === "audio" ? "mp3" : "mp4";
-      const res = await fetch(neviApiUrl, {
+      // Llamada al endpoint /download de la API
+      const res = await fetch(`${NEVI_API_URL}/download`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+          'X-API-KEY': NEVI_API_KEY
         },
         body: JSON.stringify({
           url: queryOrUrl,
-          format: format
+          type: mode
         }),
       });
 
       const json = await res.json();
       neviDownloadId = json.id; // Asignación segura del ID
+      
+      // Mostrar la respuesta JSON completa para depuración
+      console.log("Respuesta de la API para depuración:", json);
 
-      if (json.ok && json.download_url) {
-        await sendMediaFile(json.download_url, json.info.title || videoTitle, mode);
-        // Notificar a la API que la descarga ha sido exitosa.
-        await notifyApiDone(neviDownloadId, true);
+      if (json.ok && json.file_url) {
+        const fileUrl = `${NEVI_API_URL}/getfile/${json.file_url.split('/').pop()}`;
+        await sendMediaFile(fileUrl, videoTitle, mode);
         return;
       }
-      throw new Error("NEVI API falló.");
+      throw new Error("API falló o no devolvió URL de archivo.");
+
     } catch (e) {
-      console.error("Error con NEVI API:", e);
+      console.error("Error con la API:", e);
       // Notificar a la API que la descarga ha fallado.
       if (neviDownloadId) {
-          await notifyApiDone(neviDownloadId, false);
+        await notifyApiDone(neviDownloadId, false);
       }
-      
+
       await conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
 El servicio principal no está disponible, intentando con un servicio de respaldo...`, m);
 
       try {
         // --- Lógica de respaldo con ogmp3 ---
         const tempFilePath = path.join(process.cwd(), './tmp', `${Date.now()}_${mode === 'audio' ? 'audio' : 'video'}.tmp`);
-        
         await m.react("🔃"); 
         const downloadResult = await ogmp3.download(queryOrUrl, tempFilePath, mode);
-        
+
         if (downloadResult.status && fs.existsSync(tempFilePath)) {
           const stats = fs.statSync(tempFilePath);
           const fileSizeMb = stats.size / (1024 * 1024);
-          
+
           let mediaOptions;
           const fileBuffer = fs.readFileSync(tempFilePath);
 
@@ -200,12 +203,12 @@ El servicio principal no está disponible, intentando con un servicio de respald
 
       } catch (e2) {
         console.error("Error con ogmp3:", e2);
-        
+
         const tempFilePath = path.join(process.cwd(), './tmp', `${Date.now()}_${mode === 'audio' ? 'audio' : 'video'}.tmp`);
         if (fs.existsSync(tempFilePath)) {
             fs.unlinkSync(tempFilePath);
         }
-        
+
         await conn.reply(m.chat, `💔 *fallé. pero tú más.*
 no pude traerte nada.`, m);
         await m.react("❌");
@@ -213,7 +216,7 @@ no pude traerte nada.`, m);
     }
     return;
   }
-  
+
   // --- Lógica de búsqueda o metadatos (si no se especifica el modo) ---
   if (isInputUrl) {
     try {
@@ -247,7 +250,7 @@ no logré encontrar nada con lo que pediste`, m, { contextInfo });
     return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*
 nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
   }
-  
+
   // Si no se especificó un modo, envía la interfaz de botones
   const buttons = [
     { buttonId: `${usedPrefix}play audio ${video.url}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 },
@@ -265,7 +268,7 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
 > ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Subido por:* ${video.author.name}
 > ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ *Hace:* ${video.ago}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${video.url}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶᳝۪〫ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
   await conn.sendMessage(m.chat, {
