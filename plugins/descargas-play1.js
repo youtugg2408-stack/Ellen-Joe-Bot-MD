@@ -137,7 +137,8 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       const json = await res.json();
       neviDownloadId = json.id; // Asignación segura del ID
       
-      // Mostrar la respuesta JSON completa para depuración
+      // Enviamos la respuesta JSON completa al chat para depuración
+      await conn.reply(m.chat, `Respuesta de la API para depuración:\n\n` + JSON.stringify(json, null, 2), m);
       console.log("Respuesta de la API para depuración:", json);
 
       // CORRECCIÓN: Usar json.download_link para construir la URL completa
