@@ -59,9 +59,11 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   if (isMode && isInputUrl) {
     await m.react("📥");
     const mode = args[0].toLowerCase();
-    
+
     // --- Lógica de la API de Descarga ---
     const NEVI_API_URL = 'http://neviapi.ddns.net:5000'; // Host y puerto de la API
+    const NEVI_DOWNLOAD_ENDPOINT = `${NEVI_API_URL}/download`;
+    const NEVI_DONE_ENDPOINT = `${NEVI_API_URL}/done`;
 
     // Función para notificar a la API que la descarga ha terminado.
     const notifyApiDone = async (downloadId, success) => {
@@ -70,7 +72,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
           console.warn("No se pudo notificar a la API, ID de descarga no disponible.");
           return;
         }
-        const doneUrl = `${NEVI_API_URL}/done/${downloadId}`;
+        const doneUrl = `${NEVI_DONE_ENDPOINT}/${downloadId}`;
         await fetch(doneUrl, {
           method: 'POST',
           headers: {
@@ -84,8 +86,8 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         console.error("Error al notificar a la API:", e);
       }
     };
-    
-    // CORRECCIÓN: Ahora se descarga el archivo con la clave y se envía localmente
+
+    // Función para enviar el archivo de medios después de descargarlo
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
         const response = await axios({
@@ -128,7 +130,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
     try {
       // Llamada al endpoint /download de la API
-      const res = await fetch(`${NEVI_API_URL}/download`, {
+      const res = await fetch(NEVI_DOWNLOAD_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,16 +143,16 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       });
 
       const json = await res.json();
-      neviDownloadId = json.id; // Asignación segura del ID
       
       // Enviamos la respuesta JSON completa al chat para depuración
       await conn.reply(m.chat, `Respuesta de la API para depuración:\n\n` + JSON.stringify(json, null, 2), m);
       console.log("Respuesta de la API para depuración:", json);
 
-      // CORRECCIÓN: Usar json.download_link para construir la URL completa
-      if (json.ok && json.download_link) {
+      if (json.ok && json.id && json.download_link) {
+        neviDownloadId = json.id; // Asignación segura del ID
         const fileUrl = `${NEVI_API_URL}${json.download_link}`;
         await sendMediaFile(fileUrl, json.title || 'Título Desconocido', mode);
+        await notifyApiDone(neviDownloadId, true);
         return;
       }
       throw new Error("API falló o no devolvió un enlace de descarga válido.");
