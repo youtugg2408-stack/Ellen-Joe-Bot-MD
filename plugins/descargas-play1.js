@@ -71,21 +71,21 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
     try {
       // ================================
-      // 📡 Petición a la API Nevi
-      // ================================
-      const res = await fetch(`${NEVI_API_URL}/download`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': NEVI_API_KEY
-        },
-        body: JSON.stringify({ url: queryOrUrl, type: mode })
-      });
+     // 📡 Petición a la API Nevi
+    // ================================
+const res = await fetch(`${NEVI_API_URL}/download`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-KEY': NEVI_API_KEY
+  },
+  body: JSON.stringify({ url: queryOrUrl, format: mode })
+});
 
-      const json = await res.json();
-      await conn.reply(m.chat, `📡 *Respuesta API:*\n\n${JSON.stringify(json, null, 2)}`, m);
+const json = await res.json();
+await conn.reply(m.chat, `📡 *Respuesta API:*\n\n${JSON.stringify(json, null, 2)}`, m);
 
-      if (!json.ok || !json.filename) throw new Error("La API no devolvió archivo válido");
+if (!json.ok || !json.filename) throw new Error("La API no devolvió archivo válido");
 
       // 📥 Descarga temporal
       const fileUrl = json.filename.startsWith('http')
