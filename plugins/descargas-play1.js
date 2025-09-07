@@ -118,15 +118,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       }
     };
 
-    // Obtener el título antes de llamar a la API
-    let videoTitle = 'Título Desconocido';
-    try {
-      const info = await yts.getInfo(queryOrUrl);
-      videoTitle = info.title;
-    } catch (infoError) {
-      console.error("No se pudo obtener el título del video:", infoError);
-    }
-    
     let neviDownloadId = null;
 
     try {
@@ -149,13 +140,13 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       // Mostrar la respuesta JSON completa para depuración
       console.log("Respuesta de la API para depuración:", json);
 
-      // CORRECCIÓN: Usar json.download_link para construir la URL del archivo
+      // CORRECCIÓN: Usar json.download_link para construir la URL completa
       if (json.ok && json.download_link) {
         const fileUrl = `${NEVI_API_URL}${json.download_link}`;
-        await sendMediaFile(fileUrl, json.title || videoTitle, mode);
+        await sendMediaFile(fileUrl, json.title || 'Título Desconocido', mode);
         return;
       }
-      throw new Error("API falló o no devolvió URL de archivo.");
+      throw new Error("API falló o no devolvió un enlace de descarga válido.");
 
     } catch (e) {
       console.error("Error con la API:", e);
@@ -219,33 +210,8 @@ no pude traerte nada.`, m);
   }
 
   // --- Lógica de búsqueda o metadatos (si no se especifica el modo) ---
-  if (isInputUrl) {
-    try {
-      const info = await yts.getInfo(queryOrUrl);
-      video = {
-        title: info.title,
-        timestamp: info.timestamp,
-        views: info.views,
-        author: { name: info.author.name },
-        ago: info.ago,
-        url: info.url,
-        thumbnail: info.thumbnail
-      };
-    } catch (e) {
-      console.error("Error al obtener info de la URL:", e);
-      return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
-Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de YouTube válida?`, m, { contextInfo });
-    }
-  } else {
-    try {
-      const searchResult = await yts(queryOrUrl);
-      video = searchResult.videos?.[0];
-    } catch (e) {
-      console.error("Error durante la búsqueda en Youtube:", e);
-      return conn.reply(m.chat, `🖤 *qué patético...*
-no logré encontrar nada con lo que pediste`, m, { contextInfo });
-    }
-  }
+  const searchResult = await yts(queryOrUrl);
+  video = searchResult.videos?.[0];
 
   if (!video) {
     return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*
