@@ -121,7 +121,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     // Obtener el título antes de llamar a la API
     let videoTitle = 'Título Desconocido';
     try {
-      const videoInfo = await yts.getInfo(queryOrUrl);
+      const info = await yts.getInfo(queryOrUrl);
       videoTitle = info.title;
     } catch (infoError) {
       console.error("No se pudo obtener el título del video:", infoError);
@@ -149,9 +149,10 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       // Mostrar la respuesta JSON completa para depuración
       console.log("Respuesta de la API para depuración:", json);
 
-      if (json.ok && json.file_url) {
-        const fileUrl = `${NEVI_API_URL}/getfile/${json.file_url.split('/').pop()}`;
-        await sendMediaFile(fileUrl, videoTitle, mode);
+      // CORRECCIÓN: Usar json.download_link para construir la URL del archivo
+      if (json.ok && json.download_link) {
+        const fileUrl = `${NEVI_API_URL}${json.download_link}`;
+        await sendMediaFile(fileUrl, json.title || videoTitle, mode);
         return;
       }
       throw new Error("API falló o no devolvió URL de archivo.");
