@@ -85,17 +85,23 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       }
     };
     
-    // --- Lógica de la función de envío de archivos, ahora con el check de tamaño ---
+    // CORRECCIÓN: Ahora se descarga el archivo con la clave y se envía localmente
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
-        const response = await axios.head(downloadUrl);
-        const contentLength = response.headers['content-length'];
-        const fileSizeMb = contentLength / (1024 * 1024);
+        const response = await axios({
+            url: downloadUrl,
+            method: 'GET',
+            responseType: 'arraybuffer',
+            headers: { 'X-API-KEY': NEVI_API_KEY } // Incluye la clave en la solicitud de descarga
+        });
+
+        const fileBuffer = response.data;
+        const fileSizeMb = fileBuffer.length / (1024 * 1024);
 
         if (fileSizeMb > SIZE_LIMIT_MB) {
           // El archivo es demasiado grande, enviarlo como documento
           await conn.sendMessage(m.chat, {
-            document: { url: downloadUrl },
+            document: fileBuffer,
             fileName: `${title}.${currentMode === 'audio' ? 'mp3' : 'mp4'}`,
             mimetype: currentMode === 'audio' ? 'audio/mpeg' : 'video/mp4',
             caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
@@ -105,16 +111,16 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         } else {
           // El archivo está dentro del límite, enviarlo como audio o video
           const mediaOptions = currentMode === 'audio'
-            ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-            : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
+              ? { audio: fileBuffer, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+              : { video: fileBuffer, caption: `🎬 *Listo.*
 🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
 
           await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
           await m.react(currentMode === 'audio' ? "🎧" : "📽️");
         }
       } catch (error) {
-        console.error("Error al obtener el tamaño del archivo o al enviarlo:", error);
-        throw new Error("No se pudo obtener el tamaño del archivo o falló el envío. Se intentará de nuevo.");
+        console.error("Error al obtener el archivo o al enviarlo:", error.response?.status, error.response?.statusText);
+        throw new Error("No se pudo obtener el archivo o falló el envío. Se intentará de nuevo.");
       }
     };
 
