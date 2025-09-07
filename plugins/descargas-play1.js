@@ -10,9 +10,6 @@ import fs from 'fs';
 
 // Reemplaza 'TU_CLAVE_API' con tu clave real.
 const NEVI_API_KEY = 'ellen';
-// NOTA: La documentación no menciona el uso de SHA256,
-// por lo que usaremos la clave directamente.
-// const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
 
 const SIZE_LIMIT_MB = 100;
 const MIN_AUDIO_SIZE_BYTES = 50000;
@@ -22,6 +19,7 @@ const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
   args = args.filter(v => v?.trim());
+  const isDebug = args.includes('debug');
 
   const contextInfo = {
     mentionedJid: [m.sender],
@@ -34,7 +32,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     },
     externalAdReply: {
       title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
-      body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 s𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
+      body: `✦ 𝙀sperando 𝙩u s𝙤𝙡𝙞𝙘𝙞𝙩u𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
       thumbnail: icons, // Asume que 'icons' está definido en otro lugar
       sourceUrl: redes, // Asume que 'redes' está definido en otro lugar
       mediaType: 1,
@@ -42,7 +40,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     }
   };
 
-  if (!args[0]) {
+  if (!args[0] || args.some(arg => arg.toLowerCase() === 'debug' && args.length === 1)) {
     return conn.reply(m.chat, `🦈 *¿᥎іᥒіs𝗍ᥱ ᥲ ⍴ᥱძіrmᥱ ᥲᥣg᥆ sіᥒ sᥲᑲᥱr 𝗊ᥙᥱ́?*
 ძі ᥣ᥆ 𝗊ᥙᥱ 𝗊ᥙіᥱrᥱs... ᥆ ᥎ᥱ𝗍ᥱ.
 
@@ -51,9 +49,9 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   }
 
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
-  const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
+  const queryOrUrl = isMode ? args.slice(1).filter(a => a.toLowerCase() !== 'debug').join(" ") : args.filter(a => a.toLowerCase() !== 'debug').join(" ");
   const isInputUrl = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl);
-
+  
   let video;
 
   // Si ya se especifica el modo y el enlace, va directo a la descarga
@@ -61,11 +59,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     await m.react("📥");
     const mode = args[0].toLowerCase();
     
-    // NOTA: La documentación no incluye un endpoint '/done',
-    // por lo que eliminamos esta lógica.
-    // const notifyApiDone = async (downloadId, success) => { /* ... */ };
-
-    // --- Lógica de la función de envío de archivos, ahora con el check de tamaño ---
     const sendMediaFile = async (downloadUrl, title, currentMode) => {
       try {
         const response = await axios.head(downloadUrl);
@@ -73,7 +66,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
         const fileSizeMb = contentLength / (1024 * 1024);
 
         if (fileSizeMb > SIZE_LIMIT_MB) {
-          // El archivo es demasiado grande, enviarlo como documento
           await conn.sendMessage(m.chat, {
             document: { url: downloadUrl },
             fileName: `${title}.${currentMode === 'audio' ? 'mp3' : 'mp4'}`,
@@ -81,9 +73,8 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
             caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
 🖤 *Título:* ${title}`
           }, { quoted: m });
-          await m.react("📄"); // React con un emoji de documento
+          await m.react("📄");
         } else {
-          // El archivo está dentro del límite, enviarlo como audio o video
           const mediaOptions = currentMode === 'audio'
             ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
             : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
@@ -101,22 +92,24 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
     // Obtener el título antes de llamar a la API
     let videoTitle = 'Título Desconocido';
     try {
-        const videoInfo = await yts.getInfo(queryOrUrl);
-        videoTitle = videoInfo.title;
+        // CORRECCIÓN: Usamos yt-search para obtener el ID del video y buscar su información.
+        const urlObj = new URL(queryOrUrl);
+        const videoID = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
+        const searchResult = await yts({ videoId: videoID });
+        if (searchResult && searchResult.title) {
+          videoTitle = searchResult.title;
+        }
     } catch (infoError) {
         console.error("No se pudo obtener el título del video:", infoError);
     }
     
     try {
-      // --- Lógica para la NEVI API ---
-      // CAMBIO 1: Endpoint ajustado para coincidir con la documentación.
       const neviApiUrl = `http://neviapi.ddns.net:5000/download`;
       const format = mode === "audio" ? "mp3" : "mp4";
       const res = await fetch(neviApiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // CAMBIO 2: Encabezado de autenticación ajustado para coincidir con la documentación.
           'X-API-KEY': NEVI_API_KEY,
         },
         body: JSON.stringify({
@@ -127,8 +120,12 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
       const json = await res.json();
       
+      // NUEVO: Envía la respuesta de la API al chat si el modo de depuración está activo.
+      if (isDebug) {
+        await conn.reply(m.chat, `*DEBUG - Respuesta de la API:*\n\`\`\`json\n${JSON.stringify(json, null, 2)}\n\`\`\``, m);
+      }
+      
       if (json.ok && json.download_url) {
-        // La API de la documentación devuelve la URL directa
         await sendMediaFile(json.download_url, json.info?.title || videoTitle, mode);
         return;
       }
@@ -140,7 +137,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 El servicio principal no está disponible, intentando con un servicio de respaldo...`, m);
 
       try {
-        // --- Lógica de respaldo con ogmp3 ---
         const tempFilePath = path.join(process.cwd(), './tmp', `${Date.now()}_${mode === 'audio' ? 'audio' : 'video'}.tmp`);
         
         await m.react("🔃"); 
@@ -194,16 +190,11 @@ no pude traerte nada.`, m);
   // --- Lógica de búsqueda o metadatos (si no se especifica el modo) ---
   if (isInputUrl) {
     try {
-      const info = await yts.getInfo(queryOrUrl);
-      video = {
-        title: info.title,
-        timestamp: info.timestamp,
-        views: info.views,
-        author: { name: info.author.name },
-        ago: info.ago,
-        url: info.url,
-        thumbnail: info.thumbnail
-      };
+      // CORRECCIÓN: Se usa el mismo método que arriba para obtener la info de la URL.
+      const urlObj = new URL(queryOrUrl);
+      const videoID = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
+      const searchResult = await yts({ videoId: videoID });
+      video = searchResult.videos?.[0];
     } catch (e) {
       console.error("Error al obtener info de la URL:", e);
       return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
@@ -225,7 +216,6 @@ no logré encontrar nada con lo que pediste`, m, { contextInfo });
 nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
   }
   
-  // Si no se especificó un modo, envía la interfaz de botones
   const buttons = [
     { buttonId: `${usedPrefix}play audio ${video.url}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 },
     { buttonId: `${usedPrefix}play video ${video.url}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 }
@@ -242,7 +232,7 @@ nada encontrado con "${queryOrUrl}"`, m, { contextInfo });
 > ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Subido por:* ${video.author.name}
 > ૢ⃘꒰📅⃝︩֟፝𐴲ⳋᩧ᪲ *Hace:* ${video.ago}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${video.url}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〪〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〫〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
   await conn.sendMessage(m.chat, {
