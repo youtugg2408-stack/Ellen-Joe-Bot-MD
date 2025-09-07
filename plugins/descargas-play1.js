@@ -1,33 +1,19 @@
-// ================================
-// ⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ — Service
-// Handler con API Nevi + respaldo ogmp3
-// ================================
-
+// Importa las librerías necesarias
 import fetch from "node-fetch";
 import { ogmp3 } from '../lib/youtubedl.js';
 import yts from "yt-search";
-import crypto from 'crypto';
+import axios from 'axios';
 import path from 'path';
 import fs from 'fs';
 
-// ================================
-// 🔑 Configuración de API
-// ================================
+// 🔑 Clave API (no en SHA256, se manda directo)
 const NEVI_API_KEY = 'ellen';
-const NEVI_API_URL = 'http://neviapi.ddns.net:5000';
-const SIZE_LIMIT_MB = 100;
 
+const SIZE_LIMIT_MB = 100;
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 
-// 📂 Carpeta temporal
-const TMP_DIR = path.join(process.cwd(), 'tmp');
-if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR);
-
-// ================================
-// ⚙️ Handler principal
-// ================================
-let handler = async (m, { conn, text, args, usedPrefix, command }) => {
+const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
   args = args.filter(v => v?.trim());
 
@@ -43,14 +29,14 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
     externalAdReply: {
       title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
       body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 𝙩𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
-      thumbnail: icons, // <- define esto en tu settings.js
-      sourceUrl: redes, // <- define esto en tu settings.js
+      thumbnail: icons, // definido fuera
+      sourceUrl: redes, // definido fuera
       mediaType: 1,
       renderLargerThumbnail: false
     }
   };
 
-  if (!text) {
+  if (!args[0]) {
     return conn.reply(m.chat, `🦈 *¿᥎іᥒіs𝗍ᥱ ᥲ ⍴ᥱძіrmᥱ ᥲᥣg᥆ sіᥒ sᥲᑲᥱr 𝗊ᥙᥱ́?*
 ძі ᥣ᥆ 𝗊ᥙᥱ 𝗊ᥙіᥱrᥱs... ᥆ ᥎ᥱ𝗍ᥱ.
 
@@ -58,106 +44,117 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
 ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   }
 
-  // Si es link directo
-  const isMode = ["audio", "video"].includes(args[0]?.toLowerCase());
+  const isMode = ["audio", "video"].includes(args[0].toLowerCase());
   const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
   const isInputUrl = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl);
 
   let video;
 
+  // ================================
+  // 📥 Descarga directa (si hay url y modo)
+  // ================================
   if (isMode && isInputUrl) {
     await m.react("📥");
-    const mode = args[0].toLowerCase();
+    const modeArg = args[0].toLowerCase();
+    const format = modeArg === "audio" ? "mp3" : "mp4";
+
+    const NEVI_API_URL = 'http://neviapi.ddns.net:5000';
+    let neviDownloadId = null;
 
     try {
-      // ================================
-     // 📡 Petición a la API Nevi
-    // ================================
-const res = await fetch(`${NEVI_API_URL}/download`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-API-KEY': NEVI_API_KEY
-  },
-  body: JSON.stringify({ url: queryOrUrl, format: mode })
-});
-
-const json = await res.json();
-await conn.reply(m.chat, `📡 *Respuesta API:*\n\n${JSON.stringify(json, null, 2)}`, m);
-
-if (!json.ok || !json.filename) throw new Error("La API no devolvió archivo válido");
-
-      // 📥 Descarga temporal
-      const fileUrl = json.filename.startsWith('http')
-        ? json.filename
-        : `${NEVI_API_URL}${json.filename}`;
-
-      const tmpFilePath = path.join(TMP_DIR, `${Date.now()}_${mode}.tmp`);
-      const fileRes = await fetch(fileUrl, { headers: { 'X-API-KEY': NEVI_API_KEY_SHA256 } });
-
-      if (!fileRes.ok) throw new Error(`Error al descargar archivo: ${fileRes.status}`);
-      const destStream = fs.createWriteStream(tmpFilePath);
-      await new Promise((resolve, reject) => {
-        fileRes.body.pipe(destStream);
-        fileRes.body.on("error", reject);
-        destStream.on("finish", resolve);
+      // 📡 Petición a la API
+      const res = await fetch(`${NEVI_API_URL}/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': NEVI_API_KEY
+        },
+        body: JSON.stringify({
+          url: queryOrUrl,
+          format
+        }),
       });
 
-      // 📤 Envío
-      const stats = fs.statSync(tmpFilePath);
-      const fileSizeMB = stats.size / (1024 * 1024);
+      const json = await res.json();
+      await conn.reply(m.chat, `📡 *Respuesta API:*\n\n${JSON.stringify(json, null, 2)}`, m);
 
-      if (mode === "audio") {
-        await conn.sendMessage(m.chat, {
-          audio: fs.createReadStream(tmpFilePath),
-          mimetype: "audio/mpeg",
-          fileName: `${Date.now()}.mp3`,
-          caption: `🎧 *Listo.*\n🖤 *Tamaño:* ${fileSizeMB.toFixed(2)} MB`
-        }, { quoted: m });
-      } else {
-        await conn.sendMessage(m.chat, {
-          video: fs.createReadStream(tmpFilePath),
-          mimetype: "video/mp4",
-          fileName: `${Date.now()}.mp4`,
-          caption: `🎬 *Listo.*\n🖤 *Tamaño:* ${fileSizeMB.toFixed(2)} MB`
-        }, { quoted: m });
-      }
+      if (json.status === "success" && json.filename && json.title) {
+        const fileUrl = `${NEVI_API_URL}${json.filename}`;
 
-      fs.unlinkSync(tmpFilePath);
-      await m.react("✅");
-
-    } catch (err) {
-      console.error("❌ Error:", err);
-      await conn.reply(m.chat, `💔 *Fallé al complacerte.*\nIntentando con respaldo...`, m);
-
-      // ================================
-      // 🔄 Respaldo con ogmp3
-      // ================================
-      try {
-        const result = await ogmp3(queryOrUrl);
-        if (!result?.audio) throw new Error("ogmp3 no devolvió audio.");
-
-        const tmpFilePath = path.join(TMP_DIR, `${Date.now()}_backup.mp3`);
-        const res = await fetch(result.audio);
-        const dest = fs.createWriteStream(tmpFilePath);
-        await new Promise((resolve, reject) => {
-          res.body.pipe(dest);
-          res.body.on("error", reject);
-          dest.on("finish", resolve);
+        // Descargar el archivo
+        const response = await axios({
+          url: fileUrl,
+          method: 'GET',
+          responseType: 'arraybuffer',
+          headers: { 'X-API-KEY': NEVI_API_KEY }
         });
 
-        await conn.sendMessage(m.chat, {
-          audio: fs.createReadStream(tmpFilePath),
-          mimetype: "audio/mpeg",
-          fileName: `${Date.now()}_backup.mp3`,
-          caption: `🎵 *Respaldo (ogmp3)*`
-        }, { quoted: m });
+        const fileBuffer = response.data;
+        const fileSizeMb = fileBuffer.length / (1024 * 1024);
 
-        fs.unlinkSync(tmpFilePath);
-        await m.react("🔄");
-      } catch (backupErr) {
-        console.error("Error en ogmp3:", backupErr);
-        await conn.reply(m.chat, `💔 *fallé. pero tú más.*\nno pude traerte nada.`, m);
+        if (fileSizeMb > SIZE_LIMIT_MB) {
+          await conn.sendMessage(m.chat, {
+            document: fileBuffer,
+            fileName: `${json.title}.${format}`,
+            mimetype: format === "mp3" ? "audio/mpeg" : "video/mp4",
+            caption: `⚠️ *El archivo pesa ${fileSizeMb.toFixed(2)} MB, lo envío como documento.*`
+          }, { quoted: m });
+          await m.react("📄");
+        } else {
+          const mediaOptions = format === "mp3"
+            ? { audio: fileBuffer, mimetype: "audio/mpeg", fileName: `${json.title}.mp3` }
+            : { video: fileBuffer, caption: `🎬 *Listo.*\n🖤 *Título:* ${json.title}`, fileName: `${json.title}.mp4`, mimetype: "video/mp4" };
+
+          await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+          await m.react(format === "mp3" ? "🎧" : "📽️");
+        }
+        return;
+      }
+
+      throw new Error(`API falló: ${json.message || "No se devolvió un archivo válido"}`);
+
+    } catch (e) {
+      console.error("Error con la API:", e);
+
+      await conn.reply(m.chat, `💔 *Fallé al usar la API.*
+Intentando con servicio de respaldo...`, m);
+
+      try {
+        // Respaldo con ogmp3
+        const tempFilePath = path.join(process.cwd(), './tmp', `${Date.now()}.${format}`);
+        await m.react("🔃");
+        const downloadResult = await ogmp3.download(queryOrUrl, tempFilePath, modeArg);
+
+        if (downloadResult.status && fs.existsSync(tempFilePath)) {
+          const stats = fs.statSync(tempFilePath);
+          const fileSizeMb = stats.size / (1024 * 1024);
+          const fileBuffer = fs.readFileSync(tempFilePath);
+
+          if (fileSizeMb > SIZE_LIMIT_MB) {
+            await conn.sendMessage(m.chat, {
+              document: fileBuffer,
+              fileName: `${downloadResult.result.title}.${format}`,
+              mimetype: format === "mp3" ? "audio/mpeg" : "video/mp4",
+              caption: `⚠️ *El archivo pesa ${fileSizeMb.toFixed(2)} MB, lo envío como documento.*`
+            }, { quoted: m });
+            await m.react("📄");
+          } else {
+            const mediaOptions = format === "mp3"
+              ? { audio: fileBuffer, mimetype: "audio/mpeg", fileName: `${downloadResult.result.title}.mp3` }
+              : { video: fileBuffer, caption: `🎬 *Listo.* 🖤 *Título:* ${downloadResult.result.title}`, fileName: `${downloadResult.result.title}.mp4`, mimetype: "video/mp4" };
+
+            await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+            await m.react(format === "mp3" ? "🎧" : "📽️");
+          }
+
+          fs.unlinkSync(tempFilePath);
+          return;
+        }
+        throw new Error("ogmp3 no pudo descargar el archivo.");
+
+      } catch (e2) {
+        console.error("Error con ogmp3:", e2);
+        await conn.reply(m.chat, `❌ *No pude traerte nada.*`, m);
         await m.react("❌");
       }
     }
@@ -165,12 +162,13 @@ if (!json.ok || !json.filename) throw new Error("La API no devolvió archivo vá
   }
 
   // ================================
-  // 🔍 Búsqueda cuando no hay modo
+  // 🔍 Búsqueda si no se especifica url
   // ================================
   const searchResult = await yts(queryOrUrl);
   video = searchResult.videos?.[0];
+
   if (!video) {
-    return conn.reply(m.chat, `🦈 *esta cosa murió antes de empezar.*\nNada encontrado con "${queryOrUrl}"`, m, { contextInfo });
+    return conn.reply(m.chat, `🦈 *nada encontrado con:* "${queryOrUrl}"`, m, { contextInfo });
   }
 
   const buttons = [
@@ -180,29 +178,27 @@ if (!json.ok || !json.filename) throw new Error("La API no devolvió archivo vá
 
   const caption = `
 ₊‧꒰ 🎧꒱ 𝙀𝙇𝙇𝙀𝙉 𝙅𝙊𝙀 𝘽𝙊𝙏 — 𝙋𝙇𝘼𝙔 ✧˖°
-> 🎧 *Título:* ${video.title}
+> 🎶 *Título:* ${video.title}
 > ⏱️ *Duración:* ${video.timestamp}
 > 👀 *Vistas:* ${video.views.toLocaleString()}
 > 👤 *Canal:* ${video.author.name}
 > 📅 *Hace:* ${video.ago}
-> 🔗 *URL:* ${video.url}`;
+> 🔗 *URL:* ${video.url}
+`;
 
   await conn.sendMessage(m.chat, {
     image: { url: video.thumbnail },
     caption,
-    footer: 'Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.',
+    footer: 'Dime cómo lo quieres... ┐(￣ー￣)┌',
     buttons,
     headerType: 4,
     contextInfo
   }, { quoted: m });
 };
 
-// ================================
-// 📌 Configuración del comando
-// ================================
-handler.help = ['play <texto|url>'];
-handler.tags = ['downloader'];
-handler.command = ['play', 'ytplay', 'ytmp3', 'ytmp4'];
+handler.help = ['play'].map(v => v + ' <búsqueda o URL>');
+handler.tags = ['descargas'];
+handler.command = ['play'];
 handler.register = true;
 handler.prefix = /^[./#]/;
 
