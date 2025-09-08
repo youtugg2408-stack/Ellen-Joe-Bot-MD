@@ -3,32 +3,12 @@ import crypto from 'crypto';
 
 // --- Constantes y Configuración de Transmisión ---
 const NEVI_API_KEY = 'ellen';
-const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
+// NOTA: La API del puerto 5000 no usa SHA256, se usa la clave directamente.
 
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⏤͟͞ू⃪፝͜⁞⟡ 𝐄llen 𝐉ᴏᴇ\'s 𝐒ervice';
 
-// --- Función para notificar a la API de NEVI ---
-const notifyApiDone = async (downloadId, success) => {
-    try {
-        if (!downloadId) {
-            console.warn("No se pudo notificar a la API, ID de descarga no disponible.");
-            return;
-        }
-        const doneUrl = `http://neviapi.ddns.net:8000/done/${downloadId}`;
-        await fetch(doneUrl, {
-            method: 'POST',
-            headers: {
-                'X-Auth-Sha256': NEVI_API_KEY_SHA256,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ success })
-        });
-        console.log(`Notificación a NEVI API de descarga terminada: ${downloadId}, éxito: ${success}`);
-    } catch (e) {
-        console.error("Error al notificar a la API:", e);
-    }
-};
+// NOTA: Se elimina la función notifyApiDone ya que la API del puerto 5000 no la soporta.
 
 var handler = async (m, { conn, args, usedPrefix, command }) => {
     const name = conn.getName(m.sender);
@@ -45,8 +25,8 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
         externalAdReply: {
             title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
             body: `✦ Esperando tu solicitud, ${name}.`,
-            thumbnail: global.icons,
-            sourceUrl: global.redes,
+            thumbnail: global.icons, // Asume que 'global.icons' está definido
+            sourceUrl: global.redes, // Asume que 'global.redes' está definido
             mediaType: 1,
             renderLargerThumbnail: false
         }
@@ -69,15 +49,16 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
     );
 
     const url = args[0];
-    let neviDownloadId = null;
 
     try {
-        const neviApiUrl = `http://neviapi.ddns.net:8000/youtube`;
+        // CAMBIO 1: Se usa el endpoint de la API en el puerto 5000
+        const neviApiUrl = `http://neviapi.ddns.net:5000/download`;
         const res = await fetch(neviApiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+                // CAMBIO 2: Se usa la clave de API simple sin SHA256
+                'X-API-KEY': NEVI_API_KEY,
             },
             body: JSON.stringify({
                 url: url,
@@ -86,38 +67,24 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
         });
 
         const json = await res.json();
-        neviDownloadId = json.id;
-
-        if (json.ok && json.download_url) {
-            // Lógica para formatear la duración a h:m:s
-            const durationInSeconds = json.info.duration;
-            const hours = Math.floor(durationInSeconds / 3600);
-            const minutes = Math.floor((durationInSeconds % 3600) / 60);
-            const seconds = durationInSeconds % 60;
-            const durationFormatted = [
-                hours,
-                minutes,
-                seconds
-            ].map(v => v.toString().padStart(2, '0')).join(':').replace(/^00:/, '');
-
+        
+        // CAMBIO 3: Se usa 'status' y 'download_link' que son los campos correctos de la API del puerto 5000
+        if (json.status === "success" && json.download_link) {
+            const titleFromApi = json.title || 'Título Desconocido';
+            
             await conn.sendMessage(
                 m.chat, {
-                    audio: { url: json.download_url },
+                    audio: { url: json.download_link },
                     mimetype: 'audio/mpeg',
-                    fileName: json.info.title + '.mp3',
+                    fileName: titleFromApi + '.mp3',
                     ptt: false,
+                    // CAMBIO 4: Se ajusta el pie de página para usar solo la información disponible
                     caption: `
 *¡Audio descargado con éxito!*
-🎵 *Título:* ${json.info.title}
-👤 *Autor:* ${json.info.uploader}
-⏳ *Duración:* ${durationFormatted}
-👁️ *Vistas:* ${json.info.view_count.toLocaleString()}
-🔗 *Enlace:* ${json.info.channel_url}
+🎵 *Título:* ${titleFromApi}
 `
                 }, { contextInfo, quoted: m }
             );
-
-            await notifyApiDone(neviDownloadId, true);
 
         } else {
             throw new Error(`No se pudo descargar el audio. Razón: ${json.message || 'Respuesta inválida del servidor.'}`);
@@ -125,10 +92,6 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
 
     } catch (e) {
         console.error(e);
-
-        if (neviDownloadId) {
-            await notifyApiDone(neviDownloadId, false);
-        }
 
         await conn.reply(
             m.chat,
