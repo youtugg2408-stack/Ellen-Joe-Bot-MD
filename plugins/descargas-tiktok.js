@@ -82,14 +82,8 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
   const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
 
-  // CAMBIO: Validación de URL más robusta con expresión regular
-  const isInputUrl = /^(https?:\/\/)?(www\.)?(vm\.|vt\.)?tiktok\.com\/.+$/i.test(queryOrUrl);
-
-  if (!isInputUrl) {
-    return conn.reply(m.chat, `💔 *Esa no es una URL de TikTok.*
-Solo soporto URLs directas.`, m, { contextInfo });
-  }
-
+  // CAMBIO: Se eliminó la validación de URL.
+  
   await m.react("🔎");
 
   try {
