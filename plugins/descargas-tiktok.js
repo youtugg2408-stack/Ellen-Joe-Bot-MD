@@ -1,22 +1,55 @@
+
 // Importa las librerías necesarias
 import fetch from "node-fetch";
 import axios from 'axios';
-import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import AdmZip from 'adm-zip';
 
 // Reemplaza 'TU_CLAVE_API' con tu clave real.
 const NEVI_API_KEY = 'ellen';
-const NEVI_API_KEY_SHA256 = crypto.createHash('sha256').update(NEVI_API_KEY).digest('hex');
+const NEVI_API_ENDPOINT = 'http://neviapi.ddns.net:5000'; // CAMBIO: Puerto 5000
 
 const SIZE_LIMIT_MB = 100;
 const newsletterJid = '120363418071540900@newsletter';
-const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
+const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏ𝐞 𖥔 Sᥱrvice';
 
-// URL de imagen de respaldo si la API no proporciona una.
-const FALLBACK_IMAGE_URL = 'https://i.imgur.com/KqW4LgM.jpeg';
+// La función notifyApiDone ha sido eliminada.
 
+const sendMediaFile = async (conn, m, downloadUrl, title, currentMode) => {
+  try {
+    const response = await axios.head(downloadUrl);
+    const contentLength = response.headers['content-length'];
+    const fileSizeMb = contentLength / (1024 * 1024);
+
+    let mediaOptions = {};
+
+    if (fileSizeMb > SIZE_LIMIT_MB) {
+      mediaOptions = {
+        document: { url: downloadUrl },
+        fileName: `${title}.${currentMode === 'audio' ? 'mp3' : 'mp4'}`,
+        mimetype: currentMode === 'audio' ? 'audio/mpeg' : 'video/mp4',
+        caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
+🖤 *Título:* ${title}`
+      };
+      await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+      await m.react("📄");
+    } else {
+      mediaOptions = currentMode === 'audio'
+        ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
+        : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
+🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
+
+      await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
+      await m.react(currentMode === 'audio' ? "🎧" : "📽️");
+    }
+  } catch (error) {
+    console.error("Error al obtener el tamaño del archivo o al enviarlo:", error);
+    throw new Error("No se pudo obtener el tamaño del archivo o falló el envío.");
+  }
+};
+
+// --- Manejador Principal ---
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
   args = args.filter(v => v?.trim());
@@ -33,8 +66,8 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     externalAdReply: {
       title: '🖤 ⏤͟͟͞͞𝙀𝙇𝙇𝙀𝙉 - 𝘽𝙊𝙏 ᨶ႒ᩚ',
       body: `✦ 𝙀𝙨𝙥𝙚𝙧𝙖𝙣𝙙𝙤 t𝙪 𝙨𝙤𝙡𝙞𝙘𝙞𝙩𝙪𝙙, ${name}. ♡~٩( ˃▽˂ )۶~♡`,
-      thumbnail: icons, // Asume que 'icons' está definido en otro lugar
-      sourceUrl: redes, // Asume que 'redes' está definido en otro lugar
+      thumbnail: icons,
+      sourceUrl: redes,
       mediaType: 1,
       renderLargerThumbnail: false
     }
@@ -45,241 +78,104 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 ძі ᥣ᥆ 𝗊ᥙᥱ 𝗊ᥙіᥱrᥱs... ᥆ ᥎ᥱ𝗍ᥱ.
 
 🎧 ᥱȷᥱm⍴ᥣ᥆s:
-${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789
-${usedPrefix}tiktok video https://www.tiktok.com/@user/video/123456789`, m, { contextInfo });
+${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextInfo });
   }
 
-  const isMode = ["audio", "video", "images"].includes(args[0].toLowerCase());
+  const isMode = ["audio", "video"].includes(args[0].toLowerCase());
   const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
-  const isInputUrl = /^(https?:\/\/)?(www\.)?(vm\.)?tiktok\.com\/.+$/i.test(queryOrUrl);
-  
+
+  const isInputUrl = queryOrUrl.includes('tiktok.com');
+
   if (!isInputUrl) {
     return conn.reply(m.chat, `💔 *Esa no es una URL de TikTok.*
 Solo soporto URLs directas.`, m, { contextInfo });
   }
 
-  const notifyApiDone = async (downloadId, success) => {
-    try {
-      if (!downloadId) {
-        console.warn("No se pudo notificar a la API, ID de descarga no disponible.");
-        return;
-      }
-      const doneUrl = `http://neviapi.ddns.net:8000/done/${downloadId}`;
-      await fetch(doneUrl, {
-        method: 'POST',
-        headers: {
-          'X-Auth-Sha256': NEVI_API_KEY_SHA256,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ success })
-      });
-      console.log(`Notificación a NEVI API de descarga terminada: ${downloadId}, éxito: ${success}`);
-    } catch (e) {
-      console.error("Error al notificar a la API:", e);
-    }
-  };
+  await m.react("🔎");
 
-  const sendMediaFile = async (downloadUrl, title, currentMode) => {
-    try {
-      const response = await axios.head(downloadUrl);
-      const contentLength = response.headers['content-length'];
-      const fileSizeMb = contentLength / (1024 * 1024);
-
-      if (fileSizeMb > SIZE_LIMIT_MB) {
-        await conn.sendMessage(m.chat, {
-          document: { url: downloadUrl },
-          fileName: `${title}.${currentMode === 'audio' ? 'mp3' : 'mp4'}`,
-          mimetype: currentMode === 'audio' ? 'audio/mpeg' : 'video/mp4',
-          caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
-🖤 *Título:* ${title}`
-        }, { quoted: m });
-        await m.react("📄");
-      } else {
-        const mediaOptions = currentMode === 'audio'
-          ? { audio: { url: downloadUrl }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }
-          : { video: { url: downloadUrl }, caption: `🎬 *Listo.*
-🖤 *Título:* ${title}`, fileName: `${title}.mp4`, mimetype: "video/mp4" };
-
-        await conn.sendMessage(m.chat, mediaOptions, { quoted: m });
-        await m.react(currentMode === 'audio' ? "🎧" : "📽️");
-      }
-    } catch (error) {
-      console.error("Error al obtener el tamaño del archivo o al enviarlo:", error);
-      throw new Error("No se pudo obtener el tamaño del archivo o falló el envío.");
-    }
-  };
-
-  const sendImagesFromZip = async (downloadUrl, title) => {
-    const tempDir = path.join(process.cwd(), 'temp', `tiktok_img_${Date.now()}`);
-    const tempZipPath = `${tempDir}.zip`;
-
-    if (!fs.existsSync(path.dirname(tempDir))) {
-        fs.mkdirSync(path.dirname(tempDir));
-    }
-
-    try {
-        const response = await axios({
-            method: 'GET',
-            url: downloadUrl,
-            responseType: 'stream'
-        });
-
-        const writer = fs.createWriteStream(tempZipPath);
-        response.data.pipe(writer);
-
-        await new Promise((resolve, reject) => {
-            writer.on('finish', resolve);
-            writer.on('error', reject);
-        });
-
-        const zip = new AdmZip(tempZipPath);
-        zip.extractAllTo(tempDir, true);
-
-        const extractedFiles = fs.readdirSync(tempDir).filter(file => /\.(jpeg|jpg|png)$/i.test(file));
-        if (extractedFiles.length === 0) {
-            throw new Error('El archivo ZIP no contiene imágenes.');
-        }
-
-        await conn.reply(m.chat, `🖼️ *Enviando ${extractedFiles.length} imágenes...*`, m);
-        for (const file of extractedFiles) {
-            const imagePath = path.join(tempDir, file);
-            await conn.sendMessage(m.chat, { image: fs.readFileSync(imagePath), caption: `_Imagen de la presentación de ${title}_` });
-        }
-
-    } catch (error) {
-        console.error("Error al procesar imágenes:", error);
-        throw new Error("No se pudieron procesar las imágenes del carrusel.");
-    } finally {
-        if (fs.existsSync(tempZipPath)) {
-            fs.unlinkSync(tempZipPath);
-        }
-        if (fs.existsSync(tempDir)) {
-            fs.rmSync(tempDir, { recursive: true, force: true });
-        }
-    }
-  };
-
-  if (isMode) {
-    await m.react("📥");
-    const mode = args[0].toLowerCase();
-    let neviDownloadId = null;
-
-    try {
-      const neviApiUrl = `http://neviapi.ddns.net:8000/tiktok`;
-      let format = mode === "audio" ? "mp3" : "mp4";
-      if (mode === "images") {
-          format = "images";
-      }
-
+  try {
+    const neviApiUrl = `${NEVI_API_ENDPOINT}/tiktok`;
+    
+    // Si se especifica un modo, se realiza la descarga directamente
+    if (isMode) {
+      const mode = args[0].toLowerCase();
+      const action = mode === "audio" ? "download_audio" : "download_video";
+      
       const res = await fetch(neviApiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Auth-Sha256': NEVI_API_KEY_SHA256,
+          'X-API-KEY': NEVI_API_KEY,
         },
         body: JSON.stringify({
           url: queryOrUrl,
-          format: format
+          action: action
+        }),
+      });
+      
+      const json = await res.json();
+      
+      if (json.status === "success" && json.download_link) {
+        const videoTitle = json.title || 'Título Desconocido';
+        await sendMediaFile(conn, m, json.download_link, videoTitle, mode);
+        return;
+      }
+      throw new Error(`Fallo de la API: ${json.message || 'Respuesta inválida.'}`);
+
+    } else { // Si no se especifica un modo, se obtienen los metadatos y se muestran los botones
+      const res = await fetch(neviApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': NEVI_API_KEY,
+        },
+        body: JSON.stringify({
+          url: queryOrUrl,
+          action: "info"
         }),
       });
 
       const json = await res.json();
-      
-      neviDownloadId = json.id;
 
-      if (json.ok && json.download_url) {
-        const videoTitle = json.info?.title || 'Título Desconocido';
-        if (mode === "images") {
-            await sendImagesFromZip(json.download_url, videoTitle);
-        } else {
-            await sendMediaFile(json.download_url, videoTitle, mode);
-        }
-        await notifyApiDone(neviDownloadId, true);
-        return;
+      if (json.status !== "success" || !json.title) {
+        throw new Error("No se encontraron metadatos.");
       }
-      throw new Error("NEVI API falló.");
-    } catch (e) {
-      console.error("Error con NEVI API:", e);
-      if (neviDownloadId) {
-        await notifyApiDone(neviDownloadId, false);
-      }
-      return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
-No pude descargar el video de TikTok.`, m);
-    }
-    return;
-  }
-  
-  await m.react("🔎");
-  let neviSearchId = null;
 
-  try {
-    const neviApiUrl = `http://neviapi.ddns.net:8000/tiktok-search`;
-    const res = await fetch(neviApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Auth-Sha256': NEVI_API_KEY_SHA256,
-      },
-      body: JSON.stringify({
-        url: queryOrUrl
-      }),
-    });
-    
-    const json = await res.json();
+      const { uploader, music_title, title, description, thumbnail_link } = json;
 
-    if (!json.ok || !json.info) {
-      throw new Error("No se encontraron metadatos.");
-    }
+      const buttons = [
+        { buttonId: `${usedPrefix}tiktok video ${queryOrUrl}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 },
+        { buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 }
+      ];
 
-    neviSearchId = json.id; // Asumimos que la API ahora retorna un ID
+      const finalDescription = description || title || 'Sin descripción';
+      const finalMusicTitle = music_title || 'Desconocida';
+      const finalUploader = uploader || 'Desconocido';
 
-    const { uploader, music_info, title, is_slideshow } = json.info;
-    
-    const buttons = [];
-    if (is_slideshow) {
-        buttons.push({ buttonId: `${usedPrefix}tiktok images ${queryOrUrl}`, buttonText: { displayText: '🖼️ 𝙄𝙈𝘼́𝙂𝙀𝙉𝙀𝙎' }, type: 1 });
-        buttons.push({ buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 });
-    } else {
-        buttons.push({ buttonId: `${usedPrefix}tiktok video ${queryOrUrl}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 });
-        buttons.push({ buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 });
-    }
-
-    const caption = `
+      const caption = `
 ┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪۪۪۪۪ٜ݊᷼⁔᮫ּׅ̫ׄ࣪︵᮫ּ๋ׅׅ۪۪۪۪ׅ࣪࣪͡⌒🌀𔗨⃪̤̤̤ٜ۫۫۫҈҈҈҈҉҉᷒ᰰ꤬۫۫۫𔗨̤̤̤𐇽─۪۪۪۪ٜ᷼┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪݊᷼
 ₊‧꒰ 🎧꒱ 𝙀𝙇𝙇𝙀𝙉 𝙅𝙊𝙀 𝘽𝙊𝙏 — 𝙋𝙇𝘼𝙔 𝙈𝙊𝘿𝙀 ✧˖°
 ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶
 
-> ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Autor:* ${uploader || 'Desconocido'}
-> ૢ⃘꒰💬⃝︩֟፝𐴲ⳋᩧ᪲ *Descripción:* ${title || 'Sin descripción'}
-> ૢ⃘꒰🎵⃝︩֟፝𐴲ⳋᩧ᪲ *Música:* ${music_info?.title || 'Desconocida'}
+> ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Autor:* ${finalUploader}
+> ૢ⃘꒰💬⃝︩֟፝𐴲ⳋᩧ᪲ *Descripción:* ${finalDescription}
+> ૢ⃘꒰🎵⃝︩֟፝𐴲ⳋᩧ᪲ *Música:* ${finalMusicTitle}
 > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${queryOrUrl}
 ⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〫〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
      ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
 
-    try {
-        await conn.sendMessage(m.chat, {
-            image: { url: json.info?.download_url || FALLBACK_IMAGE_URL },
-            caption,
-            footer: 'Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.',
-            buttons,
-            headerType: 4,
-            contextInfo
-        }, { quoted: m });
-
-        // Si la solicitud de búsqueda fue exitosa y la API retornó un ID, notifica la descarga de la miniatura.
-        if (neviSearchId) {
-            await notifyApiDone(neviSearchId, true);
-        }
-    } catch (e) {
-        console.error("Error al enviar el mensaje de vista previa:", e);
-        // Notifica el fallo si la API retornó un ID
-        if (neviSearchId) {
-            await notifyApiDone(neviSearchId, false);
-        }
+      await conn.sendMessage(m.chat, {
+        image: { url: thumbnail_link },
+        caption,
+        footer: 'Dime cómo lo quieres... o no digas nada ┐(￣ー￣)┌.',
+        buttons,
+        headerType: 4,
+        contextInfo
+      }, { quoted: m });
     }
 
   } catch (e) {
-    console.error("Error al buscar metadatos de TikTok:", e);
+    console.error("Error al procesar la solicitud de TikTok:", e);
     return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
 Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de TikTok válida?`, m, { contextInfo });
   }
