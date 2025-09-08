@@ -1,4 +1,3 @@
-
 // Importa las librerías necesarias
 import fetch from "node-fetch";
 import axios from 'axios';
@@ -8,14 +7,13 @@ import AdmZip from 'adm-zip';
 
 // Reemplaza 'TU_CLAVE_API' con tu clave real.
 const NEVI_API_KEY = 'ellen';
-const NEVI_API_ENDPOINT = 'http://neviapi.ddns.net:5000'; // CAMBIO: Puerto 5000
+const NEVI_API_ENDPOINT = 'http://neviapi.ddns.net:5000';
 
 const SIZE_LIMIT_MB = 100;
 const newsletterJid = '120363418071540900@newsletter';
 const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏ𝐞 𖥔 Sᥱrvice';
 
-// La función notifyApiDone ha sido eliminada.
-
+// --- Funciones de Utilidad ---
 const sendMediaFile = async (conn, m, downloadUrl, title, currentMode) => {
   try {
     const response = await axios.head(downloadUrl);
@@ -84,7 +82,8 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
   const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
 
-  const isInputUrl = queryOrUrl.includes('tiktok.com');
+  // CAMBIO: Validación de URL más robusta con expresión regular
+  const isInputUrl = /^(https?:\/\/)?(www\.)?(vm\.|vt\.)?tiktok\.com\/.+$/i.test(queryOrUrl);
 
   if (!isInputUrl) {
     return conn.reply(m.chat, `💔 *Esa no es una URL de TikTok.*
@@ -96,7 +95,6 @@ Solo soporto URLs directas.`, m, { contextInfo });
   try {
     const neviApiUrl = `${NEVI_API_ENDPOINT}/tiktok`;
     
-    // Si se especifica un modo, se realiza la descarga directamente
     if (isMode) {
       const mode = args[0].toLowerCase();
       const action = mode === "audio" ? "download_audio" : "download_video";
@@ -122,7 +120,7 @@ Solo soporto URLs directas.`, m, { contextInfo });
       }
       throw new Error(`Fallo de la API: ${json.message || 'Respuesta inválida.'}`);
 
-    } else { // Si no se especifica un modo, se obtienen los metadatos y se muestran los botones
+    } else {
       const res = await fetch(neviApiUrl, {
         method: 'POST',
         headers: {
