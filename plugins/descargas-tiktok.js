@@ -81,81 +81,61 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
 
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
   const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
-
-  // CAMBIO: Se eliminó la validación de URL.
   
   await m.react("🔎");
 
   try {
     const neviApiUrl = `${NEVI_API_ENDPOINT}/tiktok`;
+    const action = isMode ? (args[0].toLowerCase() === "audio" ? "download_audio" : "download_video") : "info";
+
+    const res = await fetch(neviApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-KEY': NEVI_API_KEY,
+      },
+      body: JSON.stringify({
+        url: queryOrUrl,
+        action: action
+      }),
+    });
     
-    if (isMode) {
-      const mode = args[0].toLowerCase();
-      const action = mode === "audio" ? "download_audio" : "download_video";
-      
-      const res = await fetch(neviApiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': NEVI_API_KEY,
-        },
-        body: JSON.stringify({
-          url: queryOrUrl,
-          action: action
-        }),
-      });
-      
-      const json = await res.json();
-      
-      if (json.status === "success" && json.download_link) {
-        const videoTitle = json.title || 'Título Desconocido';
-        await sendMediaFile(conn, m, json.download_link, videoTitle, mode);
-        return;
-      }
-      throw new Error(`Fallo de la API: ${json.message || 'Respuesta inválida.'}`);
+    // --- INICIO MODO DEPURACIÓN: Muestra la respuesta completa de la API
+    const json = await res.json();
+    console.log("Respuesta de la API:", json); // Esto se verá en tu consola
+    
+    // Envía la respuesta JSON al chat
+    await conn.reply(m.chat, `Respuesta de la API:\n\n${JSON.stringify(json, null, 2)}`, m, { contextInfo });
+    // --- FIN MODO DEPURACIÓN ---
 
-    } else {
-      const res = await fetch(neviApiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': NEVI_API_KEY,
-        },
-        body: JSON.stringify({
-          url: queryOrUrl,
-          action: "info"
-        }),
-      });
+    // Puedes comentar la sección de arriba (entre START y END) y descomentar el código original de abajo para que vuelva a funcionar.
 
-      const json = await res.json();
-
-      if (json.status !== "success" || !json.title) {
-        throw new Error("No se encontraron metadatos.");
-      }
-
+    /*
+    if (json.status === "success" && json.download_link) {
+      const videoTitle = json.title || 'Título Desconocido';
+      await sendMediaFile(conn, m, json.download_link, videoTitle, isMode ? args[0].toLowerCase() : 'video');
+      return;
+    }
+    if (json.status === "success" && !isMode) {
       const { uploader, music_title, title, description, thumbnail_link } = json;
-
       const buttons = [
         { buttonId: `${usedPrefix}tiktok video ${queryOrUrl}`, buttonText: { displayText: '🎬 𝙑𝙄𝘿𝙀𝙊' }, type: 1 },
         { buttonId: `${usedPrefix}tiktok audio ${queryOrUrl}`, buttonText: { displayText: '🎧 𝘼𝙐𝘿𝙄𝙊' }, type: 1 }
       ];
-
       const finalDescription = description || title || 'Sin descripción';
       const finalMusicTitle = music_title || 'Desconocida';
       const finalUploader = uploader || 'Desconocido';
-
       const caption = `
-┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪۪۪۪۪ٜ݊᷼⁔᮫ּׅ̫ׄ࣪︵᮫ּ๋ׅׅ۪۪۪۪ׅ࣪࣪͡⌒🌀𔗨⃪̤̤̤ٜ۫۫۫҈҈҈҈҉҉᷒ᰰ꤬۫۫۫𔗨̤̤̤𐇽─۪۪۪۪ٜ᷼┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪݊᷼
-₊‧꒰ 🎧꒱ 𝙀𝙇𝙇𝙀𝙉 𝙅𝙊𝙀 𝘽𝙊𝙏 — 𝙋𝙇𝘼𝙔 𝙈𝙊𝘿𝙀 ✧˖°
-︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶
+        ┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪۪۪۪۪ٜ݊᷼⁔᮫ּׅ̫ׄ࣪︵᮫ּ๋ׅׅ۪۪۪۪ׅ࣪࣪͡⌒🌀𔗨⃪̤̤̤ٜ۫۫۫҈҈҈҈҉҉᷒ᰰ꤬۫۫۫𔗨̤̤̤𐇽─۪۪۪۪ٜ᷼┈۪۪۪۪۪۪۪۪ٜ̈᷼─۪۪۪۪ٜ࣪᷼┈۪۪۪۪݊᷼
+        ₊‧꒰ 🎧꒱ 𝙀𝙇𝙇𝙀𝙉 𝙅𝙊𝙀 𝘽𝙊𝙏 — 𝙋𝙇𝘼𝙔 𝙈𝙊𝘿𝙀 ✧˖°
+        ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶   ︶֟፝ᰳ࡛۪۪۪۪۪⏝̣ ͜͝ ۫۫۫۫۫۫︶
 
-> ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Autor:* ${finalUploader}
-> ૢ⃘꒰💬⃝︩֟፝𐴲ⳋᩧ᪲ *Descripción:* ${finalDescription}
-> ૢ⃘꒰🎵⃝︩֟፝𐴲ⳋᩧ᪲ *Música:* ${finalMusicTitle}
-> ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${queryOrUrl}
-⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〫〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
-     ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
-
+        > ૢ⃘꒰👤⃝︩֟፝𐴲ⳋᩧ᪲ *Autor:* ${finalUploader}
+        > ૢ⃘꒰💬⃝︩֟፝𐴲ⳋᩧ᪲ *Descripción:* ${finalDescription}
+        > ૢ⃘꒰🎵⃝︩֟፝𐴲ⳋᩧ᪲ *Música:* ${finalMusicTitle}
+        > ૢ⃘꒰🔗⃝︩֟፝𐴲ⳋᩧ᪲ *URL:* ${queryOrUrl}
+        ⌣᮫ֶุ࣪ᷭ⌣〫᪲꒡᳝۪︶᮫໋࣭〭〫𝆬࣪࣪𝆬࣪꒡ֶ〪࣪ ׅ۫ெ᮫〪⃨〫〫᪲࣪˚̥ׅ੭ֶ֟ৎ᮫໋ׅ̣𝆬  ּ֢̊࣪⡠᮫ ໋🦈᮫ຸ〪〪〫〫ᷭ ݄࣪⢄ꠋּ֢ ࣪ ֶׅ੭ֶ̣֟ৎ᮫˚̥࣪ெ᮫〪〪⃨〫᪲ ࣪꒡᮫໋〭࣪𝆬࣪︶〪᳝۪ꠋּ꒡ׅ⌣᮫ֶ࣪᪲⌣᮫ຸ᳝〫֩ᷭ
+             ᷼͝ ᮫໋⏝᮫໋〪ׅ〫𝆬⌣ׄ𝆬᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᷑︶᮫᷼͡︶ׅ ໋𝆬⋰᩠〫 ᮫ׄ ׅ𝆬 ⠸᮫ׄ ׅ ⋱〫 ۪۪ׄ᷑𝆬︶᮫໋᷼͡︶ׅ 𝆬⌣᮫〫ׄ᷑᷼᷼᷼᷼᷼᷼᷼᷼᷼⌣᜔᮫ׄ⏝᜔᮫๋໋〪ׅ〫 ᷼͝`;
       await conn.sendMessage(m.chat, {
         image: { url: thumbnail_link },
         caption,
@@ -164,12 +144,15 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
         headerType: 4,
         contextInfo
       }, { quoted: m });
+      return;
     }
+    throw new Error(`Fallo de la API: ${json.message || 'Respuesta inválida.'}`);
+    */
 
   } catch (e) {
     console.error("Error al procesar la solicitud de TikTok:", e);
     return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
-Esa URL me da un dolor de cabeza, ¿estás seguro de que es una URL de TikTok válida?`, m, { contextInfo });
+Hubo un error al intentar comunicarme con la API.`, m, { contextInfo });
   }
 };
 
