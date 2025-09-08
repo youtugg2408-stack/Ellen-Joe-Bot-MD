@@ -19,7 +19,6 @@ const newsletterName = '⸙ְ̻࠭ꪆ🦈 𝐄llen 𝐉ᴏᴇ 𖥔 Sᥱrvice';
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
   args = args.filter(v => v?.trim());
-  const isDebug = args.includes('debug');
 
   const contextInfo = {
     mentionedJid: [m.sender],
@@ -40,7 +39,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     }
   };
 
-  if (!args[0] || args.some(arg => arg.toLowerCase() === 'debug' && args.length === 1)) {
+  if (!args[0]) {
     return conn.reply(m.chat, `🦈 *¿᥎іᥒіs𝗍ᥱ ᥲ ⍴ᥱძіrmᥱ ᥲᥣg᥆ sіᥒ sᥲᑲᥱr 𝗊ᥙᥱ́?*
 ძі ᥣ᥆ 𝗊ᥙᥱ 𝗊ᥙіᥱrᥱs... ᥆ ᥎ᥱ𝗍ᥱ.
 
@@ -49,7 +48,7 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
   }
 
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
-  const queryOrUrl = isMode ? args.slice(1).filter(a => a.toLowerCase() !== 'debug').join(" ") : args.filter(a => a.toLowerCase() !== 'debug').join(" ");
+  const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
   const isInputUrl = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.be)\/.+$/i.test(queryOrUrl);
   
   let video;
@@ -89,20 +88,6 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
       }
     };
 
-    // Obtener el título antes de llamar a la API
-    let videoTitle = 'Título Desconocido';
-    try {
-        // CORRECCIÓN: Usamos yt-search para obtener el ID del video y buscar su información.
-        const urlObj = new URL(queryOrUrl);
-        const videoID = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
-        const searchResult = await yts({ videoId: videoID });
-        if (searchResult && searchResult.title) {
-          videoTitle = searchResult.title;
-        }
-    } catch (infoError) {
-        console.error("No se pudo obtener el título del video:", infoError);
-    }
-    
     try {
       const neviApiUrl = `http://neviapi.ddns.net:5000/download`;
       const format = mode === "audio" ? "mp3" : "mp4";
@@ -120,13 +105,10 @@ ${usedPrefix}play moonlight - kali uchis`, m, { contextInfo });
 
       const json = await res.json();
       
-      // NUEVO: Envía la respuesta de la API al chat si el modo de depuración está activo.
-      if (isDebug) {
-        await conn.reply(m.chat, `*DEBUG - Respuesta de la API:*\n\`\`\`json\n${JSON.stringify(json, null, 2)}\n\`\`\``, m);
-      }
-      
-      if (json.ok && json.download_url) {
-        await sendMediaFile(json.download_url, json.info?.title || videoTitle, mode);
+      // CAMBIO: Ahora usa 'download_link' en lugar de 'download_url' y usa los títulos de la API.
+      if (json.status === "success" && json.download_link) {
+        const titleFromApi = json.title || 'Título Desconocido';
+        await sendMediaFile(json.download_link, titleFromApi, mode);
         return;
       }
       throw new Error("NEVI API falló.");
@@ -190,7 +172,6 @@ no pude traerte nada.`, m);
   // --- Lógica de búsqueda o metadatos (si no se especifica el modo) ---
   if (isInputUrl) {
     try {
-      // CORRECCIÓN: Se usa el mismo método que arriba para obtener la info de la URL.
       const urlObj = new URL(queryOrUrl);
       const videoID = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
       const searchResult = await yts({ videoId: videoID });
