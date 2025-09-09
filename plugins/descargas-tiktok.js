@@ -47,6 +47,11 @@ const sendMediaFile = async (conn, m, downloadUrl, title, currentMode) => {
   }
 };
 
+const sendJsonResponse = async (conn, m, jsonResponse) => {
+  const jsonText = JSON.stringify(jsonResponse, null, 2);
+  await conn.reply(m.chat, `*Respuesta de la API (JSON):*\n\n\`\`\`json\n${jsonText}\n\`\`\``, m);
+};
+
 // --- Manejador Principal ---
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
@@ -81,7 +86,7 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
 
   const isMode = ["audio", "video"].includes(args[0].toLowerCase());
   const queryOrUrl = isMode ? args.slice(1).join(" ") : args.join(" ");
-  
+
   await m.react("🔎");
 
   try {
@@ -99,19 +104,23 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
         action: action
       }),
     });
-    
+
     const json = await res.json();
+    await sendJsonResponse(conn, m, json); // Envía la respuesta JSON al chat
+
+    if (json.status !== "success") {
+        throw new Error(`Fallo de la API: ${json.message || 'Respuesta inválida.'}`);
+    }
 
     if (isMode) {
-      if (json.status === "success" && json.download_link) {
+      if (json.download_link) {
         const videoTitle = json.title || 'Título Desconocido';
-        await sendMediaFile(conn, m, json.download_link, videoTitle, isMode ? args[0].toLowerCase() : 'video');
-        return;
+        await sendMediaFile(conn, m, json.download_link, videoTitle, args[0].toLowerCase());
+      } else {
+        throw new Error("No se encontró el enlace de descarga.");
       }
-      throw new Error(`Fallo de la API: ${json.message || 'Respuesta inválida.'}`);
-
     } else {
-      if (json.status !== "success" || !json.title) {
+      if (!json.title) {
         throw new Error("No se encontraron metadatos.");
       }
 
@@ -150,8 +159,9 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
 
   } catch (e) {
     console.error("Error al procesar la solicitud de TikTok:", e);
+    // Mejora el mensaje de error para incluir el mensaje de la API si está disponible
     return conn.reply(m.chat, `💔 *Fallé al procesar tu capricho.*
-Hubo un error al intentar comunicarme con la API.`, m, { contextInfo });
+${e.message || 'Hubo un error al intentar comunicarme con la API.'}`, m, { contextInfo });
   }
 };
 
