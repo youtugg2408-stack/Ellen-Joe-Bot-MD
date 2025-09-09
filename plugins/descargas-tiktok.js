@@ -47,11 +47,6 @@ const sendMediaFile = async (conn, m, downloadUrl, title, currentMode) => {
   }
 };
 
-const sendJsonResponse = async (conn, m, jsonResponse) => {
-  const jsonText = JSON.stringify(jsonResponse, null, 2);
-  await conn.reply(m.chat, `*Respuesta de la API (JSON):*\n\n\`\`\`json\n${jsonText}\n\`\`\``, m);
-};
-
 // --- Manejador Principal ---
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const name = conn.getName(m.sender);
@@ -106,8 +101,7 @@ ${usedPrefix}tiktok https://www.tiktok.com/@user/video/123456789`, m, { contextI
     });
 
     const json = await res.json();
-    await sendJsonResponse(conn, m, json); // Envía la respuesta JSON al chat
-
+    
     if (json.status !== "success") {
         throw new Error(`Fallo de la API: ${json.message || 'Respuesta inválida.'}`);
     }
