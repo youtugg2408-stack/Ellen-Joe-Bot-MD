@@ -164,6 +164,28 @@ nano settings.js
 
 ---
 
+# ✦ MAYAPI ─ La API Suprema de SoyMaycol ✦  
+
+![MAYAPI](https://mayapi.ooguy.com/favicon.png)  
+
+┌─────◦(●￣(ｴ)￣●)◦─────┐  
+★ Más de **53+ endpoints** listos para usar  
+★ IA de imágenes, videos y hasta ajedrez ♟  
+★ Monitoreo, seguridad y diversión ✦  
+└─────◦(●￣(ｴ)￣●)◦─────┘  
+
+➤ **Base URL:** `https://mayapi.ooguy.com`  
+
+▸ Plan **FREE** disponible  
+▸ Plan **PREMIUM**: $2.50 (1K usos diarios)  
+
+╭══════⊂(^(工)^)⊃══════╮  
+No te quedes fuera del futuro digital  
+╰══════⊂(^(工)^)⊃══════╯
+
+
+---
+
 ## 👑 𝐂𝐫𝐞𝐚𝐝𝐨𝐫 𝐝𝐞 Ellen Joe
 
 
