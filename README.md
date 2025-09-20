@@ -50,11 +50,23 @@ href="https://www.mediafire.com/file/llugt4zgj7g3n3u/com.termux_1020.apk/file"><
   <summary><b>🔰 Ver comandos de instalación</b></summary>
 
 ```bash
-termux-setup-storage
+apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
 ```
 
 ```bash
-apt update && apt upgrade && pkg install -y git nodejs ffmpeg imagemagick yarn
+apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
+```
+
+```bash
+apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
+```
+
+```bash
+apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
+```
+
+```bash
+apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
 ```
 
 ```bash
