@@ -86,6 +86,10 @@ npm install -g yarn
 ```
 
 ```bash
+apt-get install build-essential
+```
+
+```bash
 yarn install && npm install && npm update
 ```
 
