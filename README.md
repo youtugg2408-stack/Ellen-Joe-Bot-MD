@@ -66,6 +66,10 @@ curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dea
 ```
 
 ```bash
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+```
+
+```bash
 apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
 ```
 
