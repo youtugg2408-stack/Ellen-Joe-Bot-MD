@@ -62,7 +62,7 @@ apt update && apt upgrade -y && apt install -y ca-certificates curl gnupg
 ```
 
 ```bash
-apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 ```
 
 ```bash
