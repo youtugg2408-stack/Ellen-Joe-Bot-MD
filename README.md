@@ -127,7 +127,6 @@ npm start
 proot-distro login ubuntu
 ```
 > *Solo ejecuta proot-distro login ubuntu si en la consola no te sale root@localhost:*
-</details>
 
 ```bash
 cd Ellen-Joe-Bot-MD && npm start
