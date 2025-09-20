@@ -54,7 +54,7 @@ apt update && apt upgrade -y && pkg install proot-distro -y
 ```
 
 ```bash
-apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
+proot-distro install ubuntu && proot-distro login ubuntu
 ```
 
 ```bash
