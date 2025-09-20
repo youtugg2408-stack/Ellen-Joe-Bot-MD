@@ -58,7 +58,7 @@ proot-distro install ubuntu && proot-distro login ubuntu
 ```
 
 ```bash
-apt update && apt upgrade && apt install -y git nodejs ffmpeg imagemagick yarn
+apt update && apt upgrade -y && apt install -y ca-certificates curl gnupg
 ```
 
 ```bash
