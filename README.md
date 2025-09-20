@@ -78,6 +78,14 @@ git clone https://github.com/nevi-dev/Ellen-Joe-Bot-MD && cd Ellen-Joe-Bot-MD
 ```
 
 ```bash
+rm -rf /usr/bin/yarn
+```
+
+```bash
+npm install -g yarn
+```
+
+```bash
 yarn install && npm install && npm update
 ```
 
