@@ -56,35 +56,6 @@ Esa URL no es de Spotify, ¿estás seguro de que es una URL válida?`, m, { cont
     return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
   };
 
-  const sendAudioFile = async (downloadUrl, title) => {
-    try {
-      const response = await axios.head(downloadUrl);
-      const contentLength = response.headers['content-length'];
-      const fileSizeMb = contentLength / (1024 * 1024);
-
-      if (fileSizeMb > SIZE_LIMIT_MB) {
-        await conn.sendMessage(m.chat, {
-          document: { url: downloadUrl },
-          fileName: `${title}.mp3`,
-          mimetype: 'audio/mpeg',
-          caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
-🖤 *Título:* ${title}`
-        }, { quoted: m });
-        await m.react("📄");
-      } else {
-        await conn.sendMessage(m.chat, {
-          audio: { url: downloadUrl },
-          mimetype: "audio/mpeg",
-          fileName: `${title}.mp3`
-        }, { quoted: m });
-        await m.react("🎧");
-      }
-    } catch (error) {
-      console.error("Error al obtener el tamaño del archivo o al enviarlo:", error);
-      throw new Error("No se pudo obtener el tamaño del archivo o falló el envío.");
-    }
-  };
-
   try {
     const neviApiUrl = `http://neviapi.ddns.net:5000/spotify`;
     const res = await fetch(neviApiUrl, {
@@ -125,9 +96,30 @@ Esa URL no es de Spotify, ¿estás seguro de que es una URL válida?`, m, { cont
         contextInfo
       }, { quoted: m });
       
-      // Then proceed to download and send the audio
       await m.react("🎧");
-      await sendAudioFile(result.download, result.title);
+
+      // **CAMBIO IMPORTANTE:** Descarga el archivo de audio primero.
+      const responseAudio = await axios.get(result.download, { responseType: 'arraybuffer' });
+      const audioBuffer = Buffer.from(responseAudio.data);
+
+      const fileSizeMb = audioBuffer.length / (1024 * 1024);
+      if (fileSizeMb > SIZE_LIMIT_MB) {
+          await conn.sendMessage(m.chat, {
+              document: audioBuffer,
+              fileName: `${result.title}.mp3`,
+              mimetype: 'audio/mpeg',
+              caption: `⚠️ *El archivo es muy grande (${fileSizeMb.toFixed(2)} MB), así que lo envío como documento. Puede tardar más en descargar.*
+🖤 *Título:* ${result.title}`
+          }, { quoted: m });
+          await m.react("📄");
+      } else {
+          await conn.sendMessage(m.chat, {
+              audio: audioBuffer,
+              mimetype: "audio/mpeg",
+              fileName: `${result.title}.mp3`
+          }, { quoted: m });
+          await m.react("🎧");
+      }
       return;
     }
     throw new Error("NEVI API falló.");
