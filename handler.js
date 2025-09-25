@@ -161,12 +161,12 @@ if (await manejarRespuestasStickers(this, m)) return;
 
         const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
         const participants = (m.isGroup ? groupMetadata.participants : []) || []
-        
+
         const senderNum = normalizeJid(m.sender)
         const botNums = [this.user.jid, this.user.lid].map(j => normalizeJid(cleanJid(j)))
         const user = m.isGroup ? participants.find(u => normalizeJid(u.id) === senderNum) : {}
         const bot = m.isGroup ? participants.find(u => botNums.includes(normalizeJid(u.id))) : {}
-        
+
         const isRAdmin = user?.admin === 'superadmin' || false
         const isAdmin = isRAdmin || user?.admin === 'admin' || false
         const isBotAdmin = !!bot?.admin
@@ -211,7 +211,7 @@ if (await manejarRespuestasStickers(this, m)) return;
             const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
             let _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix
             let match = (_prefix instanceof RegExp ? [[_prefix.exec(m.text), _prefix]] : Array.isArray(_prefix) ? _prefix.map(p => { let re = p instanceof RegExp ? p : new RegExp(str2Regex(p)); return [re.exec(m.text), re] }) : typeof _prefix === 'string' ? [[new RegExp(str2Regex(_prefix)).exec(m.text), new RegExp(str2Regex(_prefix))]] : [[[], new RegExp]]).find(p => p[1])
-            
+
             if (!match) continue
 
             if (typeof plugin.before === 'function') {
@@ -234,7 +234,7 @@ if (await manejarRespuestasStickers(this, m)) return;
                 if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) || (m.id.startsWith('B24E') && m.id.length === 20))) return
 
                 if (!isAccept) continue
-                
+
                 m.plugin = name
                 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
                     let chat = global.db.data.chats[m.chat]
@@ -279,7 +279,7 @@ if (await manejarRespuestasStickers(this, m)) return;
                 let xp = 'exp' in plugin ? parseInt(plugin.exp) : 17 
                 if (xp > 200) m.reply('chirrido -_-')
                 else m.exp += xp
-                
+
                 if (!isPrems && plugin.coin && global.db.data.users[m.sender].coin < plugin.coin * 1) {
                     conn.reply(m.chat, `❮✦❯ Se agotaron tus ${moneda}`, m)
                     continue
