@@ -1,0 +1,48 @@
+.js - comando de prueba avanzado
+// ID del grupo donde están los middlemen
+const MIDDLE_GROUP = '120363401317631718@g.us';
+// Guardamos los trades activos por grupo
+global.currentTrades = {}; let handler = async (m, { conn, isAdmin, isOwner }) => { 
+    const from = m.chat; const user1 = m.sender; const user2 = (m.mentionedJid && 
+    m.mentionedJid[0]) ? m.mentionedJid[0] : null; if (!user2) return 
+    conn.reply(from, "⚠️ Debes mencionar a la persona para el trade.", m); if 
+    (global.currentTrades[from]) return conn.reply(from, "⚠️ Ya hay un trade en 
+    proceso en este grupo.", m);
+    // Guardamos la solicitud
+    global.currentTrades[from] = { requester: user1, partner: user2, taken: false, 
+    timer: null }; await conn.reply(from, "⌛ Buscando middleman disponible... 1 hora 
+    para aceptar.", m);
+    // Enviar mensaje al grupo de middlemen
+    await conn.sendMessage(MIDDLE_GROUP, { text: `📩 Solicitud de middleman en el 
+    grupo ${from}\n👤 ${user1}\n👤 ${user2}\nResponde *si* para aceptar.` });
+    // Timeout de 1 hora
+    global.currentTrades[from].timer = setTimeout(async () => { if 
+        (!global.currentTrades[from].taken) {
+            await conn.reply(from, "❌ Ningún middleman aceptó en 1 hora.", m); 
+            delete global.currentTrades[from];
+        }
+    }, 3600000);
+};
+handler.help = ['middleman']; handler.tags = ['tools']; handler.command = 
+['middleman']; handler.group = true; // Solo en grupos handler.botAdmin = true; // 
+Bot debe ser admin handler.rowner = false; // No solo para owner export async 
+function before(m, { conn }) {
+    // Solo escuchamos respuestas en el grupo de middlemen
+    if (m.chat !== '120363401317631718@g.us') return;
+    // Buscamos trades pendientes
+    for (let groupId in global.currentTrades) { let trade = 
+        global.currentTrades[groupId]; if (trade.taken) continue; if (m.text && 
+        m.text.toLowerCase() === 'si') {
+            trade.taken = true; clearTimeout(trade.timer); let tradeGroup = await 
+            conn.groupCreate("TRADE", [
+                trade.requester, trade.partner, m.sender ]); await 
+            conn.sendMessage(tradeGroup.id, {
+                text: `✅ Middleman disponible: @${m.sender.split("@")[0]}\nGrupo 
+                creado para el intercambio.`, mentions: [m.sender, trade.requester, 
+                trade.partner]
+            });
+            delete global.currentTrades[groupId]; break;
+        }
+    }
+}
+export default handler;

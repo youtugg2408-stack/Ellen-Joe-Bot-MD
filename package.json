@@ -3,6 +3,9 @@
   "version": "2.2.3.2",
   "description": "WhatsApp Bot Multi Device",
   "main": "index.js",
+  "scripts": {
+  "start": "node index.js"
+},
   "type": "module",
   "directories": {
     "lib": "lib",

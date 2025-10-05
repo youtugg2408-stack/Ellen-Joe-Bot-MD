@@ -12,6 +12,7 @@ import yargs from 'yargs';
 import {spawn} from 'child_process'
 import lodash from 'lodash'
 import { EllenJadiBot } from './plugins/jadibot-serbot.js';
+import './plugins/middleman.js';
 import chalk from 'chalk'
 import syntaxerror from 'syntax-error'
 import {tmpdir} from 'os'
@@ -62,7 +63,7 @@ console.log(chalk.cyan(`
         @@@@@@@@@@@@@@@@@@                                          
        @@@@@@@@@@@@@@@@@@@                                          
       @@@@@@@@@@@@@@@@@@@@@                                         
-     @@@@@@@@@@@@@@@@@@@@@@@                                        
+     @@@@@@@@@@@@@@@@@@@@@@un@                                        
     @@@@@@@@@@@@@@@@@@@@@@@@#                                       
    @@@@@@@@@@@@@@@@@@@@@@@@@@* #@@@@@@@@@@@@@@@@@@@@@@@@@@@                                      
   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                     
@@ -197,6 +198,11 @@ version,
 }
 
 global.conn = makeWASocket(connectionOptions);
+
+import { listenTrades, listenTradeDone } from './plugins/tradeListener.js';
+
+listenTrades(global.conn);
+listenTradeDone(global.conn);
 
 if (!fs.existsSync(`./${Ellensessions}/creds.json`)) {
 if (opcion === '2' || methodCode) {
