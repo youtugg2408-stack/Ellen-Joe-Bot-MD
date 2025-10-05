@@ -533,3 +533,8 @@ return phoneUtil.isValidNumber(parsedNumber)
 } catch (error) {
 return false
 }}
+
+import express from "express";
+const app = express();
+app.get("/", (_, res) => res.send("Bot vivo ✅"));
+app.listen(3000);
