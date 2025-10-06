@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ellen-joe-bot
+    env: node
+    buildCommand: |
+      corepack enable
+      export PYTHON=$(which python3)
+      npm install --force
+    startCommand: node index.js
+    plan: free
+    region: oregon
+    runtime: node
+    nodeVersion: 18.18.2
